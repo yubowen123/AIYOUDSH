@@ -1,0 +1,11 @@
+{
+  "name": "@local/aiyou-enhancer-core",
+  "version": "0.2.1-aiyou.1",
+  "private": true,
+  "description": "Built-in editable source module: core",
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json"
+  }
+}

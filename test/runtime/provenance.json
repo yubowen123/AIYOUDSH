@@ -1,0 +1,205 @@
+{
+  "basis": "current installed 0.2.1-rc.2",
+  "packages": [
+    "@deepseek-ai/cordis",
+    "@deepseek-ai/cordis-plugin-include",
+    "@deepseek-ai/cordis-plugin-loader",
+    "@deepseek-ai/cosmokit",
+    "@deepseek-ai/dsh-brand",
+    "@deepseek-ai/dsh-host-webserver",
+    "@deepseek-ai/dsh-llm",
+    "@deepseek-ai/dsh-scope",
+    "@deepseek-ai/dsh-session",
+    "@deepseek-ai/dsh-session-projection",
+    "@deepseek-ai/dsh-timeout",
+    "@deepseek-ai/dsh-typert-protocol",
+    "@deepseek-ai/dsh-util-crypto",
+    "@deepseek-ai/dsh-util-values",
+    "@deepseek-ai/schemastery",
+    "@standard-schema/spec",
+    "argparse",
+    "bytes",
+    "compressible",
+    "compression",
+    "content-type",
+    "debug",
+    "destroy",
+    "ipaddr.js",
+    "js-yaml",
+    "mime-db",
+    "ms",
+    "negotiator",
+    "node-addon-native-custom-loader",
+    "node-addon-require-builtin",
+    "node-addon-require-builtin-darwin-arm64",
+    "on-headers",
+    "safe-buffer",
+    "vary",
+    "zod"
+  ],
+  "embeddedWebServer": {
+    "source": "Current installed DeepSeek Harness 0.2.1-rc.2 application payload; package bytes unchanged",
+    "purpose": "Portable embedded-resource regression test using the official WebServer class",
+    "entry": "node_modules/@deepseek-ai/dsh-host-webserver/lib/index.js",
+    "entrySha256": "08907285802f0edd3aeb68c91fb443be2804879ab3d41104c4600424be06f3ab",
+    "treeHashFormat": "SHA-256 of sorted package-relative path, NUL, file bytes, NUL; nested node_modules recorded separately",
+    "closure": [
+      {
+        "name": "@deepseek-ai/cordis",
+        "version": "4.0.5",
+        "path": "node_modules/@deepseek-ai/cordis",
+        "treeSha256": "331b1dbd7483f922d178bafa24a69c39c78b56c1559d7f79a38a678356652fae"
+      },
+      {
+        "name": "@deepseek-ai/cordis-plugin-include",
+        "version": "1.0.10",
+        "path": "node_modules/@deepseek-ai/cordis-plugin-include",
+        "treeSha256": "93e6b02b8fb1fa91dba256a0aa76bd95a45b2314503df2b01c2e280ba140decd"
+      },
+      {
+        "name": "@deepseek-ai/cordis-plugin-loader",
+        "version": "1.0.6",
+        "path": "node_modules/@deepseek-ai/cordis-plugin-loader",
+        "treeSha256": "ebb98e51483efe923c0d3931dc95b20f0b2bbec45ae642f85aef3071d8fd7546"
+      },
+      {
+        "name": "@deepseek-ai/cosmokit",
+        "version": "1.8.6",
+        "path": "node_modules/@deepseek-ai/cosmokit",
+        "treeSha256": "edfe5c04028b8da185fe0c37567a2fcbe981c95dd13f1dc012d89f7830237cac"
+      },
+      {
+        "name": "@deepseek-ai/dsh-host-webserver",
+        "version": "0.2.1-rc.2",
+        "path": "node_modules/@deepseek-ai/dsh-host-webserver",
+        "treeSha256": "2fed2c136029c31358feda780c977427c6030828c30ee6b5f0573f52f0f6432b"
+      },
+      {
+        "name": "negotiator",
+        "version": "1.1.0",
+        "path": "node_modules/@deepseek-ai/dsh-host-webserver/node_modules/negotiator",
+        "treeSha256": "1e1b006f1082ba5310e9d8a63a4cddd8afe9744a1ce02f08b654d960e7a431d2"
+      },
+      {
+        "name": "@deepseek-ai/schemastery",
+        "version": "3.18.5",
+        "path": "node_modules/@deepseek-ai/schemastery",
+        "treeSha256": "e47d52fce41feba97c636878a72f12752e0dcea0423d452e330d41c6d422cc6e"
+      },
+      {
+        "name": "@standard-schema/spec",
+        "version": "1.1.0",
+        "path": "node_modules/@standard-schema/spec",
+        "treeSha256": "041530233c60999c9c1a1566e3b6ca78bb8ba220c6c576ba49f1cec5dea6d641"
+      },
+      {
+        "name": "argparse",
+        "version": "2.0.1",
+        "path": "node_modules/argparse",
+        "treeSha256": "b938552c590017fc5ccc5f3980e2ae635f12ff544365bef1581c33699f1185e4"
+      },
+      {
+        "name": "bytes",
+        "version": "3.1.2",
+        "path": "node_modules/bytes",
+        "treeSha256": "a7fedaa585bd06d4b0f593e4f0d48b8e2726be9290702cbc3a6fd2481051a0c4"
+      },
+      {
+        "name": "compressible",
+        "version": "2.0.18",
+        "path": "node_modules/compressible",
+        "treeSha256": "17e337024d4b3cab43adcc92b44daee737842b07e182f1a39cdaaed5dfa05390"
+      },
+      {
+        "name": "compression",
+        "version": "1.8.2",
+        "path": "node_modules/compression",
+        "treeSha256": "47ea4da5c29e90c25119d3b9916824c566dba45d86abcc262ae16ba6c78512a0"
+      },
+      {
+        "name": "debug",
+        "version": "2.6.9",
+        "path": "node_modules/compression/node_modules/debug",
+        "treeSha256": "36d0e9af356cde4a33cd70db449076c5bddf5f9547149fb51b12de536e68e2c4"
+      },
+      {
+        "name": "ms",
+        "version": "2.0.0",
+        "path": "node_modules/compression/node_modules/ms",
+        "treeSha256": "5a8106ac87bb2d26d70a97a5313731e4323406ddde05c0e7c90142a2269ab799"
+      },
+      {
+        "name": "content-type",
+        "version": "2.1.0",
+        "path": "node_modules/content-type",
+        "treeSha256": "098e3e8f22a11711016e73ccd5cbd9ef4a1b6ba5d3fe63a559198b3306d4f7bb"
+      },
+      {
+        "name": "destroy",
+        "version": "1.2.0",
+        "path": "node_modules/destroy",
+        "treeSha256": "b1b13f78400252c0341ce02e73791b815edbf8724b62ec67825e714184043a31"
+      },
+      {
+        "name": "ipaddr.js",
+        "version": "2.5.0",
+        "path": "node_modules/ipaddr.js",
+        "treeSha256": "38d72e0673277c59484628a39cefaa7b161162dfa71386cef1c9fe1dfc199071"
+      },
+      {
+        "name": "js-yaml",
+        "version": "4.3.2",
+        "path": "node_modules/js-yaml",
+        "treeSha256": "7321f33ff80a5dadf7754eb7b7fef8c6f0863cf622a0ac9856d31fbd81f4aa2d"
+      },
+      {
+        "name": "mime-db",
+        "version": "1.54.0",
+        "path": "node_modules/mime-db",
+        "treeSha256": "8b691861d2bcb2b1fc813d9934fb0a4cff8aafdc01064a275babe272417cbda5"
+      },
+      {
+        "name": "negotiator",
+        "version": "0.6.4",
+        "path": "node_modules/negotiator",
+        "treeSha256": "2ccfa59f9360d1b5d03bdb6b631614f08d960eb76da859b6da8f086ed9e37d88"
+      },
+      {
+        "name": "node-addon-native-custom-loader",
+        "version": "0.1.9",
+        "path": "node_modules/node-addon-native-custom-loader",
+        "treeSha256": "54eda840fcdad633cd3a67b9d8cad3bfc96c62849a34c74069ac837ed0a5637c"
+      },
+      {
+        "name": "node-addon-require-builtin",
+        "version": "0.1.9",
+        "path": "node_modules/node-addon-require-builtin",
+        "treeSha256": "edd823a32eecfe652b782e661d260ca05bb84f97027ef09290623d50d98a3aa0"
+      },
+      {
+        "name": "node-addon-require-builtin-darwin-arm64",
+        "version": "0.1.9",
+        "path": "node_modules/node-addon-require-builtin-darwin-arm64",
+        "treeSha256": "d14154b39af95344ffdfaf552da8d8deb075133711b99ffff763176cbc809882"
+      },
+      {
+        "name": "on-headers",
+        "version": "1.1.0",
+        "path": "node_modules/on-headers",
+        "treeSha256": "464fc5149ec1235aa94d22431125ca908d2094b71f28f7bfcef7efbeac3b3ec8"
+      },
+      {
+        "name": "safe-buffer",
+        "version": "5.2.1",
+        "path": "node_modules/safe-buffer",
+        "treeSha256": "206d9fd6c0010a1068f6d0b8cb7e36014e9b92162a09190e68358bd9646f157b"
+      },
+      {
+        "name": "vary",
+        "version": "1.1.2",
+        "path": "node_modules/vary",
+        "treeSha256": "d5febdb05522d99b1d19cbe7d269fd2a6813b30191091a37890c19fc30517304"
+      }
+    ]
+  }
+}

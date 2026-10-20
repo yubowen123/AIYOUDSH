@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "version": "0.4.0",
+  "applicationBaseline": "installed-app 0.2.1-rc.2",
+  "storage": "${DSH_HOME}/aiyou-enhancer",
+  "transport": "native connection.requestRejection + relative /aiyoucodex-dsh routes",
+  "modules": [
+    {
+      "id": "core",
+      "name": "@local/aiyou-enhancer-core",
+      "title": "共享基础设施",
+      "client": false,
+      "tabKind": null,
+      "source": "modules/core",
+      "status": "builtin-source"
+    },
+    {
+      "id": "theme",
+      "name": "@local/aiyou-enhancer-theme",
+      "title": "主题",
+      "client": true,
+      "tabKind": "aiyoucodex-theme",
+      "source": "modules/theme",
+      "status": "builtin-source"
+    },
+    {
+      "id": "session-state",
+      "name": "@local/aiyou-enhancer-session-state",
+      "title": "会话状态",
+      "client": true,
+      "tabKind": null,
+      "source": "modules/session-state",
+      "status": "builtin-source"
+    },
+    {
+      "id": "session-context",
+      "name": "@local/aiyou-enhancer-session-context",
+      "title": "任务上下文",
+      "client": true,
+      "tabKind": "aiyoucodex-session-context",
+      "source": "modules/session-context",
+      "status": "builtin-source"
+    },
+    {
+      "id": "efficiency",
+      "name": "@local/aiyou-enhancer-efficiency",
+      "title": "输出偏好",
+      "client": true,
+      "tabKind": "aiyoucodex-efficiency",
+      "source": "modules/efficiency",
+      "status": "builtin-source"
+    },
+    {
+      "id": "asset-console",
+      "name": "@local/aiyou-enhancer-asset-console",
+      "title": "资产库",
+      "client": true,
+      "tabKind": "aiyoucodex-asset-console",
+      "source": "modules/asset-console",
+      "status": "builtin-source"
+    },
+    {
+      "id": "taskboard",
+      "name": "@local/aiyou-enhancer-taskboard",
+      "title": "项目管理",
+      "client": true,
+      "tabKind": "aiyoucodex-taskboard",
+      "source": "modules/taskboard",
+      "status": "builtin-source"
+    },
+    {
+      "id": "skills",
+      "name": "@local/aiyou-enhancer-skills",
+      "title": "Skills",
+      "client": true,
+      "tabKind": "aiyoucodex-skills",
+      "source": "modules/skills",
+      "status": "builtin-source"
+    },
+    {
+      "id": "usage",
+      "name": "@local/aiyou-enhancer-usage",
+      "title": "用量与上下文",
+      "client": true,
+      "tabKind": "aiyoucodex-usage",
+      "source": "modules/usage",
+      "status": "builtin-source"
+    },
+    {
+      "id": "reset-monitor",
+      "name": "@local/aiyou-enhancer-reset-monitor",
+      "title": "发布追踪",
+      "client": true,
+      "tabKind": "aiyoucodex-reset-monitor",
+      "source": "modules/reset-monitor",
+      "status": "builtin-source"
+    },
+    {
+      "id": "model-arena",
+      "name": "@local/aiyou-enhancer-model-arena",
+      "title": "模型竞技场",
+      "client": true,
+      "tabKind": "aiyoucodex-model-arena",
+      "source": "modules/model-arena",
+      "status": "requires-configured-mcp"
+    },
+    {
+      "id": "conversation-folders",
+      "name": "@local/aiyou-enhancer-conversation-folders",
+      "title": "输出目录",
+      "client": true,
+      "tabKind": "aiyoucodex-conversation-folders",
+      "source": "modules/conversation-folders",
+      "status": "builtin-source"
+    },
+    {
+      "id": "agent-workspace",
+      "name": "@local/aiyou-enhancer-agent-workspace",
+      "title": "Agent 工作区",
+      "client": true,
+      "tabKind": "aiyoucodex-agent-workspace",
+      "source": "modules/agent-workspace",
+      "status": "builtin-source"
+    },
+    {
+      "id": "session-transcript",
+      "name": "@local/aiyou-enhancer-session-transcript",
+      "title": "对话副本",
+      "client": true,
+      "tabKind": "aiyoucodex-session-transcript",
+      "source": "modules/session-transcript",
+      "status": "builtin-source"
+    }
+  ],
+  "excluded": [
+    "shortcuts (native navigation replaces it)",
+    "sidebar-cards (native sidebar source replaces it)",
+    "claude-code (removed at user request)"
+  ],
+  "delivery": "native Cordis addon, official application retained"
+}

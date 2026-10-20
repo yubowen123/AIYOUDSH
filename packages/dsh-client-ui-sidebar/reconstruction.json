@@ -1,0 +1,74 @@
+{
+  "package": "dsh-client-ui-sidebar",
+  "basis": "installed-app",
+  "entries": [
+    {
+      "output": "lib/client.js",
+      "sha256": "5f776b6ad9822be3d15cd4e24a95dfe38d4d7f48b090036519c8609daf2c7f4c",
+      "parts": [
+        {
+          "file": "src-recovered/lib/client_js/0000-prelude.js",
+          "region": "prelude"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0001-HeaderLeadingControls.module.css.mjs.js",
+          "region": "\\0dsh-css:upstream/packages/client/ui-sidebar/src/client/HeaderLeadingControls.module.css.mjs"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0002-lib-types-client-HeaderLeadingControls.js.js",
+          "region": "lib/types/client/HeaderLeadingControls.js"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0003-..-..-..-node_modules-.pnpm-clsx-2.1.1-node_modules-clsx-dist-clsx.mjs.js",
+          "region": "../../../node_modules/.pnpm/clsx@2.1.1/node_modules/clsx/dist/clsx.mjs"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0004-SidebarRoot.module.css.mjs.js",
+          "region": "\\0dsh-css:upstream/packages/client/ui-sidebar/src/client/SidebarRoot.module.css.mjs"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0005-lib-types-client-SidebarRoot.js.js",
+          "region": "lib/types/client/SidebarRoot.js"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0006-lib-types-client-locales.js.js",
+          "region": "lib/types/client/locales.js"
+        },
+        {
+          "file": "src/aiyou-brand.js",
+          "region": "AIYOUDSH product identity and declared brand artwork"
+        },
+        {
+          "file": "src/aiyou-shortcuts.js",
+          "region": "AIYOU shortcut grid and outline artwork"
+        },
+        {
+          "file": "src/aiyou-moke.js",
+          "region": "MOKE official Browser navigation"
+        },
+        {
+          "file": "src/aiyou-header.js",
+          "region": "Native right header conversation utilities"
+        },
+        {
+          "file": "src/aiyou-workbench.js",
+          "region": "AIYOU native workbench navigation"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0007-lib-types-client-index.js.js",
+          "region": "lib/types/client/index.js"
+        }
+      ]
+    },
+    {
+      "output": "lib/index.js",
+      "sha256": "be323c589cda4dbb7714df563ebb66f581a3d37ed2ab6859fed85fcebf970aea",
+      "parts": [
+        {
+          "file": "src-recovered/lib/index_js/0000-lib-types-index.js.js",
+          "region": "lib/types/index.js"
+        }
+      ]
+    }
+  ]
+}

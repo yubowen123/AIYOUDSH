@@ -1,0 +1,42 @@
+name: Verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  offline-build:
+    # The pinned official native fixture includes macOS arm64 bindings.
+    runs-on: macos-15
+    timeout-minutes: 15
+    env:
+      npm_config_offline: 'true'
+      npm_config_audit: 'false'
+      npm_config_fund: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check the pinned runtime architecture
+        run: node -e "if(process.platform !== 'darwin' || process.arch !== 'arm64') throw new Error('The pinned runtime fixture requires macOS arm64')"
+      # No npm install, credentials, desktop profile, or official app required.
+      - name: Build the removable add-on from repository files
+        run: npm run build
+      - name: Run regression tests
+        run: npm test
+      - name: Verify packaged module identities
+        run: npm run verify
+      - name: Verify feature services in an empty profile
+        run: node aiyou/verify.mjs
+      - name: Verify embedded services against the native router
+        run: node aiyou/verify-embedded.mjs

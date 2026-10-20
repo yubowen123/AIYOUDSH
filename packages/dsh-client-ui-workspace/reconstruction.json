@@ -1,0 +1,150 @@
+{
+  "package": "dsh-client-ui-workspace",
+  "basis": "installed-app",
+  "entries": [
+    {
+      "output": "lib/client.js",
+      "sha256": "977c75d31c356b1ffd11a0419997c4426dad48a852c80be01819d01902254050",
+      "parts": [
+        {
+          "file": "src-recovered/lib/client_js/0000-prelude.js",
+          "region": "prelude"
+        },
+        {
+          "file": "src/aiyou-sidebar-model.js",
+          "region": "AIYOU native sidebar model"
+        },
+        {
+          "file": "src/aiyou-sidebar-ui.js",
+          "region": "AIYOU native sidebar UI"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0001-lib-types-client-contract-slots.js.js",
+          "region": "lib/types/client/contract/slots.js"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0002-lib-types-client-shortcuts.js.js",
+          "region": "lib/types/client/shortcuts.js"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0003-..-..-util-values-src-partial-json.ts.js",
+          "region": "../../util/values/src/partial-json.ts"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0004-..-..-util-values-src-index.ts.js",
+          "region": "../../util/values/src/index.ts"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0005-..-..-util-workspace-path-src-index.ts.js",
+          "region": "../../util/workspace-path/src/index.ts"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0006-lib-types-client-stores.js.js",
+          "region": "lib/types/client/stores.js"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0007-lib-types-client-pin-order.js.js",
+          "region": "lib/types/client/pin-order.js"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0008-lib-types-client-navigation.js.js",
+          "region": "lib/types/client/navigation.js"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0009-..-..-..-node_modules-.pnpm-clsx-2.1.1-node_modules-clsx-dist-clsx.mjs.js",
+          "region": "../../../node_modules/.pnpm/clsx@2.1.1/node_modules/clsx/dist/clsx.mjs"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0010-Rows.module.css.mjs.js",
+          "region": "\\0dsh-css:upstream/packages/client/ui-workspace/src/client/rows/Rows.module.css.mjs"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0011-lib-types-client-rows-Rows.js.js",
+          "region": "lib/types/client/rows/Rows.js"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0012-AnimatedRows.module.css.mjs.js",
+          "region": "\\0dsh-css:upstream/packages/client/ui-workspace/src/client/rows/AnimatedRows.module.css.mjs"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0013-lib-types-client-rows-AnimatedRows.js.js",
+          "region": "lib/types/client/rows/AnimatedRows.js"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0014-WorkspacePicker.module.css.mjs.js",
+          "region": "\\0dsh-css:upstream/packages/client/ui-workspace/src/client/WorkspacePicker.module.css.mjs"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0015-lib-types-client-WorkspacePicker.js.js",
+          "region": "lib/types/client/WorkspacePicker.js"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0016-WorkspaceBrowser.module.css.mjs.js",
+          "region": "\\0dsh-css:upstream/packages/client/ui-workspace/src/client/rows/WorkspaceBrowser.module.css.mjs"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0017-lib-types-client-rows-WorkspaceBrowser.js.js",
+          "region": "lib/types/client/rows/WorkspaceBrowser.js"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0018-lib-types-client-session-actions-ArchiveSession.js.js",
+          "region": "lib/types/client/session-actions/ArchiveSession.js"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0019-lib-types-client-session-actions-derived.js.js",
+          "region": "lib/types/client/session-actions/derived.js"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0020-lib-types-client-session-actions-ForkSession.js.js",
+          "region": "lib/types/client/session-actions/ForkSession.js"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0021-lib-types-client-session-actions-PinSession.js.js",
+          "region": "lib/types/client/session-actions/PinSession.js"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0022-lib-types-client-session-actions-RenameSession.js.js",
+          "region": "lib/types/client/session-actions/RenameSession.js"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0023-lib-types-client-session-actions-RowActionToast.js.js",
+          "region": "lib/types/client/session-actions/RowActionToast.js"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0024-lib-types-client-toast-Toast.js.js",
+          "region": "lib/types/client/toast/Toast.js"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0025-lib-types-client-toast-register.js.js",
+          "region": "lib/types/client/toast/register.js"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0026-lib-types-client-session-actions-SessionId.js.js",
+          "region": "lib/types/client/session-actions/SessionId.js"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0027-lib-types-client-locales.js.js",
+          "region": "lib/types/client/locales.js"
+        },
+        {
+          "file": "src-recovered/lib/client_js/0028-lib-types-client-index.js.js",
+          "region": "lib/types/client/index.js"
+        }
+      ]
+    },
+    {
+      "output": "lib/index.js",
+      "sha256": "e6cdc4b725585354102a5c4598c9d8c79d6abac62d7979c09919821716370438",
+      "parts": [
+        {
+          "file": "src/aiyou-sidebar-model.js",
+          "region": "AIYOU native sidebar model"
+        },
+        {
+          "file": "src/aiyou-sidebar-host.js",
+          "region": "AIYOU native sidebar projection"
+        }
+      ]
+    }
+  ]
+}

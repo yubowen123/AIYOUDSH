@@ -1,0 +1,21 @@
+{
+  "name": "@local/aiyou-enhancer-model-arena",
+  "version": "0.2.1-aiyou.1",
+  "private": true,
+  "description": "Built-in editable source module: model-arena",
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-sidebar-right"
+      ]
+    }
+  }
+}

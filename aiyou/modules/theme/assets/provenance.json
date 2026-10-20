@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "assets": {
+    "mecha-control": {
+      "file": "mecha-control.png",
+      "source": "AIYOUCODEX themes/mecha-control/assets/background.png",
+      "sha256": "ce92394760c2364f92917506600985eb603c0828df2703bac9c7e97233554861"
+    },
+    "pink-candy": {
+      "file": "pink-candy.png",
+      "source": "AIYOUCODEX themes/pink-candy/assets/poster.png",
+      "sha256": "90af76ff8c256df1e95a632f235fe481c538508ab386291f98999ac20fd85b75"
+    },
+    "island-affection": {
+      "file": "island-affection.png",
+      "source": "AIYOUCODEX themes/island-affection/assets/poster.png",
+      "sha256": "83aa9da2fadcc3efe68da26110677cae5956e8f013543b8177e70409497c9df4"
+    },
+    "beach-vacation": {
+      "file": "beach-vacation.png",
+      "source": "AIYOUCODEX themes/beach-vacation/assets/beach-scene.png",
+      "sha256": "711cc5d6929187cd19ee6b8dc262ad8cbf3331a2b1e39618c550935b8e740c97"
+    },
+    "yoyo-tilt-collection": {
+      "file": "yoyo-tilt-collection.png",
+      "source": "AIYOUCODEX themes/yoyo-tilt-collection/assets/yoyo-sprite.png",
+      "sha256": "0a4c6d5521dd9b59da7bb2ab65393eeab156a612fd652c8edfcb17375ef4f567"
+    },
+    "crayon-shinchan-four-scenes-xixi": {
+      "file": "crayon-shinchan-four-scenes-xixi.svg",
+      "source": "Independent neutral static fallback; user-provided source media excluded",
+      "sha256": "86a0cd464cf3476811b37884ebd6181d733ac345020b5e8149c1693be566d9c7"
+    },
+    "spongebob-beach-motion": {
+      "file": "spongebob-beach-motion.svg",
+      "source": "Independent neutral static fallback; user-provided source media excluded",
+      "sha256": "f01c5dab3ba148f2b2e4decc0059b19249ca1e27b0b043f479432b706c8c7d7b"
+    },
+    "mecha-control-loop": {
+      "file": "mecha-control-loop.mp4",
+      "source": "AIYOUCODEX themes/mecha-control/assets/running.mp4",
+      "sha256": "1a02af82faf54b48a19a4ed5e6d546a0f37eaeec9dbbff3e15a3d25a839f0df1",
+      "bytes": 3214522,
+      "durationSeconds": 4,
+      "codec": "H.264",
+      "mode": "muted ambient loop; no Harness task state semantics"
+    }
+  },
+  "scope": "Existing non-personal theme illustrations and original neutral fallbacks; original mecha MP4 ambient loop; no conversation data or private photos."
+}

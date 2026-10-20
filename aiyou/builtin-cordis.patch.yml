@@ -1,0 +1,42 @@
+- insert:
+    id: "aiyou-enhancer-core"
+    name: "@local/aiyou-enhancer-core"
+- insert:
+    id: "aiyou-enhancer-theme"
+    name: "@local/aiyou-enhancer-theme"
+- insert:
+    id: "aiyou-enhancer-session-state"
+    name: "@local/aiyou-enhancer-session-state"
+- insert:
+    id: "aiyou-enhancer-session-context"
+    name: "@local/aiyou-enhancer-session-context"
+- insert:
+    id: "aiyou-enhancer-efficiency"
+    name: "@local/aiyou-enhancer-efficiency"
+- insert:
+    id: "aiyou-enhancer-asset-console"
+    name: "@local/aiyou-enhancer-asset-console"
+- insert:
+    id: "aiyou-enhancer-taskboard"
+    name: "@local/aiyou-enhancer-taskboard"
+- insert:
+    id: "aiyou-enhancer-skills"
+    name: "@local/aiyou-enhancer-skills"
+- insert:
+    id: "aiyou-enhancer-usage"
+    name: "@local/aiyou-enhancer-usage"
+- insert:
+    id: "aiyou-enhancer-reset-monitor"
+    name: "@local/aiyou-enhancer-reset-monitor"
+- insert:
+    id: "aiyou-enhancer-model-arena"
+    name: "@local/aiyou-enhancer-model-arena"
+- insert:
+    id: "aiyou-enhancer-conversation-folders"
+    name: "@local/aiyou-enhancer-conversation-folders"
+- insert:
+    id: "aiyou-enhancer-agent-workspace"
+    name: "@local/aiyou-enhancer-agent-workspace"
+- insert:
+    id: "aiyou-enhancer-session-transcript"
+    name: "@local/aiyou-enhancer-session-transcript"

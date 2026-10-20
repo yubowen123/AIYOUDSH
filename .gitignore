@@ -1,0 +1,23 @@
+# Generated artifacts and local validation work
+/dist/
+/installer-ui/build/
+/aiyou/.verification*/
+/publication-validation*/
+*.log
+.DS_Store
+__MACOSX/
+*.zip
+
+# Local dependency installs; the pinned offline host fixture is intentional.
+node_modules/
+!/test/runtime/node_modules/
+!/test/runtime/node_modules/**
+
+# Never publish machine profiles or credentials.
+.env
+.env.*
+!.env.example
+keys.md
+*.pem
+*.key
+/aiyou/verification.json

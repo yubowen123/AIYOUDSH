@@ -1,0 +1,58 @@
+[
+  {
+    "id": "aiyou-enhancer-core",
+    "name": "@local/aiyou-enhancer-core"
+  },
+  {
+    "id": "aiyou-enhancer-theme",
+    "name": "@local/aiyou-enhancer-theme"
+  },
+  {
+    "id": "aiyou-enhancer-session-state",
+    "name": "@local/aiyou-enhancer-session-state"
+  },
+  {
+    "id": "aiyou-enhancer-session-context",
+    "name": "@local/aiyou-enhancer-session-context"
+  },
+  {
+    "id": "aiyou-enhancer-efficiency",
+    "name": "@local/aiyou-enhancer-efficiency"
+  },
+  {
+    "id": "aiyou-enhancer-asset-console",
+    "name": "@local/aiyou-enhancer-asset-console"
+  },
+  {
+    "id": "aiyou-enhancer-taskboard",
+    "name": "@local/aiyou-enhancer-taskboard"
+  },
+  {
+    "id": "aiyou-enhancer-skills",
+    "name": "@local/aiyou-enhancer-skills"
+  },
+  {
+    "id": "aiyou-enhancer-usage",
+    "name": "@local/aiyou-enhancer-usage"
+  },
+  {
+    "id": "aiyou-enhancer-reset-monitor",
+    "name": "@local/aiyou-enhancer-reset-monitor"
+  },
+  {
+    "id": "aiyou-enhancer-model-arena",
+    "name": "@local/aiyou-enhancer-model-arena"
+  },
+  {
+    "id": "aiyou-enhancer-conversation-folders",
+    "name": "@local/aiyou-enhancer-conversation-folders"
+  },
+  {
+    "id": "aiyou-enhancer-agent-workspace",
+    "name": "@local/aiyou-enhancer-agent-workspace"
+  },
+  {
+    "id": "aiyou-enhancer-session-transcript",
+    "name": "@local/aiyou-enhancer-session-transcript"
+  }
+]
