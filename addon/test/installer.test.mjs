@@ -493,3 +493,43 @@ test('compatibility can lock package.json identity while rejecting path traversa
   await assert.rejects(install(options), { code: 'MANIFEST' });
   await assert.rejects(access(options.enhancerHome));
 }));
+
+
+for (const [label, originalPatch] of [
+  ['empty flow sequence', '[]\n'],
+  ['flow sequence without trailing newline', '[]'],
+  ['empty file', ''],
+  ['blank file', '\n'],
+  ['whitespace and CRLF', '  \r\n\r\n'],
+  ['comment-only file', '# preserve my empty configuration\n'],
+  ['comment without trailing newline', '# preserve without newline'],
+  ['comments with blank CRLF lines', ' # first note\r\n\r\n# last note\r\n'],
+]) {
+  test(`${label} stays idempotent through install and upgrade, then restores exact bytes`, async () => fixture(async ({ options }) => {
+    const file = join(options.profile, 'cordis.patch.yml');
+    assert.equal((await install(options)).changed, true);
+    const installedPatch = await readFile(file);
+    assert.equal((await status(options)).installed, true);
+    assert.equal((await install(options)).alreadyInstalled, true);
+    assert.deepEqual(await readFile(file), installedPatch);
+    const manifestFile = join(options.runtime, 'manifest.json');
+    const next = JSON.parse(await readFile(manifestFile));
+    next.version = '0.2.0';
+    await writeFile(manifestFile, JSON.stringify(next));
+    assert.equal((await install(options)).version, '0.2.0');
+    assert.equal((await install(options)).alreadyInstalled, true);
+    assert.equal((await uninstall(options)).installed, false);
+    assert.deepEqual(await readFile(file), Buffer.from(originalPatch));
+    assert.equal((await status(options)).installed, false);
+  }, originalPatch));
+}
+
+test('scalar and malformed YAML patches remain rejected instead of being treated as empty', async () => fixture(async ({ options }) => {
+  const file = join(options.profile, 'cordis.patch.yml');
+  for (const originalPatch of ['null\n', '~\n', '# note\nplain scalar\n', '- id: [broken\n', '---\n---\n']) {
+    await writeFile(file, originalPatch);
+    await assert.rejects(install(options), { code: 'PATCH_FORMAT' });
+    assert.equal(await readFile(file, 'utf8'), originalPatch);
+  }
+  await assert.rejects(access(join(options.dshHome, 'backups/aiyou-enhancer')));
+}));

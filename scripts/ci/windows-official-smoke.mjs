@@ -72,7 +72,7 @@ function failureDiagnostic(result) {
     }
   }
   const lines = String(result.stderr || '').split(/\r?\n/u);
-  const errorLines = lines.filter(line => /(?:^|\s)(?:[A-Za-z]+Error|Error|[A-Z][A-Z_]{3,}):\s/u.test(line)).slice(0, 3);
+  const errorLines = lines.filter(line => /(?:^|\s)(?:(?:[A-Za-z]+Error|Error)(?:\s+\[[A-Z][A-Z0-9_]*\])?|[A-Z][A-Z_]{3,}):\s/u.test(line)).slice(0, 3);
   const frames = lines.filter(line => /^\s+at\s/u.test(line)).slice(0, 2);
   return {
     source: 'stderr-error-lines',

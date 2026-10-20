@@ -47,6 +47,16 @@ Windows 版本使用独立官方基线和语义 CSS 映射适配原生界面与�
 
 以上为 v0.4.0 的 macOS 实机截图，展示两平台共用的功能设计；不是 Windows 宿主界面截图。欢迎页在未发送演示消息的状态下拍摄，历史会话通过搜索筛选隐藏。[截图来源](docs/screenshots/README.md)
 
+![Windows 中文增强安装器：CI 中由实际 WinForms 程序渲染](docs/screenshots/windows-installer.png)
+
+Windows 图为实际编译安装器在 GitHub Windows runner 中的准备界面，不是 Windows 宿主聊天截图。
+
+## 项目知识卡片
+
+![AIYOUDSH GitHub 项目知识卡片](docs/knowledge-card.png)
+
+基于本仓库功能与安装文档生成的项目图解；应用实机效果以上方截图为准。
+
 ## 安装
 
 先正常打开一次受支持的官方 DeepSeek Harness，完成 profile 初始化，再**完整解压**对应平台增强包。

@@ -180,7 +180,11 @@ async function runtimeInfo(runtime) {
 }
 
 function parsePatch(text) {
-  const doc = YAML.parseDocument(text || '[]\n', { keepSourceTokens: true, uniqueKeys: true, strict: true });
+  const doc = YAML.parseDocument(text ?? '', { keepSourceTokens: true, uniqueKeys: true, strict: true });
+  // Blank/comment-only YAML has no content node. Treat that as an empty
+  // sequence without rewriting its original whitespace or comments in patchPlan.
+  // Explicit scalars (including null and ~) still fail the sequence contract.
+  if (!doc.errors.length && doc.contents == null) doc.contents = doc.createNode([]);
   if (doc.errors.length || !YAML.isSeq(doc.contents)) throw fail('PATCH_FORMAT', 'The existing patch must be one valid YAML sequence; its contents were not changed');
   return doc;
 }
@@ -505,5 +509,7 @@ async function cli() {
   console.log(JSON.stringify(await operation(options), null, 2));
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  // The installer inspects raw archive bytes; Electron otherwise treats app.asar as a directory.
+  if (process.versions.electron) process.noAsar = true;
   cli().catch(error => { console.error(JSON.stringify({ ok: false, code: error.code ?? 'INSTALLER_ERROR', message: error.code ? error.message : 'Installer operation failed; no configuration contents are printed' })); process.exitCode = 1; });
 }
