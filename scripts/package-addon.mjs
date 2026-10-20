@@ -68,7 +68,25 @@ for (const [name, fragments] of [
 }
 const sourceZip = join(delivery, `AIYOUDSH-v${version}-source.zip`);
 await rm(sourceZip, { force: true });
-const sourceArchive = spawnSync('/usr/bin/ditto', ['-c', '-k', '--sequesterRsrc', '--keepParent', sourceStage, sourceZip], { encoding: 'utf8' });
+// Python's ZIP writer marks Unicode filenames as UTF-8, including the Windows
+// command wrappers. macOS ditto omits that flag, which some Windows tools misread.
+const sourceZipWriter = `
+from pathlib import Path
+from zipfile import ZipFile, ZIP_DEFLATED
+import sys
+stage, archive = map(Path, sys.argv[1:])
+with ZipFile(archive, 'w', compression=ZIP_DEFLATED, compresslevel=6) as bundle:
+    for file in sorted(stage.rglob('*')):
+        if file.is_file():
+            bundle.write(file, stage.name + '/' + file.relative_to(stage).as_posix())
+with ZipFile(archive) as bundle:
+    assert bundle.testzip() is None
+    names = bundle.namelist()
+    assert 'AIYOUDSH-source/installer-win/安装.cmd' in names
+    assert 'AIYOUDSH-source/installer-win/卸载.cmd' in names
+    assert all(entry.flag_bits & 0x800 for entry in bundle.infolist() if not entry.filename.isascii())
+`;
+const sourceArchive = spawnSync('python3', ['-c', sourceZipWriter, sourceStage, sourceZip], { encoding: 'utf8' });
 if (sourceArchive.status !== 0) throw new Error(sourceArchive.stderr);
 const hashes = {};
 for (const path of [zip, sourceZip]) hashes[path] = createHash('sha256').update(await readFile(path)).digest('hex');
