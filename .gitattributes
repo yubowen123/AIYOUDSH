@@ -7,6 +7,10 @@
 *.yml text eol=lf
 *.yaml text eol=lf
 *.swift text eol=lf
+*.cs text eol=lf
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.manifest text eol=lf
 *.md text eol=lf
 *.css text eol=lf
 *.svg text eol=lf

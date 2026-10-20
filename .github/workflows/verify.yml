@@ -56,6 +56,14 @@ jobs:
       - name: Compile Windows GUI, run its self-tests, capture its CI screenshot and package
         if: matrix.target == 'win32-x64'
         run: node scripts/package-windows.mjs
+      - name: Prepare release archives inside the artifact workspace
+        run: >-
+          node -e "const fs=require('node:fs'),path=require('node:path');
+          const version=require('./package.json').version,target='${{ matrix.target }}';
+          const suffixes=target==='darwin-arm64'?['macos-arm64.zip','source.zip']:target==='win32-x64'?['windows-x64.zip','windows-x64.zip.sha256']:null;
+          if(suffixes===null)throw new Error('Unsupported release archive target');
+          const output=path.resolve('dist/ci-release');fs.rmSync(output,{recursive:true,force:true});fs.mkdirSync(output,{recursive:true});
+          for(const suffix of suffixes){const name='AIYOUDSH-v'+version+'-'+suffix,source=path.resolve('..',name);if(fs.statSync(source).isFile()!==true)throw new Error('Missing release archive: '+name);fs.copyFileSync(source,path.join(output,name));}"
       - name: Check the real official Windows base in an isolated temporary profile
         if: matrix.target == 'win32-x64'
         shell: pwsh
@@ -67,17 +75,17 @@ jobs:
           name: AIYOUDSH-darwin-arm64
           if-no-files-found: error
           path: |
-            ../AIYOUDSH-v*-macos-arm64.zip
-            ../AIYOUDSH-v*-source.zip
+            dist/ci-release/AIYOUDSH-v*-macos-arm64.zip
+            dist/ci-release/AIYOUDSH-v*-source.zip
       - name: Upload Windows release and CI evidence
         if: matrix.target == 'win32-x64' && always()
         uses: actions/upload-artifact@v4
         with:
           name: AIYOUDSH-win32-x64
-          if-no-files-found: warn
+          if-no-files-found: error
           path: |
-            ../AIYOUDSH-v*-windows-x64.zip
-            ../AIYOUDSH-v*-windows-x64.zip.sha256
+            dist/ci-release/AIYOUDSH-v*-windows-x64.zip
+            dist/ci-release/AIYOUDSH-v*-windows-x64.zip.sha256
             dist/windows-installer-self-test.json
             dist/windows-installer-ci.png
             dist/windows-package-verification.json
