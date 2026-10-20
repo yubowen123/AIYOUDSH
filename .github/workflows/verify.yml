@@ -14,10 +14,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  offline-build:
-    # The pinned official native fixture includes macOS arm64 bindings.
-    runs-on: macos-15
-    timeout-minutes: 15
+  verify:
+    name: Verify ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: darwin-arm64
+            runner: macos-15
+          - target: win32-x64
+            runner: windows-latest
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
     env:
       npm_config_offline: 'true'
       npm_config_audit: 'false'
@@ -27,16 +35,50 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Check the pinned runtime architecture
-        run: node -e "if(process.platform !== 'darwin' || process.arch !== 'arm64') throw new Error('The pinned runtime fixture requires macOS arm64')"
-      # No npm install, credentials, desktop profile, or official app required.
-      - name: Build the removable add-on from repository files
+      - name: Check the pinned native runtime architecture
+        run: node -e "if(process.platform + '-' + process.arch !== '${{ matrix.target }}') throw new Error('The runner must match the pinned runtime fixture')"
+      # No npm install, model credentials, or user profile is needed.
+      - name: Build the platform-specific removable add-on
         run: npm run build
-      - name: Run regression tests
+      - name: Assert the runtime target
+        run: node -e "const m=require('./dist/addon/runtime/manifest.json'); if(m.upstream.platform !== '${{ matrix.target }}') throw new Error('Runtime target mismatch')"
+      - name: Run all regression tests
         run: npm test
-      - name: Verify packaged module identities
+      - name: Verify packaged module identities and selectors
         run: npm run verify
       - name: Verify feature services in an empty profile
         run: node aiyou/verify.mjs
       - name: Verify embedded services against the native router
         run: node aiyou/verify-embedded.mjs
+      - name: Package macOS GUI and complete cross-platform source
+        if: matrix.target == 'darwin-arm64'
+        run: node scripts/package-addon.mjs
+      - name: Compile Windows GUI, run its self-tests, capture its CI screenshot and package
+        if: matrix.target == 'win32-x64'
+        run: node scripts/package-windows.mjs
+      - name: Check the real official Windows base in an isolated temporary profile
+        if: matrix.target == 'win32-x64'
+        shell: pwsh
+        run: ./scripts/ci/windows-official-smoke.ps1
+      - name: Upload macOS release and full source
+        if: matrix.target == 'darwin-arm64' && success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AIYOUDSH-darwin-arm64
+          if-no-files-found: error
+          path: |
+            ../AIYOUDSH-v*-macos-arm64.zip
+            ../AIYOUDSH-v*-source.zip
+      - name: Upload Windows release and CI evidence
+        if: matrix.target == 'win32-x64' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AIYOUDSH-win32-x64
+          if-no-files-found: warn
+          path: |
+            ../AIYOUDSH-v*-windows-x64.zip
+            ../AIYOUDSH-v*-windows-x64.zip.sha256
+            dist/windows-installer-self-test.json
+            dist/windows-installer-ci.png
+            dist/windows-package-verification.json
+            dist/windows-official-smoke.json

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "platform": "darwin-arm64",
+  "os": "darwin",
+  "arch": "arm64",
+  "appVersion": "0.2.1-rc.2",
+  "buildCommit": "332895e0f7c9d4dbfb29729f5eb367fa263ff986",
+  "appAsarSha256": "b9ec4c2bbc20c9dbc3e39fa4c961434a943434ab0a803052b26753dd15f3b066",
+  "compatibility": [
+    {
+      "package": "@deepseek-ai/dsh-client-ui-sidebar",
+      "file": "lib/client.js",
+      "sha256": "5f776b6ad9822be3d15cd4e24a95dfe38d4d7f48b090036519c8609daf2c7f4c"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-sidebar",
+      "file": "lib/index.js",
+      "sha256": "be323c589cda4dbb7714df563ebb66f581a3d37ed2ab6859fed85fcebf970aea"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-workspace",
+      "file": "lib/client.js",
+      "sha256": "977c75d31c356b1ffd11a0419997c4426dad48a852c80be01819d01902254050"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-workspace",
+      "file": "lib/index.js",
+      "sha256": "e6cdc4b725585354102a5c4598c9d8c79d6abac62d7979c09919821716370438"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-sidebar",
+      "file": "package.json",
+      "sha256": "f646e96a81dd63bd04ebbe87e93f7cb554afcf1c35ed2effcbb8c5daaa053b9f"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-workspace",
+      "file": "package.json",
+      "sha256": "4f3bc45005b3e7d37f243b4e2e609ad9cae4963edee9999f7aa40d9bd4315591"
+    }
+  ],
+  "sourceUrl": "https://www.deepseek.com/en/harness/",
+  "layout": {
+    "appAsar": "Contents/Resources/app.asar",
+    "desktopProfile": "${DSH_HOME}/profiles/desktop",
+    "dshHomeDefault": "~/.dsh"
+  },
+  "executable": "Contents/MacOS/DeepSeek Harness"
+}

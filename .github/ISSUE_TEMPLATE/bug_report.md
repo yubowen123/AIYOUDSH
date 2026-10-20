@@ -13,7 +13,7 @@ labels: bug
 
 - AIYOUDSH 版本：
 - 官方 DeepSeek Harness 版本 / 构建：
-- macOS 版本：
+- Windows / macOS 版本：
 - CPU：Apple Silicon / Intel
 - 是否使用自定义 `DSH_HOME` / profile：
 

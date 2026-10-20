@@ -1,16 +1,17 @@
-# 源码构建与打包
+# 源码构建与双平台打包
 
 [返回首页](../README.md) · [贡献方式](../CONTRIBUTING.md)
 
-## 环境
+## 环境与目标
 
-- Node.js **24 或更新版本**。根构建使用仓库内已随带的依赖，无需联网下载。
-- 运行库构建及隔离测试不需要修改真实 Harness profile。
-- 图形安装器打包需要 **macOS、Command Line Tools、Swift/AppKit、`codesign` 和 `ditto`**。当前正式发布包为 Apple Silicon（arm64）；构建器按本机架构编译，其他架构尚未据此宣称通过宿主验证。
+- Node.js **24 或更新版本**；根构建使用随仓库依赖，不需要先运行 `npm install`。
+- 支持目标：`darwin-arm64`、`win32-x64`。源码构建和隔离测试不修改真实 Harness profile。
+- macOS 安装器：macOS、Command Line Tools、Swift/AppKit、`codesign` 与 `ditto`。
+- Windows 安装器：Windows 10/11 x64、PowerShell、.NET Framework 4.8；使用系统 `csc.exe` 编译 WinForms，无需额外 .NET SDK。
 
-本仓库保留的是当前发布组件的可编辑 JavaScript 分区及新增模块。`reconstruction.json` 明确分区顺序、输出和上游哈希，构建会按原共享作用域组装；它不是原始 TypeScript monorepo 的替代品。
+源码包括当前发布组件的可编辑 JavaScript 分区及新增模块。`reconstruction.json` 声明分区顺序、输出与上游哈希，构建按共享作用域组装；不是原始 TypeScript monorepo 的恢复。
 
-## 克隆与验证
+## 默认构建与验证
 
 ```sh
 git clone https://github.com/yubowen123/AIYOUDSH.git
@@ -23,71 +24,103 @@ node aiyou/verify.mjs
 node aiyou/verify-embedded.mjs
 ```
 
+默认构建按当前平台选择目标，输出 `dist/addon/runtime/`。平台原生夹具与服务测试应在对应系统运行，结果以实际运行的检查为准。
+
 | 命令 | 作用 |
 | --- | --- |
-| `npm run build` | 生成 `dist/addon/runtime/`；组装两个界面模块与 13 个功能模块，写入精确兼容清单 |
-| `npm test` | 执行导航、MOKE、主题、原生 workspace 和安装器测试 |
-| `npm run verify` | 验证运行库装配、模块身份、兼容信息与构建产物 |
-| `node aiyou/verify.mjs` | 使用临时 DSH 根目录验证功能模块和服务 |
-| `node aiyou/verify-embedded.mjs` | 使用临时目录验证内嵌资产/看板服务与路由 |
+| `npm run build` | 构建目标平台的两个界面模块与 13 个功能模块，写入兼容清单 |
+| `npm test` | 导航、MOKE、主题、原生 workspace 与共享安装事务测试 |
+| `npm run verify` | 核对构建产物、模块身份与语法 |
+| `node aiyou/verify.mjs` | 临时 DSH 根目录下验证功能模块和本地服务 |
+| `node aiyou/verify-embedded.mjs` | 临时目录下验证内嵌业务服务与路由 |
 
-功能验证结束会停止自己启动的服务并清理临时目录。测试通过后，针对改动执行必要的官方宿主界面检查；单元测试不能代替页面、安装和卸载行为验证。
+功能检查会停止自己启动的服务并清理临时数据。单元测试、静态兼容核对和原生安装器测试各自证明不同层面，均不能代替官方宿主界面实测。
 
-## 在本机装配
+## 显式构建目标
 
-先构建，再执行只读检查：
+```sh
+node scripts/build-addon.mjs --platform darwin-arm64 --out dist/macos/runtime
+node scripts/build-addon.mjs --platform win32-x64 --out dist/windows/runtime
+```
+
+交叉构建可生成运行库文件，不会把另一平台的安装器或官方应用运行在本机。`npm run verify` 默认核对 `dist/addon/runtime/`；需要按默认验证流程检查另一目标时，可将该目标构建到默认位置：
+
+```sh
+npm run build -- --platform win32-x64
+npm run verify
+```
+
+Windows 兼容清单见 [platforms/win32-x64.json](../platforms/win32-x64.json)。两平台的官方 `app.asar` 哈希不同；Windows 原生 client 的 CSS class 差异通过[语义映射](../platforms/win32-x64-selectors.json)适配。映射覆盖 335 个 class、主题涉及其中 31 个引用，不能用 Mac 包改后缀代替。
+
+## 本机安装检查
+
+先构建与当前系统一致的目标，再检查：
 
 ```sh
 node addon/installer.mjs dry-run --runtime dist/addon/runtime
 node addon/installer.mjs status
 ```
 
-确认使用支持的官方构建后，执行安装：
+确认目标官方构建后安装：
 
 ```sh
 node addon/installer.mjs install --runtime dist/addon/runtime
 ```
 
-上述安装命令会修改选定 profile。所有自定义路径须显式传入，详见[安装器接口](../addon/README.md)。重新打开官方应用后核对：品牌与左栏、当前对话顶部工具、主题预览/取消/保存、MOKE 同对话标签复用，以及官方聊天继续可用。
+安装会写选定 profile。Windows 使用当前用户目录和 junction，Mac 使用符号链接；两者共享备份、受管补丁、升级与冲突保护。Windows 的 `--app` 接受官方目录或 EXE；Mac 接受 `.app`。完整参数见[安装器说明](../addon/README.md)。
 
-## 打包
+## 打包安装器
 
-在 macOS 上完成构建后运行：
+macOS arm64 主机：
 
 ```sh
+npm run build -- --platform darwin-arm64
 npm run package
 ```
 
-主打包器组装 `.app`、中文命令行入口、运行库与源码归档，使用本地 ad-hoc 签名并核对载荷。发布到 GitHub 时使用以下资源名：
+该入口生成 Mac 安装包及源码归档，并验证本地 ad-hoc 签名。Windows x64 主机：
 
-- `AIYOUDSH-v0.4.0-macos-arm64.zip`：图形安装器、运行库、安装/卸载入口。
-- `AIYOUDSH-v0.4.0-source.zip`：可构建源码与随包依赖。
+```sh
+npm run build -- --platform win32-x64
+npm run package:windows
+```
 
-脚本输出位置和实际生成文件以打包器结果为准；Release 使用稳定 ASCII 名称。发布时应核对归档哈希、解压源码的独立构建、安装器架构与实际宿主效果。不要把私有配置、profile、备份、凭证、聊天记录、完整官方应用或安装包取证目录打入仓库。
+Windows 等价入口为 `node scripts/package-windows.mjs`。它编译真正的 `AIYOUDSHInstaller.exe`，装入 `installer/`、`runtime/`、脚本、文档和许可后打包。`.NET Framework` 自带编译器路径、GUI 自测与自身截图入口见 [Windows 安装器说明](../installer-win/README.md)。
+
+v0.5.0 Release 资源固定为：
+
+- `AIYOUDSH-v0.5.0-windows-x64.zip`
+- `AIYOUDSH-v0.5.0-macos-arm64.zip`
+- `AIYOUDSH-v0.5.0-source.zip`
+- `AIYOUDSH-v0.5.0-SHA256SUMS.txt`
+
+Windows GUI 与载荷必须完整解压，不能只分发独立 EXE。打包器输出路径以结果为准；发布前还应核对 ZIP 哈希、解压源码独立构建与对应平台清单。完整官方应用、取证目录、profile、凭证、私人聊天与配置备份不进入仓库。
 
 ## 源码目录
 
 ```text
 AIYOUDSH/
-├── addon/                    # 兼容检查、安装/卸载事务、备份与 YAML 库
-├── installer-ui/             # Swift/AppKit 中文图形安装器
+├── addon/                    # 双平台共享安装事务、备份、兼容检查与 YAML
+├── installer-ui/             # macOS Swift/AppKit 安装器
+├── installer-win/            # Windows C#/WinForms 安装器与脚本
+├── platforms/                # 平台官方基线与 Windows 语义 CSS 映射
 ├── packages/
-│   ├── dsh-client-ui-sidebar/ # 左侧导航、品牌、MOKE、顶部工具与恢复分区
+│   ├── dsh-client-ui-sidebar/ # 导航、品牌、MOKE、顶部工具与恢复分区
 │   ├── dsh-client-ui-workspace/ # 原生会话列表、状态投影与恢复分区
-│   └── dsh-client-ui-*/       # 主题测试所需的六个原生 CSS 参考分区
+│   └── dsh-client-ui-*/       # 主题适配所需原生 CSS 参考
 ├── aiyou/
 │   ├── modules/              # 14 个功能源码模块，13 个默认安装
-│   ├── lib/                  # 共享适配和服务桥接
-│   └── vendor/               # 随包资产与任务看板服务
-├── scripts/                  # 运行库构建、核对与打包
-├── test/                     # 隔离测试与运行时夹具
-└── docs/                     # 使用、范围、开发与截图
+│   ├── lib/                  # 共享适配与服务桥接
+│   └── vendor/               # 随包资产与看板服务
+├── scripts/                  # 目标构建、核对与双平台打包
+├── test/                     # 隔离测试和平台运行时夹具
+└── docs/                     # 使用、开发、版本说明与截图
 ```
 
-运行时包名使用 `@local/aiyou-*`，部分路由和 tab kind 保留 `aiyoucodex-*` 以兼容数据与接口。这些标识不代表运行时依赖另一套 AIYOUcodex 安装目录。
+运行时包名和部分 `aiyoucodex-*` 路由保持兼容标识，不依赖另一套 AIYOUcodex 安装。
 
-## 兼容适配原则
+## 兼容与验证原则
 
-官方基线固定在 `0.2.1-rc.2 / 332895e`。新版本适配应重新读取目标发布组件，核对 slot、投影、模块身份、CSS 和扩展合同，再更新兼容清单与验证。不要只改版本字符串、跳过归档校验或把无证据的新构建标记为兼容。
+基线固定为官方 `0.2.1-rc.2 / 332895e`。适配新构建需重读发布组件，核对 slot、投影、模块身份、原生 CSS 和接口，再更新兼容清单；不能只改版本字符串或绕过哈希。
 
-开发恢复分区时保持 manifest 顺序和共享作用域。导航使用原生会话身份、右栏 slot 与 Browser 接口；主题媒体使用宿主认证路由。本地服务只在打开相应工作区后按需启动，沿用宿主的连接认证和权限。
+Mac 实机界面、Windows CI 编译/自测、隔离 junction 事务与 Windows 宿主聊天验收应分别记录。CI 自测安装器的参数、进程环境和结果解析，或输出安装器自身截图，不代表已经在用户 Windows 桌面加载增强并验收聊天。当前证据范围见 [v0.5.0 说明](releases/v0.5.0.md#验证范围)。

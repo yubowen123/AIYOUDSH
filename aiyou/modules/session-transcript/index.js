@@ -1,9 +1,10 @@
 import { guardContext } from '../../runtime.mjs';
 /** Source-owned native feature. Reads bounded metadata from its stated source and reports unknowns explicitly. */
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { mkdir, readFile, readdir, stat, writeFile, rename } from 'node:fs/promises';
+import { mkdir, readFile, readdir, stat, lstat, writeFile, rename } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import { absoluteDirectory, sessionDirectory } from '../../lib/platform-paths.mjs';
 // Namespace import, NOT `import { zstdDecompressSync } from 'node:zlib'`.
 // node:zlib is CommonJS: asking for a named export the runtime does not have fails
 // at LINK time, which takes the whole plugin down before apply() runs — the module
@@ -98,6 +99,7 @@ function recordServing(extra) {
 
 /** Find the session log on disk, whatever project key it is filed under. */
 export async function findSessionLog(sessionId) {
+  sessionDirectory(SESSIONS_DIR, sessionId);
   let projectDirs = [];
   try {
     projectDirs = await readdir(SESSIONS_DIR);
@@ -282,6 +284,13 @@ async function newestSessionId() {
   }
 }
 
+export function transcriptExportTarget(dir, sessionId, platform = process.platform) {
+  const root = dir === undefined || dir === null || dir === '' ? join(ROOT, 'aiyou-conversations') : absoluteDirectory(dir, platform);
+  if (!root) throw Object.assign(new Error('an absolute export directory path is required'), { status: 400 });
+  try { return sessionDirectory(root, sessionId, platform); }
+  catch (error) { throw Object.assign(error, { status: 400 }); }
+}
+
 export function apply(ctx) {
   ctx = guardContext(ctx);
   const lifecycle = () => {
@@ -358,10 +367,15 @@ export function apply(ctx) {
           const raw = Buffer.concat(chunks).toString('utf8');
           const payload = raw ? JSON.parse(raw) : {};
           const sessionId = String(payload?.session ?? '') || (await newestSessionId()) || '';
-          const dir = typeof payload?.dir === 'string' && payload.dir.startsWith('/') ? payload.dir : join(ROOT, 'aiyou-conversations');
+          const target = transcriptExportTarget(payload?.dir, sessionId);
           const transcript = await buildTranscript(sessionId);
-          const target = join(dir, sessionId);
+          const current = await lstat(target).catch(error => { if (error.code === 'ENOENT') return null; throw error; });
+          if (current && (!current.isDirectory() || current.isSymbolicLink())) throw new Error('the export destination is not an owned directory path');
           await mkdir(target, { recursive: true });
+          for (const file of ['conversation.md', 'conversation.json']) {
+            const info = await lstat(join(target, file)).catch(error => { if (error.code === 'ENOENT') return null; throw error; });
+            if (info && (!info.isFile() || info.isSymbolicLink())) throw new Error('an export file was replaced by another owner');
+          }
           await writeFile(join(target, 'conversation.md'), renderMarkdown(transcript));
           await writeFile(join(target, 'conversation.json'), `${JSON.stringify({
             schemaVersion: 1,
@@ -376,7 +390,7 @@ export function apply(ctx) {
           recordServing({ exported: target, kept: transcript.kept });
           json(res, 200, { ok: true, dir: target, files: ['conversation.md', 'conversation.json'], kept: transcript.kept, events: transcript.lines });
         } catch (error) {
-          json(res, 500, { error: String(error?.message ?? error) });
+          json(res, error?.status ?? 500, { error: String(error?.message ?? error) });
         }
       },
     }), 'aiyoucodex-session-transcript:export');

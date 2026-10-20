@@ -6,11 +6,17 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import YAML from '../vendor/yaml/dist/index.js';
-import { install, uninstall, status } from '../installer.mjs';
+import { install, uninstall, status, paths, probeApplication, __testing } from '../installer.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const temporary = join(root, 'temporary');
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+const archivePath = app => join(app, process.platform === 'win32' ? 'resources/app.asar' : 'Contents/Resources/app.asar');
+const makeLink = (target, file) => symlink(resolve(target), file, process.platform === 'win32' ? 'junction' : 'dir');
+async function assertLinkTarget(file, target) {
+  const actual = await readlink(file);
+  assert(__testing.sameLink({ type: 'symlink', target: actual }, { type: 'symlink', target: resolve(target) }), `Unexpected module link target`);
+}
 const original = '# Preserve this comment and exact spelling\n- insert:\n    - id: old-addon\n      name: "@local/old-addon"\n      config:\n        credential: "fixture-credential-never-print"\n        expression: !!js >-\n          process.env.EXAMPLE_TEST_VALUE\n# user trailing comment\n';
 const archive = (files) => {
   const tree = { files: {} }; let offset = 0;
@@ -29,10 +35,12 @@ async function fixture(fn, patch = original) {
   const location = await mkdtemp(join(temporary, 'addon-installer-'));
   const options = { dshHome: join(location, 'dsh'), profile: join(location, 'dsh/profiles/desktop'), enhancerHome: join(location, 'enhancer'), runtime: join(location, 'runtime'), app: join(location, 'Official Harness.app') };
   const expected = Buffer.from('current native client baseline\n');
-  const upstream = { appVersion: '0.2.1-rc.2', buildCommit: 'fixture-build', compatibility: [{ package: '@deepseek-ai/dsh-client-ui-sidebar', file: 'lib/client.js', sha256: hash(expected) }] };
+  const componentMetadata = Buffer.from(JSON.stringify({ name: '@deepseek-ai/dsh-client-ui-sidebar', version: '0.2.1-rc.2' }));
+  const upstream = { ...(process.platform === 'win32' ? { platform: 'win32-x64' } : {}), appVersion: '0.2.1-rc.2', buildCommit: 'fixture-build', compatibility: [{ package: '@deepseek-ai/dsh-client-ui-sidebar', file: 'lib/client.js', sha256: hash(expected) }] };
   const bytes = archive([
     ['package.json', Buffer.from(JSON.stringify({ version: upstream.appVersion, dshBuildCommit: upstream.buildCommit }))],
     ['dsh/node_modules/@deepseek-ai/dsh-client-ui-sidebar/lib/client.js', expected],
+    ['dsh/node_modules/@deepseek-ai/dsh-client-ui-sidebar/package.json', componentMetadata],
   ]);
   upstream.appAsarSha256 = hash(bytes);
   const manifest = {
@@ -41,8 +49,9 @@ async function fixture(fn, patch = original) {
     patches: [{ id: 'ui-sidebar', disabled: true }, { id: 'ui-workspace', disabled: true }, { insert: [{ id: 'aiyou-native-sidebar', name: '@local/aiyou-native-sidebar' }, { id: 'aiyou-native-workspace', name: '@local/aiyou-native-workspace' }] }],
     legacyPluginIds: ['old-addon', 'nonexistent-old-addon'],
   };
-  await mkdir(join(options.app, 'Contents/Resources'), { recursive: true });
-  await writeFile(join(options.app, 'Contents/Resources/app.asar'), bytes);
+  await mkdir(dirname(archivePath(options.app)), { recursive: true });
+  await writeFile(archivePath(options.app), bytes);
+  if (process.platform === 'win32') await writeFile(join(options.app, 'DeepSeek Harness.exe'), 'fixture executable marker');
   await mkdir(options.profile, { recursive: true });
   await writeFile(join(options.profile, 'package.json'), JSON.stringify({ dsh: { profile: { bundles: ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app'] } } }));
   await writeFile(join(options.profile, 'credentials.json'), 'fixture-private-file\n');
@@ -54,7 +63,7 @@ async function fixture(fn, patch = original) {
     await writeFile(join(options.runtime, module.directory, 'package.json'), JSON.stringify({ name: module.name, type: 'module', main: 'index.js' }));
     await writeFile(join(options.runtime, module.directory, 'index.js'), 'export function apply() {}\n');
   }
-  try { await fn({ options, location, manifest, appHash: hash(bytes) }); }
+  try { await fn({ options, location, manifest, appHash: hash(bytes), componentMetadata }); }
   finally { await rm(location, { recursive: true, force: true }); }
 }
 
@@ -68,14 +77,16 @@ test('install is idempotent, preserves user bytes/tags/credentials, and uninstal
   const parsed = YAML.parseDocument(patch); assert.equal(parsed.errors.length, 0);
   assert.match(patch, /!!js >-/); assert.match(patch, /# user trailing comment/);
   const rows = parsed.toJS(); assert.equal(rows.filter(row => row.id === 'old-addon').length, 1); assert(!rows.some(row => row.id === 'nonexistent-old-addon'));
-  assert.equal((await lstat(join(result.backupDirectory, 'before.raw.yml'))).mode & 0o777, 0o600);
-  assert.equal((await lstat(join(result.backupDirectory, 'restore.yml'))).mode & 0o777, 0o600);
+  if (process.platform !== 'win32') {
+    assert.equal((await lstat(join(result.backupDirectory, 'before.raw.yml'))).mode & 0o777, 0o600);
+    assert.equal((await lstat(join(result.backupDirectory, 'restore.yml'))).mode & 0o777, 0o600);
+  }
   assert.equal((await status(options)).installed, true);
   assert.equal((await install(options)).alreadyInstalled, true);
   assert.equal((await readdir(join(options.dshHome, 'backups/aiyou-enhancer'))).length, 1);
   assert.deepEqual(await readFile(join(options.profile, 'package.json')), profilePackage);
   assert.equal(await readFile(join(options.profile, 'credentials.json'), 'utf8'), 'fixture-private-file\n');
-  assert.equal(hash(await readFile(join(options.app, 'Contents/Resources/app.asar'))), appHash);
+  assert.equal(hash(await readFile(archivePath(options.app))), appHash);
   const removed = await uninstall(options); assert.equal(removed.installed, false);
   assert.equal(await readFile(join(options.profile, 'cordis.patch.yml'), 'utf8'), original);
   assert.equal((await status(options)).installed, false);
@@ -127,9 +138,9 @@ test('incompatible app and preexisting module paths are preserved', async () => 
   await assert.rejects(install(options), { code: 'APP_HASH' });
   await writeFile(manifestFile, saved);
   await mkdir(join(options.profile, 'node_modules/@local'), { recursive: true });
-  await symlink('/another-owner', join(options.profile, 'node_modules/@local/aiyou-native-sidebar'));
+  await makeLink('/another-owner', join(options.profile, 'node_modules/@local/aiyou-native-sidebar'));
   await assert.rejects(install(options), { code: 'LINK_CONFLICT' });
-  assert.equal(await readlink(join(options.profile, 'node_modules/@local/aiyou-native-sidebar')), '/another-owner');
+  await assertLinkTarget(join(options.profile, 'node_modules/@local/aiyou-native-sidebar'), '/another-owner');
   assert.equal(await readFile(join(options.profile, 'cordis.patch.yml'), 'utf8'), original);
 }));
 
@@ -235,10 +246,10 @@ for (const owner of ['symlink', 'file']) {
     const retainedTarget = await readlink(retained);
     const retired = await retireModule(options);
     await unlink(retired.path);
-    if (owner === 'symlink') await symlink('/user-owned-replacement', retired.path);
+    if (owner === 'symlink') await makeLink('/user-owned-replacement', retired.path);
     else await writeFile(retired.path, 'user-owned replacement file\n');
     await assert.rejects(install(options), { code: 'LINK_CONFLICT' });
-    if (owner === 'symlink') assert.equal(await readlink(retired.path), '/user-owned-replacement');
+    if (owner === 'symlink') await assertLinkTarget(retired.path, '/user-owned-replacement');
     else assert.equal(await readFile(retired.path, 'utf8'), 'user-owned replacement file\n');
     assert.equal(await readlink(retained), retainedTarget);
     assert.deepEqual(await readFile(stateFile), beforeState);
@@ -257,7 +268,7 @@ test('failed upgrade restores the retired link and the previous receipt', async 
     await assert.rejects(lstat(retired.path), { code: 'ENOENT' });
     throw Object.assign(new Error('fixture failure after link retirement'), { code: 'FIXTURE_FAILURE' });
   } } }), { code: 'FIXTURE_FAILURE' });
-  for (const row of oldState.links) assert.equal(await readlink(row.path), row.target);
+  for (const row of oldState.links) await assertLinkTarget(row.path, row.target);
   assert.deepEqual(await readFile(stateFile), beforeState);
   assert.deepEqual(await readFile(join(options.profile, 'cordis.patch.yml')), beforePatch);
   assert.equal((await status(options)).installed, true);
@@ -272,12 +283,12 @@ test('rollback never overwrites a concurrent new owner at the retired path', asy
   const retired = await retireModule(options);
   await assert.rejects(install({ ...options, hooks: { beforePatchWrite: async () => {
     await assert.rejects(lstat(retired.path), { code: 'ENOENT' });
-    await symlink('/concurrent-new-owner', retired.path);
+    await makeLink('/concurrent-new-owner', retired.path);
     throw Object.assign(new Error('fixture failure with a concurrent owner'), { code: 'FIXTURE_FAILURE' });
   } } }), { code: 'ROLLBACK_CONFLICT' });
-  assert.equal(await readlink(retired.path), '/concurrent-new-owner');
+  await assertLinkTarget(retired.path, '/concurrent-new-owner');
   const retained = oldState.links.find(row => row.name !== retired.name);
-  assert.equal(await readlink(retained.path), retained.target);
+  await assertLinkTarget(retained.path, retained.target);
   assert.deepEqual(await readFile(stateFile), beforeState);
   assert.deepEqual(await readFile(join(options.profile, 'cordis.patch.yml')), beforePatch);
 }));
@@ -290,4 +301,195 @@ test('failed upgrade does not resurrect a retired link already removed before in
     throw Object.assign(new Error('fixture failure with an initially absent link'), { code: 'FIXTURE_FAILURE' });
   } } }), { code: 'FIXTURE_FAILURE' });
   await assert.rejects(lstat(retired.path), { code: 'ENOENT' });
+}));
+
+// These fixtures deliberately contain only tiny fabricated ASAR files. They do
+// not replace the independently verified official platform baseline.
+async function windowsFixture(fn) {
+  return fixture(async value => {
+    const { options, manifest } = value;
+    manifest.upstream.platform = 'win32-x64';
+    await writeFile(join(options.runtime, 'manifest.json'), JSON.stringify(manifest));
+    const winArchive = join(options.app, 'resources/app.asar');
+    if (archivePath(options.app) !== winArchive) {
+      await mkdir(dirname(winArchive), { recursive: true });
+      await cp(archivePath(options.app), winArchive);
+      await rm(join(options.app, 'Contents'), { recursive: true });
+    }
+    await writeFile(join(options.app, 'DeepSeek Harness.exe'), 'fixture executable marker');
+    options._testHost = { platform: 'win32', arch: 'x64' };
+    await fn(value);
+  });
+}
+
+test('Windows layout accepts both installation root and existing executable', async () => windowsFixture(async ({ options, manifest, appHash }) => {
+  for (const app of [options.app, join(options.app, 'DeepSeek Harness.exe')]) {
+    const result = await probeApplication(app, manifest, options);
+    assert.equal(result.platform, 'win32-x64');
+    assert.equal(result.app, options.app);
+    assert.equal(result.appAsarSha256, appHash);
+  }
+  await assert.rejects(install({ ...options, app: join(options.app, 'missing.exe') }), { code: 'APP_NOT_FOUND' });
+  await assert.rejects(access(options.enhancerHome));
+}));
+
+test('Windows default locations use LOCALAPPDATA while official profile stays in DSH_HOME', async () => windowsFixture(async ({ options, location }) => {
+  const home = join(location, 'home'), local = join(home, 'AppData/Local');
+  const official = join(local, 'Programs/DeepSeek Harness');
+  await cp(options.app, official, { recursive: true });
+  const result = await paths({ runtime: options.runtime, _testHost: { platform: 'win32', arch: 'x64', home, env: { LOCALAPPDATA: local } } });
+  assert.equal(result.enhancerHome, join(local, 'AIYOUDSH'));
+  assert.equal(result.dshHome, join(home, '.dsh'));
+  assert.equal(result.profile, join(home, '.dsh/profiles/desktop'));
+  assert.equal(result.app, official);
+  const overridden = await paths({ runtime: options.runtime, _testHost: { platform: 'win32', arch: 'x64', home, env: { LOCALAPPDATA: local, DSH_HOME: join(location, 'custom-dsh') } } });
+  assert.equal(overridden.profile, join(location, 'custom-dsh/profiles/desktop'));
+  await assert.rejects(access(result.enhancerHome));
+}));
+
+test('Windows discovery also recognizes ProgramFiles installations', async () => windowsFixture(async ({ options, location }) => {
+  const programFiles = join(location, 'Program Files');
+  const official = join(programFiles, 'DeepSeek Harness');
+  await cp(options.app, official, { recursive: true });
+  const result = await paths({ runtime: options.runtime, _testHost: { platform: 'win32', arch: 'x64', home: location, env: { ProgramFiles: programFiles } } });
+  assert.equal(result.app, official);
+}));
+
+test('missing Windows installation fails before lock, backup or configuration mutation', async () => windowsFixture(async ({ options, location }) => {
+  const absent = join(location, 'missing-application');
+  const before = await readFile(join(options.profile, 'cordis.patch.yml'));
+  await assert.rejects(install({ ...options, app: absent }), { code: 'APP_NOT_FOUND' });
+  await assert.rejects(access(options.enhancerHome));
+  await assert.rejects(access(join(options.dshHome, 'backups')));
+  assert.deepEqual(await readFile(join(options.profile, 'cordis.patch.yml')), before);
+}));
+
+test('platform and architecture mismatches stop before any installer state is created', async () => windowsFixture(async ({ options }) => {
+  const before = await readFile(join(options.profile, 'cordis.patch.yml'));
+  for (const _testHost of [{ platform: 'darwin', arch: 'arm64' }, { platform: 'win32', arch: 'arm64' }, { platform: 'linux', arch: 'x64' }]) {
+    await assert.rejects(install({ ...options, _testHost }), { code: 'APP_PLATFORM' });
+  }
+  await assert.rejects(access(options.enhancerHome));
+  assert.deepEqual(await readFile(join(options.profile, 'cordis.patch.yml')), before);
+}));
+
+test('legacy platform-less schema 1 runtime is Mac arm64 only', async () => fixture(async ({ options, manifest }) => {
+  delete manifest.upstream.platform;
+  await writeFile(join(options.runtime, 'manifest.json'), JSON.stringify(manifest));
+  await assert.rejects(install({ ...options, _testHost: { platform: 'win32', arch: 'x64' } }), { code: 'APP_PLATFORM' });
+  await assert.rejects(install({ ...options, _testHost: { platform: 'darwin', arch: 'x64' } }), { code: 'APP_PLATFORM' });
+  await assert.rejects(access(options.enhancerHome));
+}));
+
+test('Windows target normalization covers NT, UNC, separators and case without merging owners', () => {
+  const equal = (left, right) => __testing.sameLink({ type: 'symlink', target: left }, { type: 'symlink', target: right }, 'win32');
+  assert(equal('\\\\?\\C:\\Users\\Me\\runtime\\module\\', 'c:/users/me/runtime/module'));
+  assert(equal('\\??\\C:\\Users\\Me\\runtime\\module', 'c:/users/me/runtime/module'));
+  assert(equal('\\\\?\\UNC\\Server\\Share\\Module', '\\\\server\\share\\module'));
+  assert(equal('\\\\?\\unc\\Server\\Share\\Module', '//server/share/module'));
+  assert(!equal('C:\\Users\\Me\\runtime\\module', 'C:\\Users\\Me\\runtime\\other'));
+  assert(!__testing.sameLink({ type: 'symlink', target: '/a' }, { type: 'other' }, 'win32'));
+});
+
+test('Windows transactions install, upgrade, retire, repeat and uninstall with schema 1 receipts', async () => windowsFixture(async ({ options, appHash }) => {
+  const first = await install(options);
+  assert.equal(first.platform, 'win32-x64');
+  assert.equal(first.app, options.app);
+  assert.equal((await status(options)).installed, true);
+  assert.equal((await install(options)).alreadyInstalled, true);
+  const beforeState = JSON.parse(await readFile(join(options.enhancerHome, 'install-state.json')));
+  assert.equal(beforeState.schemaVersion, 1);
+  const retired = await retireModule(options);
+  const upgraded = await install(options);
+  assert.deepEqual(upgraded.removedModules, [retired.name]);
+  await assert.rejects(lstat(retired.path), { code: 'ENOENT' });
+  assert.equal((await install(options)).alreadyInstalled, true);
+  assert.equal((await uninstall(options)).installed, false);
+  assert.equal(await readFile(join(options.profile, 'cordis.patch.yml'), 'utf8'), original);
+  assert.equal(hash(await readFile(join(options.app, 'resources/app.asar'))), appHash);
+}));
+
+test('Windows upgrade preserves a user-owned module replacement', async () => windowsFixture(async ({ options }) => {
+  await install(options);
+  const retired = await retireModule(options);
+  await unlink(retired.path);
+  await writeFile(retired.path, 'user-owned replacement');
+  const before = await readFile(join(options.profile, 'cordis.patch.yml'));
+  await assert.rejects(install(options), { code: 'LINK_CONFLICT' });
+  assert.equal(await readFile(retired.path, 'utf8'), 'user-owned replacement');
+  assert.deepEqual(await readFile(join(options.profile, 'cordis.patch.yml')), before);
+}));
+
+test('Windows rollback restores retired junction and preserves concurrent patch changes', async () => windowsFixture(async ({ options }) => {
+  await install(options);
+  const retired = await retireModule(options);
+  const target = await readlink(retired.path);
+  const file = join(options.profile, 'cordis.patch.yml');
+  const edited = `${await readFile(file, 'utf8')}\n- id: concurrent-win-edit\n  disabled: true\n`;
+  await assert.rejects(install({ ...options, hooks: { beforePatchWrite: () => writeFile(file, edited) } }), { code: 'PATCH_CHANGED' });
+  assert.equal(await readFile(file, 'utf8'), edited);
+  assert.equal(await readlink(retired.path), target);
+}));
+
+test('Windows uninstall keeps a user-owned module and reports a partial receipt', async () => windowsFixture(async ({ options }) => {
+  await install(options);
+  const module = join(options.profile, 'node_modules/@local/aiyou-native-sidebar');
+  await unlink(module);
+  await writeFile(module, 'keep this user file');
+  const result = await uninstall(options);
+  assert.equal(result.installed, true);
+  assert(result.conflicts.some(value => value.component === 'module-link'));
+  assert.equal(await readFile(module, 'utf8'), 'keep this user file');
+  assert.equal(JSON.parse(await readFile(join(options.enhancerHome, 'install-state.json'))).status, 'uninstall-partial');
+}));
+
+test('Windows junction parent is rejected without following it into another profile', async () => windowsFixture(async ({ options, location }) => {
+  const external = join(location, 'external-modules');
+  await mkdir(external);
+  await makeLink(external, join(options.profile, 'node_modules'));
+  const before = await readFile(join(options.profile, 'cordis.patch.yml'));
+  await assert.rejects(install(options), { code: 'PROFILE_PATH' });
+  assert.deepEqual(await readdir(external), []);
+  assert.deepEqual(await readFile(join(options.profile, 'cordis.patch.yml')), before);
+}));
+
+test('native Windows creates real directory junctions without symlink elevation', { skip: process.platform !== 'win32' }, async () => windowsFixture(async ({ options }) => {
+  await install(options);
+  const receipt = JSON.parse(await readFile(join(options.enhancerHome, 'install-state.json')));
+  for (const link of receipt.links) {
+    assert((await lstat(link.path)).isSymbolicLink());
+    await assertLinkTarget(link.path, link.target);
+    assert.equal(await readFile(join(link.path, 'index.js'), 'utf8'), 'export function apply() {}\n');
+  }
+  // Repeat and upgrade must compare actual readlink() NT path representations.
+  assert.equal((await install(options)).alreadyInstalled, true);
+  await retireModule(options);
+  await install(options);
+  assert.equal((await status(options)).installed, true);
+  await uninstall(options);
+}));
+
+
+test('CLI does not expose a platform-validation bypass', async () => fixture(async ({ options }) => {
+  const result = execFileSync(process.execPath, [join(root, 'addon/installer.mjs'), 'dry-run', '--platform', 'win32-x64'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  assert.fail(`Unexpected CLI result: ${result}`);
+}).catch(error => {
+  if (!error.stderr) throw error;
+  const response = JSON.parse(error.stderr.toString().trim());
+  assert.equal(response.code, 'ARGUMENT');
+}));
+
+
+test('compatibility can lock package.json identity while rejecting path traversal', async () => fixture(async ({ options, manifest, componentMetadata }) => {
+  // Add the exact already shipped package.json archive entry as another check.
+  manifest.upstream.compatibility.push({ package: '@deepseek-ai/dsh-client-ui-sidebar', file: 'package.json', sha256: hash(componentMetadata) });
+  await writeFile(join(options.runtime, 'manifest.json'), JSON.stringify(manifest));
+  assert.equal((await install({ ...options, dryRun: true })).compatible, true);
+  manifest.upstream.compatibility.at(-1).sha256 = '0'.repeat(64);
+  await writeFile(join(options.runtime, 'manifest.json'), JSON.stringify(manifest));
+  await assert.rejects(install(options), { code: 'APP_COMPATIBILITY' });
+  manifest.upstream.compatibility.at(-1).file = '../package.json';
+  await writeFile(join(options.runtime, 'manifest.json'), JSON.stringify(manifest));
+  await assert.rejects(install(options), { code: 'MANIFEST' });
+  await assert.rejects(access(options.enhancerHome));
 }));

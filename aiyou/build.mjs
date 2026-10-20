@@ -1,5 +1,5 @@
 import {cp,mkdir,readFile,writeFile} from 'node:fs/promises';
-import {dirname,join,resolve} from 'node:path';
+import {dirname,join,resolve,sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
 const SOURCE=dirname(fileURLToPath(import.meta.url));
 export async function buildAiyou(appDir){
@@ -30,7 +30,7 @@ if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
 }
 /** Package the enhancement as a removable native Cordis add-on; never mutates the real profile. */
 export async function buildAddonFeatures(outDir){
-  const target=resolve(outDir);if(target===SOURCE||target.startsWith(SOURCE+'/'))throw new Error('Addon output must be outside the feature source directory');
+  const target=resolve(outDir);if(target===SOURCE||target.startsWith(SOURCE+sep))throw new Error('Addon output must be outside the feature source directory');
   await mkdir(target,{recursive:true});
   for(const name of ['runtime.mjs','services.mjs','service-worker.mjs','manifest.json','registry.json','builtin-cordis.patch.yml','LICENSE-AIYOUCODEX','THIRD_PARTY_NOTICES.md','lib','vendor'])await cp(join(SOURCE,name),join(target,name),{recursive:true});
   const manifest=JSON.parse(await readFile(join(SOURCE,'manifest.json'),'utf8'));

@@ -35,7 +35,8 @@
     "on-headers",
     "safe-buffer",
     "vary",
-    "zod"
+    "zod",
+    "node-addon-require-builtin-win32-x64-msvc"
   ],
   "embeddedWebServer": {
     "source": "Current installed DeepSeek Harness 0.2.1-rc.2 application payload; package bytes unchanged",
@@ -201,5 +202,54 @@
         "treeSha256": "d5febdb05522d99b1d19cbe7d269fd2a6813b30191091a37890c19fc30517304"
       }
     ]
+  },
+  "windowsNativeFixture": {
+    "source": "Official DeepSeek Harness Windows x64 0.2.1-rc.2 installer, bytes unchanged; includes upstream MIT license.",
+    "sourceUrl": "https://download.deepseek.com/dsh-desk/bin/win-x64/deepseek-harness-0.2.1-rc.2-win-x64.exe",
+    "archiveSha256": "72e4a8579f11b5428dd0a1506532777924adba7ecaacc710a7e429085796537f",
+    "appAsarSha256": "47874618bf5b3011fcaac10cd4c85f69da333e70d4f99b921207c78d0999512a",
+    "purpose": "Windows x64 Node-API v9 native-loader fixture for isolated official WebServer tests; does not ship the official application or user data.",
+    "closure": [
+      {
+        "name": "node-addon-require-builtin-win32-x64-msvc",
+        "version": "0.1.9",
+        "path": "node_modules/node-addon-require-builtin-win32-x64-msvc",
+        "treeSha256": "38b365c466354b6f9ae8c9f0eb2432bded0da064a5a72897ab6eaa40240a4a9f"
+      }
+    ],
+    "files": [
+      {
+        "file": "LICENSE",
+        "size": 1096,
+        "sha256": "75bd0a6d6b9f9f0a6c792ca89832360b19749ebe16af0222e34387f262baa95e"
+      },
+      {
+        "file": "README.md",
+        "size": 225,
+        "sha256": "914f948527c56daaf2e99f4a046c46b60b07fadddfca236205b3aaadfb1ef913"
+      },
+      {
+        "file": "index.js",
+        "size": 127,
+        "sha256": "1ca7929a06a837121c8dcc6e485a3ac9becfdaf2f3ded95e088d1df54019608a"
+      },
+      {
+        "file": "package.json",
+        "size": 707,
+        "sha256": "df0ed8b80ac7e2144e0c97e1ad0ad9f9dfc9c055e4a87589c8b3fba5700212b5"
+      },
+      {
+        "file": "prebuilds.json",
+        "size": 222,
+        "sha256": "4c5f1a36419166c251bc315fda44c59bfe2101bab6c83ec735c1bfd714e1abfd"
+      },
+      {
+        "file": "prebuilt/win32-x64-msvc-napi-v9.node",
+        "size": 356840,
+        "sha256": "27ed5f1d1380001e63dd1a2b6455f8d4ff9950baf1ebbf7a64f10b7ad314094b"
+      }
+    ],
+    "execution": "Not executable on this macOS arm64 host; actual native load must run on Windows x64 CI.",
+    "treeHashFormat": "SHA-256 of Unicode code-point-sorted package-relative path, NUL, file bytes, NUL"
   }
 }

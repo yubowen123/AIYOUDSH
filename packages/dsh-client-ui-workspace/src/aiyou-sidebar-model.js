@@ -72,15 +72,46 @@ function aiyouSidebarInterrupted(list, sessionId, statuses) {
   return AIYOU_INTERRUPTED_REASONS.has(aiyouSidebarFacts(list, sessionId).endReason);
 }
 
+/** Browser-safe absolute path normalization; Windows paths compare without case. */
+function aiyouSidebarFolderPath(value) {
+  if (typeof value !== 'string' || !value || value.includes('\0')) return null;
+  const path = value.replaceAll('\\', '/');
+  let root, body, windows = false;
+  if (/^[A-Za-z]:\//u.test(path)) {
+    windows = true;
+    root = `${path.slice(0, 2).toLowerCase()}/`;
+    body = path.slice(3);
+  } else {
+    const unc = /^\/\/([^/:?*]+)\/([^/:?*]+)(?:\/|$)/u.exec(path);
+    if (unc) {
+      windows = true;
+      root = `//${unc[1].toLowerCase()}/${unc[2].toLowerCase()}`;
+      body = path.slice(unc[0].length);
+    } else if (path.startsWith('/') && !value.startsWith('\\') && !path.startsWith('//')) {
+      root = '/';
+      body = path.slice(1);
+    } else return null;
+  }
+  const segments = [];
+  for (const segment of body.split('/')) {
+    if (!segment || segment === '.') continue;
+    if (segment === '..') segments.pop();
+    else segments.push(windows ? segment.toLowerCase() : segment);
+  }
+  return { windows, path: root + (segments.length ? (root.endsWith('/') ? '' : '/') + segments.join('/') : '') };
+}
+
 /** Select a workspace folder together with its registered descendants. */
 function aiyouSidebarWorkspaceIds(workspaces, selected) {
   if (selected === '*' || selected === '__ungrouped__') return null;
   const selectedWorkspace = workspaces.find(workspace => workspace.workspaceId === selected);
   if (!selectedWorkspace) return new Set();
-  const root = selectedWorkspace.path.replace(/[\\/]+$/u, '').replaceAll('\\', '/');
+  const root = aiyouSidebarFolderPath(selectedWorkspace.path);
+  const prefix = root ? root.path + (root.path.endsWith('/') ? '' : '/') : '';
   return new Set(workspaces.filter(workspace => {
-    const path = workspace.path.replaceAll('\\', '/');
-    return workspace.workspaceId === selected || path.startsWith(`${root}/`);
+    if (workspace.workspaceId === selected) return true;
+    const path = aiyouSidebarFolderPath(workspace.path);
+    return root && path && root.windows === path.windows && (path.path === root.path || path.path.startsWith(prefix));
   }).flatMap(workspace => workspace.sessionIds));
 }
 

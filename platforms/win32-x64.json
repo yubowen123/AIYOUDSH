@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "platform": "win32-x64",
+  "os": "win32",
+  "arch": "x64",
+  "appVersion": "0.2.1-rc.2",
+  "buildCommit": "332895e0f7c9d4dbfb29729f5eb367fa263ff986",
+  "appAsarSha256": "47874618bf5b3011fcaac10cd4c85f69da333e70d4f99b921207c78d0999512a",
+  "compatibility": [
+    {
+      "package": "@deepseek-ai/dsh-client-ui-sidebar",
+      "file": "package.json",
+      "sha256": "f646e96a81dd63bd04ebbe87e93f7cb554afcf1c35ed2effcbb8c5daaa053b9f"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-sidebar",
+      "file": "lib/client.js",
+      "sha256": "12b911280efed871c21985c4e4bcf8c41a7e2f764c60420993e8d72e64302285"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-sidebar",
+      "file": "lib/index.js",
+      "sha256": "be323c589cda4dbb7714df563ebb66f581a3d37ed2ab6859fed85fcebf970aea"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-workspace",
+      "file": "package.json",
+      "sha256": "65c04a85e1ac925713bec7de8359e1e8360e8d2a3b51527f883bcc92ddd40104"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-workspace",
+      "file": "lib/client.js",
+      "sha256": "4dd7f3c580f2316af8172ee4dc542b10e19b030e81f9242f4696e8139260dc17"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-workspace",
+      "file": "lib/index.js",
+      "sha256": "e6cdc4b725585354102a5c4598c9d8c79d6abac62d7979c09919821716370438"
+    }
+  ],
+  "sourceUrl": "https://download.deepseek.com/dsh-desk/bin/win-x64/deepseek-harness-0.2.1-rc.2-win-x64.exe",
+  "discoveryUrl": "https://www.deepseek.com/en/harness/",
+  "updateFeedUrl": "https://download.deepseek.com/dsh-desk/feeds/win-x64/nightly.yml",
+  "archiveSha256": "72e4a8579f11b5428dd0a1506532777924adba7ecaacc710a7e429085796537f",
+  "archiveSize": 289385456,
+  "archiveSha512": "39POl5osl9PKMqrPXQA52dh/bCV0Z02vOV9cTjOJDHE6gsJwp5bv7lfgB3mVWAKspX7a/w1iTi+8Listdhq45g==",
+  "layout": {
+    "appAsar": "resources/app.asar",
+    "appAsarUnpacked": "resources/app.asar.unpacked",
+    "modules": "dsh/node_modules",
+    "desktopProfile": "${DSH_HOME}/profiles/desktop",
+    "dshHomeDefault": "${USERPROFILE}/.dsh"
+  },
+  "executable": "DeepSeek Harness.exe",
+  "embeddedRuntime": {
+    "electron": "44.7.0",
+    "node": "24.21.0",
+    "runAsNode": true,
+    "environment": {
+      "ELECTRON_RUN_AS_NODE": "1"
+    },
+    "verification": "Windows PE strings and fuse wire inspected; executable not run on macOS. Windows CI must independently execute it."
+  },
+  "selectorMapping": "platforms/win32-x64-selectors.json",
+  "compatibilityEvidence": {
+    "replacements": "Both package.json and host index.js files are byte-identical to macOS. Client bundles differ only in scoped CSS class names and CSS source-path comments; after semantic export-key normalization all remaining bytes are identical.",
+    "nativeShell": "Windows native shell layout remains owned by the official app; theme selectors for untouched modules use the Windows map.",
+    "desktopSmokeVerified": false
+  }
+}

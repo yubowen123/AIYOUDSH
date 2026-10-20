@@ -1,0 +1,2214 @@
+{
+  "schemaVersion": 1,
+  "platform": "win32-x64",
+  "appVersion": "0.2.1-rc.2",
+  "buildCommit": "332895e0f7c9d4dbfb29729f5eb367fa263ff986",
+  "sourceUrl": "https://download.deepseek.com/dsh-desk/bin/win-x64/deepseek-harness-0.2.1-rc.2-win-x64.exe",
+  "scope": "Untouched official chat, conversation, layout and sidebar-right CSS exports only; custom sidebar/workspace bundles retain their bundled classes.",
+  "mapping": {
+    "JXrxFq_dsh-turn-mark-busy": "xpvNua_dsh-turn-mark-busy",
+    "JXrxFq_dsh-turn-preview-enter": "xpvNua_dsh-turn-preview-enter",
+    "JXrxFq_fadeBottom": "xpvNua_fadeBottom",
+    "JXrxFq_fadeTop": "xpvNua_fadeTop",
+    "JXrxFq_frame": "xpvNua_frame",
+    "JXrxFq_mark": "xpvNua_mark",
+    "JXrxFq_markActive": "xpvNua_markActive",
+    "JXrxFq_markBusy": "xpvNua_markBusy",
+    "JXrxFq_markPreview": "xpvNua_markPreview",
+    "JXrxFq_markUnloaded": "xpvNua_markUnloaded",
+    "JXrxFq_marks": "xpvNua_marks",
+    "JXrxFq_preview": "xpvNua_preview",
+    "JXrxFq_previewPrompt": "xpvNua_previewPrompt",
+    "JXrxFq_previewResponse": "xpvNua_previewResponse",
+    "JXrxFq_scroller": "xpvNua_scroller",
+    "JXrxFq_slot": "xpvNua_slot",
+    "icaHSq_callRow": "xz4KEq_callRow",
+    "icaHSq_column": "xz4KEq_column",
+    "icaHSq_flowItem": "xz4KEq_flowItem",
+    "icaHSq_frame": "xz4KEq_frame",
+    "icaHSq_hint": "xz4KEq_hint",
+    "icaHSq_modalAction": "xz4KEq_modalAction",
+    "icaHSq_older": "xz4KEq_older",
+    "icaHSq_openError": "xz4KEq_openError",
+    "icaHSq_root": "xz4KEq_root",
+    "icaHSq_running": "xz4KEq_running",
+    "icaHSq_runningContent": "xz4KEq_runningContent",
+    "icaHSq_runningDivider": "xz4KEq_runningDivider",
+    "icaHSq_runningIcon": "xz4KEq_runningIcon",
+    "icaHSq_runningText": "xz4KEq_runningText",
+    "icaHSq_runningWhaleAnimated": "xz4KEq_runningWhaleAnimated",
+    "icaHSq_runningWhaleStill": "xz4KEq_runningWhaleStill",
+    "icaHSq_scroll": "xz4KEq_scroll",
+    "icaHSq_toBottom": "xz4KEq_toBottom",
+    "icaHSq_toBottomSlot": "xz4KEq_toBottomSlot",
+    "icaHSq_turnSpacer": "xz4KEq_turnSpacer",
+    "TXqvFW_activityIcon": "WW4l1q_activityIcon",
+    "TXqvFW_body": "WW4l1q_body",
+    "TXqvFW_chevron": "WW4l1q_chevron",
+    "TXqvFW_content": "WW4l1q_content",
+    "TXqvFW_expandedBody": "WW4l1q_expandedBody",
+    "TXqvFW_fadeBottom": "WW4l1q_fadeBottom",
+    "TXqvFW_fadeTop": "WW4l1q_fadeTop",
+    "TXqvFW_label": "WW4l1q_label",
+    "TXqvFW_leading": "WW4l1q_leading",
+    "TXqvFW_root": "WW4l1q_root",
+    "TXqvFW_title": "WW4l1q_title",
+    "IzP3Va_attachmentRow": "cJsG2q_attachmentRow",
+    "IzP3Va_bubble": "cJsG2q_bubble",
+    "IzP3Va_compactionBody": "cJsG2q_compactionBody",
+    "IzP3Va_compactionButton": "cJsG2q_compactionButton",
+    "IzP3Va_compactionContextIcon": "cJsG2q_compactionContextIcon",
+    "IzP3Va_compactionDisclosureIcon": "cJsG2q_compactionDisclosureIcon",
+    "IzP3Va_compactionLeading": "cJsG2q_compactionLeading",
+    "IzP3Va_compactionRow": "cJsG2q_compactionRow",
+    "IzP3Va_compactionSep": "cJsG2q_compactionSep",
+    "IzP3Va_compactionSummary": "cJsG2q_compactionSummary",
+    "IzP3Va_compactionTitle": "cJsG2q_compactionTitle",
+    "IzP3Va_contextRow": "cJsG2q_contextRow",
+    "IzP3Va_fileCard": "cJsG2q_fileCard",
+    "IzP3Va_fileContent": "cJsG2q_fileContent",
+    "IzP3Va_fileIcon": "cJsG2q_fileIcon",
+    "IzP3Va_fileMeta": "cJsG2q_fileMeta",
+    "IzP3Va_fileName": "cJsG2q_fileName",
+    "IzP3Va_maxTokensTitle": "cJsG2q_maxTokensTitle",
+    "IzP3Va_referenceSummary": "cJsG2q_referenceSummary",
+    "IzP3Va_retryDetailLabel": "cJsG2q_retryDetailLabel",
+    "IzP3Va_retryDetails": "cJsG2q_retryDetails",
+    "IzP3Va_retryRow": "cJsG2q_retryRow",
+    "IzP3Va_retrySummary": "cJsG2q_retrySummary",
+    "IzP3Va_retryText": "cJsG2q_retryText",
+    "IzP3Va_turnErrorCode": "cJsG2q_turnErrorCode",
+    "IzP3Va_turnErrorCopy": "cJsG2q_turnErrorCopy",
+    "IzP3Va_turnErrorDot": "cJsG2q_turnErrorDot",
+    "IzP3Va_turnErrorMessage": "cJsG2q_turnErrorMessage",
+    "IzP3Va_turnErrorRow": "cJsG2q_turnErrorRow",
+    "IzP3Va_turnErrorTitle": "cJsG2q_turnErrorTitle",
+    "IzP3Va_userRow": "cJsG2q_userRow",
+    "IzP3Va_userStack": "cJsG2q_userStack",
+    "npkFxW_catalogNotice": "PWz36q_catalogNotice",
+    "npkFxW_entries": "PWz36q_entries",
+    "npkFxW_entry": "PWz36q_entry",
+    "npkFxW_entryDescription": "PWz36q_entryDescription",
+    "npkFxW_entryName": "PWz36q_entryName",
+    "npkFxW_field": "PWz36q_field",
+    "npkFxW_fieldKey": "PWz36q_fieldKey",
+    "npkFxW_fieldValue": "PWz36q_fieldValue",
+    "npkFxW_fields": "PWz36q_fields",
+    "npkFxW_file": "PWz36q_file",
+    "npkFxW_fileAction": "PWz36q_fileAction",
+    "npkFxW_filePath": "PWz36q_filePath",
+    "npkFxW_files": "PWz36q_files",
+    "npkFxW_recall": "PWz36q_recall",
+    "npkFxW_recallCounts": "PWz36q_recallCounts",
+    "npkFxW_recallLabel": "PWz36q_recallLabel",
+    "npkFxW_recalls": "PWz36q_recalls",
+    "npkFxW_relaySender": "PWz36q_relaySender",
+    "npkFxW_section": "PWz36q_section",
+    "npkFxW_sectionName": "PWz36q_sectionName",
+    "npkFxW_sectionText": "PWz36q_sectionText",
+    "npkFxW_sections": "PWz36q_sections",
+    "npkFxW_text": "PWz36q_text",
+    "Bpi2Dq_body": "EYGw8G_body",
+    "Bpi2Dq_chevron": "EYGw8G_chevron",
+    "Bpi2Dq_root": "EYGw8G_root",
+    "Bpi2Dq_sep": "EYGw8G_sep",
+    "Bpi2Dq_source": "EYGw8G_source",
+    "Bpi2Dq_summary": "EYGw8G_summary",
+    "Bpi2Dq_toolChanges": "EYGw8G_toolChanges",
+    "ppByMG_action": "xD_KDq_action",
+    "ppByMG_actions": "xD_KDq_actions",
+    "ppByMG_endInfo": "xD_KDq_endInfo",
+    "ppByMG_timeEnd": "xD_KDq_timeEnd",
+    "ppByMG_timeStart": "xD_KDq_timeStart",
+    "ppByMG_visuallyHidden": "xD_KDq_visuallyHidden",
+    "z7mQLa_visuallyHidden": "glcmna_visuallyHidden",
+    "HiSsxa_leading": "_3GBCTG_leading",
+    "HiSsxa_root": "_3GBCTG_root",
+    "HiSsxa_row": "_3GBCTG_row",
+    "HiSsxa_separator": "_3GBCTG_separator",
+    "HiSsxa_summary": "_3GBCTG_summary",
+    "HiSsxa_summaryText": "_3GBCTG_summaryText",
+    "HiSsxa_thinkBody": "_3GBCTG_thinkBody",
+    "HiSsxa_title": "_3GBCTG_title",
+    "gKv1-q_actions": "v5IAXa_actions",
+    "gKv1-q_body": "v5IAXa_body",
+    "gKv1-q_root": "v5IAXa_root",
+    "gKv1-q_stopped": "v5IAXa_stopped",
+    "YS3v9W_body": "wY20ga_body",
+    "YS3v9W_leading": "wY20ga_leading",
+    "YS3v9W_root": "wY20ga_root",
+    "YS3v9W_separator": "wY20ga_separator",
+    "YS3v9W_summary": "wY20ga_summary",
+    "YS3v9W_title": "wY20ga_title",
+    "_PaunW_chevron": "_4AI11G_chevron",
+    "_PaunW_durationNumber": "_4AI11G_durationNumber",
+    "_PaunW_label": "_4AI11G_label",
+    "_PaunW_root": "_4AI11G_root",
+    "sZXytW_label": "Rd79tq_label",
+    "sZXytW_root": "Rd79tq_root",
+    "sZXytW_trigger": "Rd79tq_trigger",
+    "-Fl-UW_details": "Xt1eiG_details",
+    "-Fl-UW_panel": "Xt1eiG_panel",
+    "-Fl-UW_reasoning": "Xt1eiG_reasoning",
+    "-Fl-UW_route": "Xt1eiG_route",
+    "-Fl-UW_title": "Xt1eiG_title",
+    "-Fl-UW_titleLabel": "Xt1eiG_titleLabel",
+    "-Fl-UW_titleRule": "Xt1eiG_titleRule",
+    "-Fl-UW_titleValue": "Xt1eiG_titleValue",
+    "d1vkyW_actions": "zZmEaW_actions",
+    "d1vkyW_root": "zZmEaW_root",
+    "nqfepW_body": "oE-XyW_body",
+    "nqfepW_chevron": "oE-XyW_chevron",
+    "nqfepW_content": "oE-XyW_content",
+    "nqfepW_explanation": "oE-XyW_explanation",
+    "nqfepW_header": "oE-XyW_header",
+    "nqfepW_icon": "oE-XyW_icon",
+    "nqfepW_openChevron": "oE-XyW_openChevron",
+    "nqfepW_root": "oE-XyW_root",
+    "nqfepW_time": "oE-XyW_time",
+    "nqfepW_title": "oE-XyW_title",
+    "OpZ85W_anchor": "iq1doa_anchor",
+    "OpZ85W_label": "iq1doa_label",
+    "OpZ85W_pill": "iq1doa_pill",
+    "OpZ85W_sep": "iq1doa_sep",
+    "_28qALa_chevron": "XZcbxG_chevron",
+    "_28qALa_desc": "XZcbxG_desc",
+    "_28qALa_row": "XZcbxG_row",
+    "_28qALa_rowText": "XZcbxG_rowText",
+    "_28qALa_selector": "XZcbxG_selector",
+    "_28qALa_title": "XZcbxG_title",
+    "B0oWoG_ellipsis": "Jj6vTG_ellipsis",
+    "B0oWoG_root": "Jj6vTG_root",
+    "pO-u3q_chip": "rtYPxa_chip",
+    "pO-u3q_icon": "rtYPxa_icon",
+    "pO-u3q_invalid": "rtYPxa_invalid",
+    "pO-u3q_label": "rtYPxa_label",
+    "pO-u3q_marker": "rtYPxa_marker",
+    "f30p-W_openable": "mxScHa_openable",
+    "f30p-W_reference": "mxScHa_reference",
+    "f30p-W_textRef": "mxScHa_textRef",
+    "_0TPaqG_action": "v1kfCW_action",
+    "_0TPaqG_actions": "v1kfCW_actions",
+    "_0TPaqG_attachments": "v1kfCW_attachments",
+    "_0TPaqG_chevron": "v1kfCW_chevron",
+    "_0TPaqG_count": "v1kfCW_count",
+    "_0TPaqG_dock": "v1kfCW_dock",
+    "_0TPaqG_file": "v1kfCW_file",
+    "_0TPaqG_fileIcon": "v1kfCW_fileIcon",
+    "_0TPaqG_fileName": "v1kfCW_fileName",
+    "_0TPaqG_fileSize": "v1kfCW_fileSize",
+    "_0TPaqG_header": "v1kfCW_header",
+    "_0TPaqG_lead": "v1kfCW_lead",
+    "_0TPaqG_list": "v1kfCW_list",
+    "_0TPaqG_panel": "v1kfCW_panel",
+    "_0TPaqG_pendingRow": "v1kfCW_pendingRow",
+    "_0TPaqG_preview": "v1kfCW_preview",
+    "_0TPaqG_row": "v1kfCW_row",
+    "_0TPaqG_status": "v1kfCW_status",
+    "_0TPaqG_thumb": "v1kfCW_thumb",
+    "WW8u-a_chevron": "mP3ANa_chevron",
+    "WW8u-a_desc": "mP3ANa_desc",
+    "WW8u-a_row": "mP3ANa_row",
+    "WW8u-a_rowText": "mP3ANa_rowText",
+    "WW8u-a_selector": "mP3ANa_selector",
+    "WW8u-a_title": "mP3ANa_title",
+    "ST7X_W_body": "Dc7zOa_body",
+    "ST7X_W_composerHero": "Dc7zOa_composerHero",
+    "ST7X_W_composerSeat": "Dc7zOa_composerSeat",
+    "ST7X_W_composerStack": "Dc7zOa_composerStack",
+    "ST7X_W_crumb": "Dc7zOa_crumb",
+    "ST7X_W_crumbCurrent": "Dc7zOa_crumbCurrent",
+    "ST7X_W_crumbSeg": "Dc7zOa_crumbSeg",
+    "ST7X_W_crumbSep": "Dc7zOa_crumbSep",
+    "ST7X_W_crumbSubagent": "Dc7zOa_crumbSubagent",
+    "ST7X_W_crumbs": "Dc7zOa_crumbs",
+    "ST7X_W_embeddedBody": "Dc7zOa_embeddedBody",
+    "ST7X_W_header": "Dc7zOa_header",
+    "ST7X_W_headerActions": "Dc7zOa_headerActions",
+    "ST7X_W_headerBlank": "Dc7zOa_headerBlank",
+    "ST7X_W_headerCorner": "Dc7zOa_headerCorner",
+    "ST7X_W_headerLeading": "Dc7zOa_headerLeading",
+    "ST7X_W_headerSessionless": "Dc7zOa_headerSessionless",
+    "ST7X_W_headerUtilities": "Dc7zOa_headerUtilities",
+    "ST7X_W_heroOptions": "Dc7zOa_heroOptions",
+    "ST7X_W_heroWorkspaceRow": "Dc7zOa_heroWorkspaceRow",
+    "ST7X_W_root": "Dc7zOa_root",
+    "ST7X_W_scrollBody": "Dc7zOa_scrollBody",
+    "ST7X_W_tab": "Dc7zOa_tab",
+    "ST7X_W_tabActive": "Dc7zOa_tabActive",
+    "ST7X_W_tabs": "Dc7zOa_tabs",
+    "ST7X_W_titleCluster": "Dc7zOa_titleCluster",
+    "ST7X_W_titleRow": "Dc7zOa_titleRow",
+    "ST7X_W_viewArea": "Dc7zOa_viewArea",
+    "ST7X_W_widthHandle": "Dc7zOa_widthHandle",
+    "bocITq_body": "Hqq-bq_body",
+    "bocITq_chevron": "Hqq-bq_chevron",
+    "bocITq_fish": "Hqq-bq_fish",
+    "bocITq_fishHitbox": "Hqq-bq_fishHitbox",
+    "bocITq_folder": "Hqq-bq_folder",
+    "bocITq_headline": "Hqq-bq_headline",
+    "bocITq_hero-fish-swim": "Hqq-bq_hero-fish-swim",
+    "bocITq_modalAction": "Hqq-bq_modalAction",
+    "bocITq_modalError": "Hqq-bq_modalError",
+    "bocITq_modalInput": "Hqq-bq_modalInput",
+    "bocITq_previewBadge": "Hqq-bq_previewBadge",
+    "bocITq_root": "Hqq-bq_root",
+    "bocITq_stack": "Hqq-bq_stack",
+    "bocITq_titleGroup": "Hqq-bq_titleGroup",
+    "bocITq_workspace": "Hqq-bq_workspace",
+    "bocITq_workspaceLabel": "Hqq-bq_workspaceLabel",
+    "bocITq_workspaceRow": "Hqq-bq_workspaceRow",
+    "y0jqnG_bar": "_2WTFBq_bar",
+    "y0jqnG_colorMessages": "_2WTFBq_colorMessages",
+    "y0jqnG_colorSystem": "_2WTFBq_colorSystem",
+    "y0jqnG_colorTools": "_2WTFBq_colorTools",
+    "y0jqnG_figures": "_2WTFBq_figures",
+    "y0jqnG_fill": "_2WTFBq_fill",
+    "y0jqnG_header": "_2WTFBq_header",
+    "y0jqnG_headline": "_2WTFBq_headline",
+    "y0jqnG_panel": "_2WTFBq_panel",
+    "y0jqnG_percent": "_2WTFBq_percent",
+    "y0jqnG_root": "_2WTFBq_root",
+    "y0jqnG_row": "_2WTFBq_row",
+    "y0jqnG_rows": "_2WTFBq_rows",
+    "y0jqnG_segment": "_2WTFBq_segment",
+    "y0jqnG_swatch": "_2WTFBq_swatch",
+    "y0jqnG_track": "_2WTFBq_track",
+    "y0jqnG_trigger": "_2WTFBq_trigger",
+    "yhfFVG_accessory": "RlGAzG_accessory",
+    "yhfFVG_activity": "RlGAzG_activity",
+    "yhfFVG_activityExpanded": "RlGAzG_activityExpanded",
+    "yhfFVG_add": "RlGAzG_add",
+    "yhfFVG_card": "RlGAzG_card",
+    "yhfFVG_cardWorkspaceTrigger": "RlGAzG_cardWorkspaceTrigger",
+    "yhfFVG_dock": "RlGAzG_dock",
+    "yhfFVG_grow": "RlGAzG_grow",
+    "yhfFVG_hero": "RlGAzG_hero",
+    "yhfFVG_input": "RlGAzG_input",
+    "yhfFVG_input-pending": "RlGAzG_input-pending",
+    "yhfFVG_inputDisabled": "RlGAzG_inputDisabled",
+    "yhfFVG_modes": "RlGAzG_modes",
+    "yhfFVG_notice": "RlGAzG_notice",
+    "yhfFVG_overlayAnchor": "RlGAzG_overlayAnchor",
+    "yhfFVG_pending": "RlGAzG_pending",
+    "yhfFVG_placeholder": "RlGAzG_placeholder",
+    "yhfFVG_primary": "RlGAzG_primary",
+    "yhfFVG_retry": "RlGAzG_retry",
+    "yhfFVG_root": "RlGAzG_root",
+    "yhfFVG_row": "RlGAzG_row",
+    "yhfFVG_scroll": "RlGAzG_scroll",
+    "yhfFVG_select": "RlGAzG_select",
+    "yhfFVG_standardControls": "RlGAzG_standardControls",
+    "yhfFVG_tools": "RlGAzG_tools",
+    "yhfFVG_trailing": "RlGAzG_trailing",
+    "yhfFVG_trailingActive": "RlGAzG_trailingActive",
+    "w9rwOa_body": "aSus8q_body",
+    "w9rwOa_chevron": "aSus8q_chevron",
+    "w9rwOa_content": "aSus8q_content",
+    "w9rwOa_glyph": "aSus8q_glyph",
+    "w9rwOa_header": "aSus8q_header",
+    "w9rwOa_item": "aSus8q_item",
+    "w9rwOa_lead": "aSus8q_lead",
+    "w9rwOa_list": "aSus8q_list",
+    "w9rwOa_progress": "aSus8q_progress",
+    "w9rwOa_root": "aSus8q_root",
+    "w9rwOa_title": "aSus8q_title",
+    "_6Qf49G_bottomRow": "BynINW_bottomRow",
+    "_6Qf49G_centerCol": "BynINW_centerCol",
+    "_6Qf49G_frame": "BynINW_frame",
+    "_6Qf49G_handle": "BynINW_handle",
+    "_6Qf49G_leadingSeat": "BynINW_leadingSeat",
+    "_6Qf49G_overlayLayer": "BynINW_overlayLayer",
+    "_6Qf49G_rightbarCol": "BynINW_rightbarCol",
+    "_6Qf49G_sidebarCol": "BynINW_sidebarCol",
+    "-w4Aka_entry": "unKlVG_entry",
+    "-w4Aka_entryCell": "unKlVG_entryCell",
+    "-w4Aka_entryDescription": "unKlVG_entryDescription",
+    "-w4Aka_entryIcon": "unKlVG_entryIcon",
+    "-w4Aka_entryText": "unKlVG_entryText",
+    "-w4Aka_entryTitle": "unKlVG_entryTitle",
+    "-w4Aka_guide": "unKlVG_guide",
+    "-w4Aka_hero": "unKlVG_hero",
+    "-w4Aka_placeholderInk": "unKlVG_placeholderInk",
+    "-w4Aka_titleIcon": "unKlVG_titleIcon",
+    "wmirxG_button": "dzXS4q_button",
+    "wmirxG_icon": "dzXS4q_icon",
+    "irMxjq_collapseGlyph": "OUqwTW_collapseGlyph",
+    "irMxjq_iconButton": "OUqwTW_iconButton",
+    "irMxjq_panel": "OUqwTW_panel",
+    "irMxjq_panelBody": "OUqwTW_panelBody",
+    "irMxjq_session": "OUqwTW_session",
+    "irMxjq_tabBody": "OUqwTW_tabBody",
+    "irMxjq_tabTitle": "OUqwTW_tabTitle",
+    "irMxjq_unavailable": "OUqwTW_unavailable"
+  },
+  "modules": [
+    {
+      "package": "@deepseek-ai/dsh-client-ui-chat",
+      "file": "lib/client.js",
+      "macSha256": "f817e5d53f872cba796fa9cf3157b167112755411b141a639a6a3dbbd500b732",
+      "windowsSha256": "a130b58fd24ea9b1e2a6a0f516009e9f9bfa9dc289cc8ebf004a735496fa52ca",
+      "cssModules": [
+        {
+          "path": "packages/client/ui-chat/src/client/chat/TurnNavigator.module.css.mjs",
+          "exports": {
+            "dsh-turn-mark-busy": {
+              "mac": "JXrxFq_dsh-turn-mark-busy",
+              "windows": "xpvNua_dsh-turn-mark-busy",
+              "themeReferences": false
+            },
+            "dsh-turn-preview-enter": {
+              "mac": "JXrxFq_dsh-turn-preview-enter",
+              "windows": "xpvNua_dsh-turn-preview-enter",
+              "themeReferences": false
+            },
+            "fadeBottom": {
+              "mac": "JXrxFq_fadeBottom",
+              "windows": "xpvNua_fadeBottom",
+              "themeReferences": false
+            },
+            "fadeTop": {
+              "mac": "JXrxFq_fadeTop",
+              "windows": "xpvNua_fadeTop",
+              "themeReferences": false
+            },
+            "frame": {
+              "mac": "JXrxFq_frame",
+              "windows": "xpvNua_frame",
+              "themeReferences": false
+            },
+            "mark": {
+              "mac": "JXrxFq_mark",
+              "windows": "xpvNua_mark",
+              "themeReferences": false
+            },
+            "markActive": {
+              "mac": "JXrxFq_markActive",
+              "windows": "xpvNua_markActive",
+              "themeReferences": false
+            },
+            "markBusy": {
+              "mac": "JXrxFq_markBusy",
+              "windows": "xpvNua_markBusy",
+              "themeReferences": false
+            },
+            "markPreview": {
+              "mac": "JXrxFq_markPreview",
+              "windows": "xpvNua_markPreview",
+              "themeReferences": false
+            },
+            "markUnloaded": {
+              "mac": "JXrxFq_markUnloaded",
+              "windows": "xpvNua_markUnloaded",
+              "themeReferences": false
+            },
+            "marks": {
+              "mac": "JXrxFq_marks",
+              "windows": "xpvNua_marks",
+              "themeReferences": false
+            },
+            "preview": {
+              "mac": "JXrxFq_preview",
+              "windows": "xpvNua_preview",
+              "themeReferences": true
+            },
+            "previewPrompt": {
+              "mac": "JXrxFq_previewPrompt",
+              "windows": "xpvNua_previewPrompt",
+              "themeReferences": false
+            },
+            "previewResponse": {
+              "mac": "JXrxFq_previewResponse",
+              "windows": "xpvNua_previewResponse",
+              "themeReferences": false
+            },
+            "scroller": {
+              "mac": "JXrxFq_scroller",
+              "windows": "xpvNua_scroller",
+              "themeReferences": false
+            },
+            "slot": {
+              "mac": "JXrxFq_slot",
+              "windows": "xpvNua_slot",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/ChatView.module.css.mjs",
+          "exports": {
+            "callRow": {
+              "mac": "icaHSq_callRow",
+              "windows": "xz4KEq_callRow",
+              "themeReferences": false
+            },
+            "column": {
+              "mac": "icaHSq_column",
+              "windows": "xz4KEq_column",
+              "themeReferences": false
+            },
+            "flowItem": {
+              "mac": "icaHSq_flowItem",
+              "windows": "xz4KEq_flowItem",
+              "themeReferences": false
+            },
+            "frame": {
+              "mac": "icaHSq_frame",
+              "windows": "xz4KEq_frame",
+              "themeReferences": true
+            },
+            "hint": {
+              "mac": "icaHSq_hint",
+              "windows": "xz4KEq_hint",
+              "themeReferences": false
+            },
+            "modalAction": {
+              "mac": "icaHSq_modalAction",
+              "windows": "xz4KEq_modalAction",
+              "themeReferences": false
+            },
+            "older": {
+              "mac": "icaHSq_older",
+              "windows": "xz4KEq_older",
+              "themeReferences": false
+            },
+            "openError": {
+              "mac": "icaHSq_openError",
+              "windows": "xz4KEq_openError",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "icaHSq_root",
+              "windows": "xz4KEq_root",
+              "themeReferences": true
+            },
+            "running": {
+              "mac": "icaHSq_running",
+              "windows": "xz4KEq_running",
+              "themeReferences": false
+            },
+            "runningContent": {
+              "mac": "icaHSq_runningContent",
+              "windows": "xz4KEq_runningContent",
+              "themeReferences": false
+            },
+            "runningDivider": {
+              "mac": "icaHSq_runningDivider",
+              "windows": "xz4KEq_runningDivider",
+              "themeReferences": false
+            },
+            "runningIcon": {
+              "mac": "icaHSq_runningIcon",
+              "windows": "xz4KEq_runningIcon",
+              "themeReferences": false
+            },
+            "runningText": {
+              "mac": "icaHSq_runningText",
+              "windows": "xz4KEq_runningText",
+              "themeReferences": false
+            },
+            "runningWhaleAnimated": {
+              "mac": "icaHSq_runningWhaleAnimated",
+              "windows": "xz4KEq_runningWhaleAnimated",
+              "themeReferences": false
+            },
+            "runningWhaleStill": {
+              "mac": "icaHSq_runningWhaleStill",
+              "windows": "xz4KEq_runningWhaleStill",
+              "themeReferences": false
+            },
+            "scroll": {
+              "mac": "icaHSq_scroll",
+              "windows": "xz4KEq_scroll",
+              "themeReferences": false
+            },
+            "toBottom": {
+              "mac": "icaHSq_toBottom",
+              "windows": "xz4KEq_toBottom",
+              "themeReferences": false
+            },
+            "toBottomSlot": {
+              "mac": "icaHSq_toBottomSlot",
+              "windows": "xz4KEq_toBottomSlot",
+              "themeReferences": false
+            },
+            "turnSpacer": {
+              "mac": "icaHSq_turnSpacer",
+              "windows": "xz4KEq_turnSpacer",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/ChatGroupSeat.module.css.mjs",
+          "exports": {
+            "activityIcon": {
+              "mac": "TXqvFW_activityIcon",
+              "windows": "WW4l1q_activityIcon",
+              "themeReferences": false
+            },
+            "body": {
+              "mac": "TXqvFW_body",
+              "windows": "WW4l1q_body",
+              "themeReferences": false
+            },
+            "chevron": {
+              "mac": "TXqvFW_chevron",
+              "windows": "WW4l1q_chevron",
+              "themeReferences": false
+            },
+            "content": {
+              "mac": "TXqvFW_content",
+              "windows": "WW4l1q_content",
+              "themeReferences": false
+            },
+            "expandedBody": {
+              "mac": "TXqvFW_expandedBody",
+              "windows": "WW4l1q_expandedBody",
+              "themeReferences": false
+            },
+            "fadeBottom": {
+              "mac": "TXqvFW_fadeBottom",
+              "windows": "WW4l1q_fadeBottom",
+              "themeReferences": false
+            },
+            "fadeTop": {
+              "mac": "TXqvFW_fadeTop",
+              "windows": "WW4l1q_fadeTop",
+              "themeReferences": false
+            },
+            "label": {
+              "mac": "TXqvFW_label",
+              "windows": "WW4l1q_label",
+              "themeReferences": false
+            },
+            "leading": {
+              "mac": "TXqvFW_leading",
+              "windows": "WW4l1q_leading",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "TXqvFW_root",
+              "windows": "WW4l1q_root",
+              "themeReferences": false
+            },
+            "title": {
+              "mac": "TXqvFW_title",
+              "windows": "WW4l1q_title",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/MessageItem.module.css.mjs",
+          "exports": {
+            "attachmentRow": {
+              "mac": "IzP3Va_attachmentRow",
+              "windows": "cJsG2q_attachmentRow",
+              "themeReferences": false
+            },
+            "bubble": {
+              "mac": "IzP3Va_bubble",
+              "windows": "cJsG2q_bubble",
+              "themeReferences": true
+            },
+            "compactionBody": {
+              "mac": "IzP3Va_compactionBody",
+              "windows": "cJsG2q_compactionBody",
+              "themeReferences": false
+            },
+            "compactionButton": {
+              "mac": "IzP3Va_compactionButton",
+              "windows": "cJsG2q_compactionButton",
+              "themeReferences": false
+            },
+            "compactionContextIcon": {
+              "mac": "IzP3Va_compactionContextIcon",
+              "windows": "cJsG2q_compactionContextIcon",
+              "themeReferences": false
+            },
+            "compactionDisclosureIcon": {
+              "mac": "IzP3Va_compactionDisclosureIcon",
+              "windows": "cJsG2q_compactionDisclosureIcon",
+              "themeReferences": false
+            },
+            "compactionLeading": {
+              "mac": "IzP3Va_compactionLeading",
+              "windows": "cJsG2q_compactionLeading",
+              "themeReferences": false
+            },
+            "compactionRow": {
+              "mac": "IzP3Va_compactionRow",
+              "windows": "cJsG2q_compactionRow",
+              "themeReferences": false
+            },
+            "compactionSep": {
+              "mac": "IzP3Va_compactionSep",
+              "windows": "cJsG2q_compactionSep",
+              "themeReferences": false
+            },
+            "compactionSummary": {
+              "mac": "IzP3Va_compactionSummary",
+              "windows": "cJsG2q_compactionSummary",
+              "themeReferences": false
+            },
+            "compactionTitle": {
+              "mac": "IzP3Va_compactionTitle",
+              "windows": "cJsG2q_compactionTitle",
+              "themeReferences": false
+            },
+            "contextRow": {
+              "mac": "IzP3Va_contextRow",
+              "windows": "cJsG2q_contextRow",
+              "themeReferences": false
+            },
+            "fileCard": {
+              "mac": "IzP3Va_fileCard",
+              "windows": "cJsG2q_fileCard",
+              "themeReferences": true
+            },
+            "fileContent": {
+              "mac": "IzP3Va_fileContent",
+              "windows": "cJsG2q_fileContent",
+              "themeReferences": false
+            },
+            "fileIcon": {
+              "mac": "IzP3Va_fileIcon",
+              "windows": "cJsG2q_fileIcon",
+              "themeReferences": false
+            },
+            "fileMeta": {
+              "mac": "IzP3Va_fileMeta",
+              "windows": "cJsG2q_fileMeta",
+              "themeReferences": false
+            },
+            "fileName": {
+              "mac": "IzP3Va_fileName",
+              "windows": "cJsG2q_fileName",
+              "themeReferences": false
+            },
+            "maxTokensTitle": {
+              "mac": "IzP3Va_maxTokensTitle",
+              "windows": "cJsG2q_maxTokensTitle",
+              "themeReferences": false
+            },
+            "referenceSummary": {
+              "mac": "IzP3Va_referenceSummary",
+              "windows": "cJsG2q_referenceSummary",
+              "themeReferences": false
+            },
+            "retryDetailLabel": {
+              "mac": "IzP3Va_retryDetailLabel",
+              "windows": "cJsG2q_retryDetailLabel",
+              "themeReferences": false
+            },
+            "retryDetails": {
+              "mac": "IzP3Va_retryDetails",
+              "windows": "cJsG2q_retryDetails",
+              "themeReferences": false
+            },
+            "retryRow": {
+              "mac": "IzP3Va_retryRow",
+              "windows": "cJsG2q_retryRow",
+              "themeReferences": false
+            },
+            "retrySummary": {
+              "mac": "IzP3Va_retrySummary",
+              "windows": "cJsG2q_retrySummary",
+              "themeReferences": false
+            },
+            "retryText": {
+              "mac": "IzP3Va_retryText",
+              "windows": "cJsG2q_retryText",
+              "themeReferences": false
+            },
+            "turnErrorCode": {
+              "mac": "IzP3Va_turnErrorCode",
+              "windows": "cJsG2q_turnErrorCode",
+              "themeReferences": false
+            },
+            "turnErrorCopy": {
+              "mac": "IzP3Va_turnErrorCopy",
+              "windows": "cJsG2q_turnErrorCopy",
+              "themeReferences": false
+            },
+            "turnErrorDot": {
+              "mac": "IzP3Va_turnErrorDot",
+              "windows": "cJsG2q_turnErrorDot",
+              "themeReferences": false
+            },
+            "turnErrorMessage": {
+              "mac": "IzP3Va_turnErrorMessage",
+              "windows": "cJsG2q_turnErrorMessage",
+              "themeReferences": false
+            },
+            "turnErrorRow": {
+              "mac": "IzP3Va_turnErrorRow",
+              "windows": "cJsG2q_turnErrorRow",
+              "themeReferences": false
+            },
+            "turnErrorTitle": {
+              "mac": "IzP3Va_turnErrorTitle",
+              "windows": "cJsG2q_turnErrorTitle",
+              "themeReferences": false
+            },
+            "userRow": {
+              "mac": "IzP3Va_userRow",
+              "windows": "cJsG2q_userRow",
+              "themeReferences": false
+            },
+            "userStack": {
+              "mac": "IzP3Va_userStack",
+              "windows": "cJsG2q_userStack",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/ContextBody.module.css.mjs",
+          "exports": {
+            "catalogNotice": {
+              "mac": "npkFxW_catalogNotice",
+              "windows": "PWz36q_catalogNotice",
+              "themeReferences": false
+            },
+            "entries": {
+              "mac": "npkFxW_entries",
+              "windows": "PWz36q_entries",
+              "themeReferences": false
+            },
+            "entry": {
+              "mac": "npkFxW_entry",
+              "windows": "PWz36q_entry",
+              "themeReferences": false
+            },
+            "entryDescription": {
+              "mac": "npkFxW_entryDescription",
+              "windows": "PWz36q_entryDescription",
+              "themeReferences": false
+            },
+            "entryName": {
+              "mac": "npkFxW_entryName",
+              "windows": "PWz36q_entryName",
+              "themeReferences": false
+            },
+            "field": {
+              "mac": "npkFxW_field",
+              "windows": "PWz36q_field",
+              "themeReferences": false
+            },
+            "fieldKey": {
+              "mac": "npkFxW_fieldKey",
+              "windows": "PWz36q_fieldKey",
+              "themeReferences": false
+            },
+            "fieldValue": {
+              "mac": "npkFxW_fieldValue",
+              "windows": "PWz36q_fieldValue",
+              "themeReferences": false
+            },
+            "fields": {
+              "mac": "npkFxW_fields",
+              "windows": "PWz36q_fields",
+              "themeReferences": false
+            },
+            "file": {
+              "mac": "npkFxW_file",
+              "windows": "PWz36q_file",
+              "themeReferences": false
+            },
+            "fileAction": {
+              "mac": "npkFxW_fileAction",
+              "windows": "PWz36q_fileAction",
+              "themeReferences": false
+            },
+            "filePath": {
+              "mac": "npkFxW_filePath",
+              "windows": "PWz36q_filePath",
+              "themeReferences": false
+            },
+            "files": {
+              "mac": "npkFxW_files",
+              "windows": "PWz36q_files",
+              "themeReferences": false
+            },
+            "recall": {
+              "mac": "npkFxW_recall",
+              "windows": "PWz36q_recall",
+              "themeReferences": false
+            },
+            "recallCounts": {
+              "mac": "npkFxW_recallCounts",
+              "windows": "PWz36q_recallCounts",
+              "themeReferences": false
+            },
+            "recallLabel": {
+              "mac": "npkFxW_recallLabel",
+              "windows": "PWz36q_recallLabel",
+              "themeReferences": false
+            },
+            "recalls": {
+              "mac": "npkFxW_recalls",
+              "windows": "PWz36q_recalls",
+              "themeReferences": false
+            },
+            "relaySender": {
+              "mac": "npkFxW_relaySender",
+              "windows": "PWz36q_relaySender",
+              "themeReferences": false
+            },
+            "section": {
+              "mac": "npkFxW_section",
+              "windows": "PWz36q_section",
+              "themeReferences": false
+            },
+            "sectionName": {
+              "mac": "npkFxW_sectionName",
+              "windows": "PWz36q_sectionName",
+              "themeReferences": false
+            },
+            "sectionText": {
+              "mac": "npkFxW_sectionText",
+              "windows": "PWz36q_sectionText",
+              "themeReferences": false
+            },
+            "sections": {
+              "mac": "npkFxW_sections",
+              "windows": "PWz36q_sections",
+              "themeReferences": false
+            },
+            "text": {
+              "mac": "npkFxW_text",
+              "windows": "PWz36q_text",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/ContextInjectionRow.module.css.mjs",
+          "exports": {
+            "body": {
+              "mac": "Bpi2Dq_body",
+              "windows": "EYGw8G_body",
+              "themeReferences": false
+            },
+            "chevron": {
+              "mac": "Bpi2Dq_chevron",
+              "windows": "EYGw8G_chevron",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "Bpi2Dq_root",
+              "windows": "EYGw8G_root",
+              "themeReferences": false
+            },
+            "sep": {
+              "mac": "Bpi2Dq_sep",
+              "windows": "EYGw8G_sep",
+              "themeReferences": false
+            },
+            "source": {
+              "mac": "Bpi2Dq_source",
+              "windows": "EYGw8G_source",
+              "themeReferences": false
+            },
+            "summary": {
+              "mac": "Bpi2Dq_summary",
+              "windows": "EYGw8G_summary",
+              "themeReferences": false
+            },
+            "toolChanges": {
+              "mac": "Bpi2Dq_toolChanges",
+              "windows": "EYGw8G_toolChanges",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/MessageIconActions.module.css.mjs",
+          "exports": {
+            "action": {
+              "mac": "ppByMG_action",
+              "windows": "xD_KDq_action",
+              "themeReferences": false
+            },
+            "actions": {
+              "mac": "ppByMG_actions",
+              "windows": "xD_KDq_actions",
+              "themeReferences": false
+            },
+            "endInfo": {
+              "mac": "ppByMG_endInfo",
+              "windows": "xD_KDq_endInfo",
+              "themeReferences": false
+            },
+            "timeEnd": {
+              "mac": "ppByMG_timeEnd",
+              "windows": "xD_KDq_timeEnd",
+              "themeReferences": false
+            },
+            "timeStart": {
+              "mac": "ppByMG_timeStart",
+              "windows": "xD_KDq_timeStart",
+              "themeReferences": false
+            },
+            "visuallyHidden": {
+              "mac": "ppByMG_visuallyHidden",
+              "windows": "xD_KDq_visuallyHidden",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/accessibility.module.css.mjs",
+          "exports": {
+            "visuallyHidden": {
+              "mac": "z7mQLa_visuallyHidden",
+              "windows": "glcmna_visuallyHidden",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/ReasoningRow.module.css.mjs",
+          "exports": {
+            "leading": {
+              "mac": "HiSsxa_leading",
+              "windows": "_3GBCTG_leading",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "HiSsxa_root",
+              "windows": "_3GBCTG_root",
+              "themeReferences": false
+            },
+            "row": {
+              "mac": "HiSsxa_row",
+              "windows": "_3GBCTG_row",
+              "themeReferences": false
+            },
+            "separator": {
+              "mac": "HiSsxa_separator",
+              "windows": "_3GBCTG_separator",
+              "themeReferences": false
+            },
+            "summary": {
+              "mac": "HiSsxa_summary",
+              "windows": "_3GBCTG_summary",
+              "themeReferences": false
+            },
+            "summaryText": {
+              "mac": "HiSsxa_summaryText",
+              "windows": "_3GBCTG_summaryText",
+              "themeReferences": false
+            },
+            "thinkBody": {
+              "mac": "HiSsxa_thinkBody",
+              "windows": "_3GBCTG_thinkBody",
+              "themeReferences": false
+            },
+            "title": {
+              "mac": "HiSsxa_title",
+              "windows": "_3GBCTG_title",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/AssistantMarkdown.module.css.mjs",
+          "exports": {
+            "actions": {
+              "mac": "gKv1-q_actions",
+              "windows": "v5IAXa_actions",
+              "themeReferences": false
+            },
+            "body": {
+              "mac": "gKv1-q_body",
+              "windows": "v5IAXa_body",
+              "themeReferences": true
+            },
+            "root": {
+              "mac": "gKv1-q_root",
+              "windows": "v5IAXa_root",
+              "themeReferences": false
+            },
+            "stopped": {
+              "mac": "gKv1-q_stopped",
+              "windows": "v5IAXa_stopped",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/GenericCommandCard.module.css.mjs",
+          "exports": {
+            "body": {
+              "mac": "YS3v9W_body",
+              "windows": "wY20ga_body",
+              "themeReferences": false
+            },
+            "leading": {
+              "mac": "YS3v9W_leading",
+              "windows": "wY20ga_leading",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "YS3v9W_root",
+              "windows": "wY20ga_root",
+              "themeReferences": true
+            },
+            "separator": {
+              "mac": "YS3v9W_separator",
+              "windows": "wY20ga_separator",
+              "themeReferences": false
+            },
+            "summary": {
+              "mac": "YS3v9W_summary",
+              "windows": "wY20ga_summary",
+              "themeReferences": false
+            },
+            "title": {
+              "mac": "YS3v9W_title",
+              "windows": "wY20ga_title",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/TurnProcessNodeView.module.css.mjs",
+          "exports": {
+            "chevron": {
+              "mac": "_PaunW_chevron",
+              "windows": "_4AI11G_chevron",
+              "themeReferences": false
+            },
+            "durationNumber": {
+              "mac": "_PaunW_durationNumber",
+              "windows": "_4AI11G_durationNumber",
+              "themeReferences": false
+            },
+            "label": {
+              "mac": "_PaunW_label",
+              "windows": "_4AI11G_label",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "_PaunW_root",
+              "windows": "_4AI11G_root",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/TurnUsagePanel.module.css.mjs",
+          "exports": {
+            "label": {
+              "mac": "sZXytW_label",
+              "windows": "Rd79tq_label",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "sZXytW_root",
+              "windows": "Rd79tq_root",
+              "themeReferences": false
+            },
+            "trigger": {
+              "mac": "sZXytW_trigger",
+              "windows": "Rd79tq_trigger",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/stat-dialog.module.css.mjs",
+          "exports": {
+            "details": {
+              "mac": "-Fl-UW_details",
+              "windows": "Xt1eiG_details",
+              "themeReferences": false
+            },
+            "panel": {
+              "mac": "-Fl-UW_panel",
+              "windows": "Xt1eiG_panel",
+              "themeReferences": true
+            },
+            "reasoning": {
+              "mac": "-Fl-UW_reasoning",
+              "windows": "Xt1eiG_reasoning",
+              "themeReferences": false
+            },
+            "route": {
+              "mac": "-Fl-UW_route",
+              "windows": "Xt1eiG_route",
+              "themeReferences": false
+            },
+            "title": {
+              "mac": "-Fl-UW_title",
+              "windows": "Xt1eiG_title",
+              "themeReferences": false
+            },
+            "titleLabel": {
+              "mac": "-Fl-UW_titleLabel",
+              "windows": "Xt1eiG_titleLabel",
+              "themeReferences": false
+            },
+            "titleRule": {
+              "mac": "-Fl-UW_titleRule",
+              "windows": "Xt1eiG_titleRule",
+              "themeReferences": false
+            },
+            "titleValue": {
+              "mac": "-Fl-UW_titleValue",
+              "windows": "Xt1eiG_titleValue",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/TurnTailNodeView.module.css.mjs",
+          "exports": {
+            "actions": {
+              "mac": "d1vkyW_actions",
+              "windows": "zZmEaW_actions",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "d1vkyW_root",
+              "windows": "zZmEaW_root",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/TurnTriggerNodeView.module.css.mjs",
+          "exports": {
+            "body": {
+              "mac": "nqfepW_body",
+              "windows": "oE-XyW_body",
+              "themeReferences": false
+            },
+            "chevron": {
+              "mac": "nqfepW_chevron",
+              "windows": "oE-XyW_chevron",
+              "themeReferences": false
+            },
+            "content": {
+              "mac": "nqfepW_content",
+              "windows": "oE-XyW_content",
+              "themeReferences": false
+            },
+            "explanation": {
+              "mac": "nqfepW_explanation",
+              "windows": "oE-XyW_explanation",
+              "themeReferences": false
+            },
+            "header": {
+              "mac": "nqfepW_header",
+              "windows": "oE-XyW_header",
+              "themeReferences": false
+            },
+            "icon": {
+              "mac": "nqfepW_icon",
+              "windows": "oE-XyW_icon",
+              "themeReferences": false
+            },
+            "openChevron": {
+              "mac": "nqfepW_openChevron",
+              "windows": "oE-XyW_openChevron",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "nqfepW_root",
+              "windows": "oE-XyW_root",
+              "themeReferences": false
+            },
+            "time": {
+              "mac": "nqfepW_time",
+              "windows": "oE-XyW_time",
+              "themeReferences": false
+            },
+            "title": {
+              "mac": "nqfepW_title",
+              "windows": "oE-XyW_title",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/StatsPills.module.css.mjs",
+          "exports": {
+            "anchor": {
+              "mac": "OpZ85W_anchor",
+              "windows": "iq1doa_anchor",
+              "themeReferences": false
+            },
+            "label": {
+              "mac": "OpZ85W_label",
+              "windows": "iq1doa_label",
+              "themeReferences": false
+            },
+            "pill": {
+              "mac": "OpZ85W_pill",
+              "windows": "iq1doa_pill",
+              "themeReferences": false
+            },
+            "sep": {
+              "mac": "OpZ85W_sep",
+              "windows": "iq1doa_sep",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/settings/PreferenceRow.module.css.mjs",
+          "exports": {
+            "chevron": {
+              "mac": "_28qALa_chevron",
+              "windows": "XZcbxG_chevron",
+              "themeReferences": false
+            },
+            "desc": {
+              "mac": "_28qALa_desc",
+              "windows": "XZcbxG_desc",
+              "themeReferences": false
+            },
+            "row": {
+              "mac": "_28qALa_row",
+              "windows": "XZcbxG_row",
+              "themeReferences": false
+            },
+            "rowText": {
+              "mac": "_28qALa_rowText",
+              "windows": "XZcbxG_rowText",
+              "themeReferences": false
+            },
+            "selector": {
+              "mac": "_28qALa_selector",
+              "windows": "XZcbxG_selector",
+              "themeReferences": false
+            },
+            "title": {
+              "mac": "_28qALa_title",
+              "windows": "XZcbxG_title",
+              "themeReferences": false
+            }
+          }
+        }
+      ]
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-conversation",
+      "file": "lib/client.js",
+      "macSha256": "48d308ca86c9350986982e113bb775696719a958415f436ce7b977de1eace0b6",
+      "windowsSha256": "843dbcd884e05d77e525bf84b9e6dce180fd49ac8486a3c75591c291f09c9afa",
+      "cssModules": [
+        {
+          "path": "packages/client/ui-conversation/src/client/user-text/UserText.module.css.mjs",
+          "exports": {
+            "ellipsis": {
+              "mac": "B0oWoG_ellipsis",
+              "windows": "Jj6vTG_ellipsis",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "B0oWoG_root",
+              "windows": "Jj6vTG_root",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-conversation/src/client/input/editor/ReferenceChip.module.css.mjs",
+          "exports": {
+            "chip": {
+              "mac": "pO-u3q_chip",
+              "windows": "rtYPxa_chip",
+              "themeReferences": false
+            },
+            "icon": {
+              "mac": "pO-u3q_icon",
+              "windows": "rtYPxa_icon",
+              "themeReferences": false
+            },
+            "invalid": {
+              "mac": "pO-u3q_invalid",
+              "windows": "rtYPxa_invalid",
+              "themeReferences": false
+            },
+            "label": {
+              "mac": "pO-u3q_label",
+              "windows": "rtYPxa_label",
+              "themeReferences": false
+            },
+            "marker": {
+              "mac": "pO-u3q_marker",
+              "windows": "rtYPxa_marker",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-conversation/src/client/input/editor/composer-editor.module.css.mjs",
+          "exports": {
+            "openable": {
+              "mac": "f30p-W_openable",
+              "windows": "mxScHa_openable",
+              "themeReferences": false
+            },
+            "reference": {
+              "mac": "f30p-W_reference",
+              "windows": "mxScHa_reference",
+              "themeReferences": false
+            },
+            "textRef": {
+              "mac": "f30p-W_textRef",
+              "windows": "mxScHa_textRef",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-conversation/src/client/queue/QueueDock.module.css.mjs",
+          "exports": {
+            "action": {
+              "mac": "_0TPaqG_action",
+              "windows": "v1kfCW_action",
+              "themeReferences": false
+            },
+            "actions": {
+              "mac": "_0TPaqG_actions",
+              "windows": "v1kfCW_actions",
+              "themeReferences": false
+            },
+            "attachments": {
+              "mac": "_0TPaqG_attachments",
+              "windows": "v1kfCW_attachments",
+              "themeReferences": false
+            },
+            "chevron": {
+              "mac": "_0TPaqG_chevron",
+              "windows": "v1kfCW_chevron",
+              "themeReferences": false
+            },
+            "count": {
+              "mac": "_0TPaqG_count",
+              "windows": "v1kfCW_count",
+              "themeReferences": false
+            },
+            "dock": {
+              "mac": "_0TPaqG_dock",
+              "windows": "v1kfCW_dock",
+              "themeReferences": false
+            },
+            "file": {
+              "mac": "_0TPaqG_file",
+              "windows": "v1kfCW_file",
+              "themeReferences": false
+            },
+            "fileIcon": {
+              "mac": "_0TPaqG_fileIcon",
+              "windows": "v1kfCW_fileIcon",
+              "themeReferences": false
+            },
+            "fileName": {
+              "mac": "_0TPaqG_fileName",
+              "windows": "v1kfCW_fileName",
+              "themeReferences": false
+            },
+            "fileSize": {
+              "mac": "_0TPaqG_fileSize",
+              "windows": "v1kfCW_fileSize",
+              "themeReferences": false
+            },
+            "header": {
+              "mac": "_0TPaqG_header",
+              "windows": "v1kfCW_header",
+              "themeReferences": false
+            },
+            "lead": {
+              "mac": "_0TPaqG_lead",
+              "windows": "v1kfCW_lead",
+              "themeReferences": false
+            },
+            "list": {
+              "mac": "_0TPaqG_list",
+              "windows": "v1kfCW_list",
+              "themeReferences": false
+            },
+            "panel": {
+              "mac": "_0TPaqG_panel",
+              "windows": "v1kfCW_panel",
+              "themeReferences": true
+            },
+            "pendingRow": {
+              "mac": "_0TPaqG_pendingRow",
+              "windows": "v1kfCW_pendingRow",
+              "themeReferences": false
+            },
+            "preview": {
+              "mac": "_0TPaqG_preview",
+              "windows": "v1kfCW_preview",
+              "themeReferences": false
+            },
+            "row": {
+              "mac": "_0TPaqG_row",
+              "windows": "v1kfCW_row",
+              "themeReferences": false
+            },
+            "status": {
+              "mac": "_0TPaqG_status",
+              "windows": "v1kfCW_status",
+              "themeReferences": false
+            },
+            "thumb": {
+              "mac": "_0TPaqG_thumb",
+              "windows": "v1kfCW_thumb",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-conversation/src/client/settings/EnterBehaviorRow.module.css.mjs",
+          "exports": {
+            "chevron": {
+              "mac": "WW8u-a_chevron",
+              "windows": "mP3ANa_chevron",
+              "themeReferences": false
+            },
+            "desc": {
+              "mac": "WW8u-a_desc",
+              "windows": "mP3ANa_desc",
+              "themeReferences": false
+            },
+            "row": {
+              "mac": "WW8u-a_row",
+              "windows": "mP3ANa_row",
+              "themeReferences": false
+            },
+            "rowText": {
+              "mac": "WW8u-a_rowText",
+              "windows": "mP3ANa_rowText",
+              "themeReferences": false
+            },
+            "selector": {
+              "mac": "WW8u-a_selector",
+              "windows": "mP3ANa_selector",
+              "themeReferences": false
+            },
+            "title": {
+              "mac": "WW8u-a_title",
+              "windows": "mP3ANa_title",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-conversation/src/client/skeleton/ConversationRoot.module.css.mjs",
+          "exports": {
+            "body": {
+              "mac": "ST7X_W_body",
+              "windows": "Dc7zOa_body",
+              "themeReferences": false
+            },
+            "composerHero": {
+              "mac": "ST7X_W_composerHero",
+              "windows": "Dc7zOa_composerHero",
+              "themeReferences": false
+            },
+            "composerSeat": {
+              "mac": "ST7X_W_composerSeat",
+              "windows": "Dc7zOa_composerSeat",
+              "themeReferences": true
+            },
+            "composerStack": {
+              "mac": "ST7X_W_composerStack",
+              "windows": "Dc7zOa_composerStack",
+              "themeReferences": true
+            },
+            "crumb": {
+              "mac": "ST7X_W_crumb",
+              "windows": "Dc7zOa_crumb",
+              "themeReferences": false
+            },
+            "crumbCurrent": {
+              "mac": "ST7X_W_crumbCurrent",
+              "windows": "Dc7zOa_crumbCurrent",
+              "themeReferences": false
+            },
+            "crumbSeg": {
+              "mac": "ST7X_W_crumbSeg",
+              "windows": "Dc7zOa_crumbSeg",
+              "themeReferences": false
+            },
+            "crumbSep": {
+              "mac": "ST7X_W_crumbSep",
+              "windows": "Dc7zOa_crumbSep",
+              "themeReferences": false
+            },
+            "crumbSubagent": {
+              "mac": "ST7X_W_crumbSubagent",
+              "windows": "Dc7zOa_crumbSubagent",
+              "themeReferences": false
+            },
+            "crumbs": {
+              "mac": "ST7X_W_crumbs",
+              "windows": "Dc7zOa_crumbs",
+              "themeReferences": false
+            },
+            "embeddedBody": {
+              "mac": "ST7X_W_embeddedBody",
+              "windows": "Dc7zOa_embeddedBody",
+              "themeReferences": true
+            },
+            "header": {
+              "mac": "ST7X_W_header",
+              "windows": "Dc7zOa_header",
+              "themeReferences": true
+            },
+            "headerActions": {
+              "mac": "ST7X_W_headerActions",
+              "windows": "Dc7zOa_headerActions",
+              "themeReferences": false
+            },
+            "headerBlank": {
+              "mac": "ST7X_W_headerBlank",
+              "windows": "Dc7zOa_headerBlank",
+              "themeReferences": false
+            },
+            "headerCorner": {
+              "mac": "ST7X_W_headerCorner",
+              "windows": "Dc7zOa_headerCorner",
+              "themeReferences": false
+            },
+            "headerLeading": {
+              "mac": "ST7X_W_headerLeading",
+              "windows": "Dc7zOa_headerLeading",
+              "themeReferences": false
+            },
+            "headerSessionless": {
+              "mac": "ST7X_W_headerSessionless",
+              "windows": "Dc7zOa_headerSessionless",
+              "themeReferences": false
+            },
+            "headerUtilities": {
+              "mac": "ST7X_W_headerUtilities",
+              "windows": "Dc7zOa_headerUtilities",
+              "themeReferences": false
+            },
+            "heroOptions": {
+              "mac": "ST7X_W_heroOptions",
+              "windows": "Dc7zOa_heroOptions",
+              "themeReferences": false
+            },
+            "heroWorkspaceRow": {
+              "mac": "ST7X_W_heroWorkspaceRow",
+              "windows": "Dc7zOa_heroWorkspaceRow",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "ST7X_W_root",
+              "windows": "Dc7zOa_root",
+              "themeReferences": true
+            },
+            "scrollBody": {
+              "mac": "ST7X_W_scrollBody",
+              "windows": "Dc7zOa_scrollBody",
+              "themeReferences": false
+            },
+            "tab": {
+              "mac": "ST7X_W_tab",
+              "windows": "Dc7zOa_tab",
+              "themeReferences": true
+            },
+            "tabActive": {
+              "mac": "ST7X_W_tabActive",
+              "windows": "Dc7zOa_tabActive",
+              "themeReferences": true
+            },
+            "tabs": {
+              "mac": "ST7X_W_tabs",
+              "windows": "Dc7zOa_tabs",
+              "themeReferences": false
+            },
+            "titleCluster": {
+              "mac": "ST7X_W_titleCluster",
+              "windows": "Dc7zOa_titleCluster",
+              "themeReferences": false
+            },
+            "titleRow": {
+              "mac": "ST7X_W_titleRow",
+              "windows": "Dc7zOa_titleRow",
+              "themeReferences": false
+            },
+            "viewArea": {
+              "mac": "ST7X_W_viewArea",
+              "windows": "Dc7zOa_viewArea",
+              "themeReferences": false
+            },
+            "widthHandle": {
+              "mac": "ST7X_W_widthHandle",
+              "windows": "Dc7zOa_widthHandle",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-conversation/src/client/skeleton/HeroShell.module.css.mjs",
+          "exports": {
+            "body": {
+              "mac": "bocITq_body",
+              "windows": "Hqq-bq_body",
+              "themeReferences": false
+            },
+            "chevron": {
+              "mac": "bocITq_chevron",
+              "windows": "Hqq-bq_chevron",
+              "themeReferences": false
+            },
+            "fish": {
+              "mac": "bocITq_fish",
+              "windows": "Hqq-bq_fish",
+              "themeReferences": false
+            },
+            "fishHitbox": {
+              "mac": "bocITq_fishHitbox",
+              "windows": "Hqq-bq_fishHitbox",
+              "themeReferences": false
+            },
+            "folder": {
+              "mac": "bocITq_folder",
+              "windows": "Hqq-bq_folder",
+              "themeReferences": false
+            },
+            "headline": {
+              "mac": "bocITq_headline",
+              "windows": "Hqq-bq_headline",
+              "themeReferences": false
+            },
+            "hero-fish-swim": {
+              "mac": "bocITq_hero-fish-swim",
+              "windows": "Hqq-bq_hero-fish-swim",
+              "themeReferences": false
+            },
+            "modalAction": {
+              "mac": "bocITq_modalAction",
+              "windows": "Hqq-bq_modalAction",
+              "themeReferences": false
+            },
+            "modalError": {
+              "mac": "bocITq_modalError",
+              "windows": "Hqq-bq_modalError",
+              "themeReferences": false
+            },
+            "modalInput": {
+              "mac": "bocITq_modalInput",
+              "windows": "Hqq-bq_modalInput",
+              "themeReferences": false
+            },
+            "previewBadge": {
+              "mac": "bocITq_previewBadge",
+              "windows": "Hqq-bq_previewBadge",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "bocITq_root",
+              "windows": "Hqq-bq_root",
+              "themeReferences": false
+            },
+            "stack": {
+              "mac": "bocITq_stack",
+              "windows": "Hqq-bq_stack",
+              "themeReferences": false
+            },
+            "titleGroup": {
+              "mac": "bocITq_titleGroup",
+              "windows": "Hqq-bq_titleGroup",
+              "themeReferences": false
+            },
+            "workspace": {
+              "mac": "bocITq_workspace",
+              "windows": "Hqq-bq_workspace",
+              "themeReferences": false
+            },
+            "workspaceLabel": {
+              "mac": "bocITq_workspaceLabel",
+              "windows": "Hqq-bq_workspaceLabel",
+              "themeReferences": false
+            },
+            "workspaceRow": {
+              "mac": "bocITq_workspaceRow",
+              "windows": "Hqq-bq_workspaceRow",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-conversation/src/client/skeleton/ContextMeter.module.css.mjs",
+          "exports": {
+            "bar": {
+              "mac": "y0jqnG_bar",
+              "windows": "_2WTFBq_bar",
+              "themeReferences": false
+            },
+            "colorMessages": {
+              "mac": "y0jqnG_colorMessages",
+              "windows": "_2WTFBq_colorMessages",
+              "themeReferences": false
+            },
+            "colorSystem": {
+              "mac": "y0jqnG_colorSystem",
+              "windows": "_2WTFBq_colorSystem",
+              "themeReferences": false
+            },
+            "colorTools": {
+              "mac": "y0jqnG_colorTools",
+              "windows": "_2WTFBq_colorTools",
+              "themeReferences": false
+            },
+            "figures": {
+              "mac": "y0jqnG_figures",
+              "windows": "_2WTFBq_figures",
+              "themeReferences": false
+            },
+            "fill": {
+              "mac": "y0jqnG_fill",
+              "windows": "_2WTFBq_fill",
+              "themeReferences": false
+            },
+            "header": {
+              "mac": "y0jqnG_header",
+              "windows": "_2WTFBq_header",
+              "themeReferences": false
+            },
+            "headline": {
+              "mac": "y0jqnG_headline",
+              "windows": "_2WTFBq_headline",
+              "themeReferences": false
+            },
+            "panel": {
+              "mac": "y0jqnG_panel",
+              "windows": "_2WTFBq_panel",
+              "themeReferences": true
+            },
+            "percent": {
+              "mac": "y0jqnG_percent",
+              "windows": "_2WTFBq_percent",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "y0jqnG_root",
+              "windows": "_2WTFBq_root",
+              "themeReferences": false
+            },
+            "row": {
+              "mac": "y0jqnG_row",
+              "windows": "_2WTFBq_row",
+              "themeReferences": false
+            },
+            "rows": {
+              "mac": "y0jqnG_rows",
+              "windows": "_2WTFBq_rows",
+              "themeReferences": false
+            },
+            "segment": {
+              "mac": "y0jqnG_segment",
+              "windows": "_2WTFBq_segment",
+              "themeReferences": false
+            },
+            "swatch": {
+              "mac": "y0jqnG_swatch",
+              "windows": "_2WTFBq_swatch",
+              "themeReferences": false
+            },
+            "track": {
+              "mac": "y0jqnG_track",
+              "windows": "_2WTFBq_track",
+              "themeReferences": false
+            },
+            "trigger": {
+              "mac": "y0jqnG_trigger",
+              "windows": "_2WTFBq_trigger",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-conversation/src/client/skeleton/InputBar.module.css.mjs",
+          "exports": {
+            "accessory": {
+              "mac": "yhfFVG_accessory",
+              "windows": "RlGAzG_accessory",
+              "themeReferences": false
+            },
+            "activity": {
+              "mac": "yhfFVG_activity",
+              "windows": "RlGAzG_activity",
+              "themeReferences": false
+            },
+            "activityExpanded": {
+              "mac": "yhfFVG_activityExpanded",
+              "windows": "RlGAzG_activityExpanded",
+              "themeReferences": false
+            },
+            "add": {
+              "mac": "yhfFVG_add",
+              "windows": "RlGAzG_add",
+              "themeReferences": true
+            },
+            "card": {
+              "mac": "yhfFVG_card",
+              "windows": "RlGAzG_card",
+              "themeReferences": true
+            },
+            "cardWorkspaceTrigger": {
+              "mac": "yhfFVG_cardWorkspaceTrigger",
+              "windows": "RlGAzG_cardWorkspaceTrigger",
+              "themeReferences": false
+            },
+            "dock": {
+              "mac": "yhfFVG_dock",
+              "windows": "RlGAzG_dock",
+              "themeReferences": false
+            },
+            "grow": {
+              "mac": "yhfFVG_grow",
+              "windows": "RlGAzG_grow",
+              "themeReferences": false
+            },
+            "hero": {
+              "mac": "yhfFVG_hero",
+              "windows": "RlGAzG_hero",
+              "themeReferences": false
+            },
+            "input": {
+              "mac": "yhfFVG_input",
+              "windows": "RlGAzG_input",
+              "themeReferences": true
+            },
+            "input-pending": {
+              "mac": "yhfFVG_input-pending",
+              "windows": "RlGAzG_input-pending",
+              "themeReferences": false
+            },
+            "inputDisabled": {
+              "mac": "yhfFVG_inputDisabled",
+              "windows": "RlGAzG_inputDisabled",
+              "themeReferences": false
+            },
+            "modes": {
+              "mac": "yhfFVG_modes",
+              "windows": "RlGAzG_modes",
+              "themeReferences": false
+            },
+            "notice": {
+              "mac": "yhfFVG_notice",
+              "windows": "RlGAzG_notice",
+              "themeReferences": false
+            },
+            "overlayAnchor": {
+              "mac": "yhfFVG_overlayAnchor",
+              "windows": "RlGAzG_overlayAnchor",
+              "themeReferences": false
+            },
+            "pending": {
+              "mac": "yhfFVG_pending",
+              "windows": "RlGAzG_pending",
+              "themeReferences": false
+            },
+            "placeholder": {
+              "mac": "yhfFVG_placeholder",
+              "windows": "RlGAzG_placeholder",
+              "themeReferences": true
+            },
+            "primary": {
+              "mac": "yhfFVG_primary",
+              "windows": "RlGAzG_primary",
+              "themeReferences": false
+            },
+            "retry": {
+              "mac": "yhfFVG_retry",
+              "windows": "RlGAzG_retry",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "yhfFVG_root",
+              "windows": "RlGAzG_root",
+              "themeReferences": false
+            },
+            "row": {
+              "mac": "yhfFVG_row",
+              "windows": "RlGAzG_row",
+              "themeReferences": false
+            },
+            "scroll": {
+              "mac": "yhfFVG_scroll",
+              "windows": "RlGAzG_scroll",
+              "themeReferences": false
+            },
+            "select": {
+              "mac": "yhfFVG_select",
+              "windows": "RlGAzG_select",
+              "themeReferences": true
+            },
+            "standardControls": {
+              "mac": "yhfFVG_standardControls",
+              "windows": "RlGAzG_standardControls",
+              "themeReferences": false
+            },
+            "tools": {
+              "mac": "yhfFVG_tools",
+              "windows": "RlGAzG_tools",
+              "themeReferences": false
+            },
+            "trailing": {
+              "mac": "yhfFVG_trailing",
+              "windows": "RlGAzG_trailing",
+              "themeReferences": false
+            },
+            "trailingActive": {
+              "mac": "yhfFVG_trailingActive",
+              "windows": "RlGAzG_trailingActive",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-conversation/src/client/skeleton/TodoPanel.module.css.mjs",
+          "exports": {
+            "body": {
+              "mac": "w9rwOa_body",
+              "windows": "aSus8q_body",
+              "themeReferences": false
+            },
+            "chevron": {
+              "mac": "w9rwOa_chevron",
+              "windows": "aSus8q_chevron",
+              "themeReferences": false
+            },
+            "content": {
+              "mac": "w9rwOa_content",
+              "windows": "aSus8q_content",
+              "themeReferences": false
+            },
+            "glyph": {
+              "mac": "w9rwOa_glyph",
+              "windows": "aSus8q_glyph",
+              "themeReferences": false
+            },
+            "header": {
+              "mac": "w9rwOa_header",
+              "windows": "aSus8q_header",
+              "themeReferences": false
+            },
+            "item": {
+              "mac": "w9rwOa_item",
+              "windows": "aSus8q_item",
+              "themeReferences": false
+            },
+            "lead": {
+              "mac": "w9rwOa_lead",
+              "windows": "aSus8q_lead",
+              "themeReferences": false
+            },
+            "list": {
+              "mac": "w9rwOa_list",
+              "windows": "aSus8q_list",
+              "themeReferences": false
+            },
+            "progress": {
+              "mac": "w9rwOa_progress",
+              "windows": "aSus8q_progress",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "w9rwOa_root",
+              "windows": "aSus8q_root",
+              "themeReferences": true
+            },
+            "title": {
+              "mac": "w9rwOa_title",
+              "windows": "aSus8q_title",
+              "themeReferences": false
+            }
+          }
+        }
+      ]
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-layout",
+      "file": "lib/client.js",
+      "macSha256": "355628eb82b799fb19b7f85b7ca49c538eee309f399733d719257643286c3c56",
+      "windowsSha256": "204348a4bc0636a11d1b2bd7ca905cd86e8c4a8394082b7037593c11ec195707",
+      "cssModules": [
+        {
+          "path": "packages/client/ui-layout/src/client/AppFrame.module.css.mjs",
+          "exports": {
+            "bottomRow": {
+              "mac": "_6Qf49G_bottomRow",
+              "windows": "BynINW_bottomRow",
+              "themeReferences": false
+            },
+            "centerCol": {
+              "mac": "_6Qf49G_centerCol",
+              "windows": "BynINW_centerCol",
+              "themeReferences": true
+            },
+            "frame": {
+              "mac": "_6Qf49G_frame",
+              "windows": "BynINW_frame",
+              "themeReferences": true
+            },
+            "handle": {
+              "mac": "_6Qf49G_handle",
+              "windows": "BynINW_handle",
+              "themeReferences": false
+            },
+            "leadingSeat": {
+              "mac": "_6Qf49G_leadingSeat",
+              "windows": "BynINW_leadingSeat",
+              "themeReferences": false
+            },
+            "overlayLayer": {
+              "mac": "_6Qf49G_overlayLayer",
+              "windows": "BynINW_overlayLayer",
+              "themeReferences": false
+            },
+            "rightbarCol": {
+              "mac": "_6Qf49G_rightbarCol",
+              "windows": "BynINW_rightbarCol",
+              "themeReferences": true
+            },
+            "sidebarCol": {
+              "mac": "_6Qf49G_sidebarCol",
+              "windows": "BynINW_sidebarCol",
+              "themeReferences": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-sidebar-right",
+      "file": "lib/client.js",
+      "macSha256": "66c175e34715db2a4c776081d08fbe5c004d8d7fe9719f044cc92aba7bbbe15f",
+      "windowsSha256": "38c1aa5968bf98dea89e19c63ed7eb30f225a31788f7e8e3e27a5a9e0e6172b2",
+      "cssModules": [
+        {
+          "path": "packages/client/ui-sidebar-right/src/client/tabs/guide/GuideBody.module.css.mjs",
+          "exports": {
+            "entry": {
+              "mac": "-w4Aka_entry",
+              "windows": "unKlVG_entry",
+              "themeReferences": false
+            },
+            "entryCell": {
+              "mac": "-w4Aka_entryCell",
+              "windows": "unKlVG_entryCell",
+              "themeReferences": false
+            },
+            "entryDescription": {
+              "mac": "-w4Aka_entryDescription",
+              "windows": "unKlVG_entryDescription",
+              "themeReferences": false
+            },
+            "entryIcon": {
+              "mac": "-w4Aka_entryIcon",
+              "windows": "unKlVG_entryIcon",
+              "themeReferences": false
+            },
+            "entryText": {
+              "mac": "-w4Aka_entryText",
+              "windows": "unKlVG_entryText",
+              "themeReferences": false
+            },
+            "entryTitle": {
+              "mac": "-w4Aka_entryTitle",
+              "windows": "unKlVG_entryTitle",
+              "themeReferences": false
+            },
+            "guide": {
+              "mac": "-w4Aka_guide",
+              "windows": "unKlVG_guide",
+              "themeReferences": false
+            },
+            "hero": {
+              "mac": "-w4Aka_hero",
+              "windows": "unKlVG_hero",
+              "themeReferences": false
+            },
+            "placeholderInk": {
+              "mac": "-w4Aka_placeholderInk",
+              "windows": "unKlVG_placeholderInk",
+              "themeReferences": false
+            },
+            "titleIcon": {
+              "mac": "-w4Aka_titleIcon",
+              "windows": "unKlVG_titleIcon",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-sidebar-right/src/client/shell/ExpandButton.module.css.mjs",
+          "exports": {
+            "button": {
+              "mac": "wmirxG_button",
+              "windows": "dzXS4q_button",
+              "themeReferences": true
+            },
+            "icon": {
+              "mac": "wmirxG_icon",
+              "windows": "dzXS4q_icon",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-sidebar-right/src/client/shell/SidebarRight.module.css.mjs",
+          "exports": {
+            "collapseGlyph": {
+              "mac": "irMxjq_collapseGlyph",
+              "windows": "OUqwTW_collapseGlyph",
+              "themeReferences": false
+            },
+            "iconButton": {
+              "mac": "irMxjq_iconButton",
+              "windows": "OUqwTW_iconButton",
+              "themeReferences": true
+            },
+            "panel": {
+              "mac": "irMxjq_panel",
+              "windows": "OUqwTW_panel",
+              "themeReferences": true
+            },
+            "panelBody": {
+              "mac": "irMxjq_panelBody",
+              "windows": "OUqwTW_panelBody",
+              "themeReferences": false
+            },
+            "session": {
+              "mac": "irMxjq_session",
+              "windows": "OUqwTW_session",
+              "themeReferences": false
+            },
+            "tabBody": {
+              "mac": "irMxjq_tabBody",
+              "windows": "OUqwTW_tabBody",
+              "themeReferences": true
+            },
+            "tabTitle": {
+              "mac": "irMxjq_tabTitle",
+              "windows": "OUqwTW_tabTitle",
+              "themeReferences": false
+            },
+            "unavailable": {
+              "mac": "irMxjq_unavailable",
+              "windows": "OUqwTW_unavailable",
+              "themeReferences": false
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

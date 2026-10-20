@@ -3,7 +3,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { access, chmod, cp, lstat, mkdir, open, readFile, readdir, readlink, realpath, rename, rm, stat, symlink, unlink, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
-import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve, win32 } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import YAML from './vendor/yaml/dist/index.js';
 
@@ -35,11 +35,59 @@ async function atomic(file, bytes, mode = 0o600, expectedHash) {
 }
 async function json(file) { const bytes = await optional(file); return bytes ? JSON.parse(bytes.toString()) : null; }
 
+// The explicit internal host fixture is unavailable from the command line. It
+// lets isolated tests exercise platform preflight without changing process state.
+function host(options = {}) {
+  const value = options._testHost ?? {};
+  return { platform: value.platform ?? process.platform, arch: value.arch ?? process.arch, home: value.home ?? homedir(), env: value.env ?? process.env };
+}
+function hostPlatform(options = {}) { const h = host(options); return `${h.platform}-${h.arch}`; }
+function normalizeWindowsPath(value) {
+  let path = String(value).replaceAll('/', '\\');
+  if (path.slice(0, 8).toLowerCase() === '\\\\?\\unc\\') path = `\\\\${path.slice(8)}`;
+  else if (path.startsWith('\\\\?\\') || path.startsWith('\\??\\')) path = path.slice(4);
+  return win32.normalize(path).replace(/\\+$/, '').toLowerCase();
+}
+function samePath(left, right, platform = process.platform) {
+  return typeof left === 'string' && typeof right === 'string' && (platform === 'win32' ? normalizeWindowsPath(left) === normalizeWindowsPath(right) : left === right);
+}
+function sameLink(left, right, platform = process.platform) {
+  return left.type === right.type && (left.type !== 'symlink' || samePath(left.target, right.target, platform));
+}
+function validatePlatform(manifest, options = {}) {
+  const expected = manifest.upstream.platform ?? 'darwin-arm64';
+  if (!['darwin-arm64', 'win32-x64'].includes(expected)) throw fail('MANIFEST', 'Unsupported runtime target platform');
+  if (hostPlatform(options) !== expected) throw fail('APP_PLATFORM', `This runtime requires ${expected}; this computer is ${hostPlatform(options)}. Nothing was installed`);
+  return expected;
+}
+async function applicationRoot(candidate, platform) {
+  if (!candidate) return null;
+  const selected = resolve(candidate);
+  const executable = platform === 'win32' && /\.exe$/i.test(selected);
+  if (executable && !(await metadata(selected))?.isFile()) return null;
+  const root = executable ? dirname(selected) : selected;
+  const archive = join(root, platform === 'win32' ? 'resources/app.asar' : 'Contents/Resources/app.asar');
+  return (await metadata(archive))?.isFile() ? root : null;
+}
+async function discoverApplication(options, h) {
+  if (options.app) return { app: await applicationRoot(options.app, h.platform), requestedApp: resolve(options.app) };
+  const candidates = h.platform === 'win32' ? [
+    ...[h.env.LOCALAPPDATA && join(h.env.LOCALAPPDATA, 'Programs'), h.env.LOCALAPPDATA, h.env.ProgramFiles, h.env['ProgramFiles(x86)']].filter(Boolean)
+      .flatMap(base => [join(base, 'DeepSeek Harness'), join(base, 'deepseek-harness'), join(base, 'DeepSeekHarness')]),
+  ] : ['/Applications/DeepSeek Harness.app', join(h.home, 'Applications/DeepSeek Harness.app')];
+  for (const candidate of candidates) {
+    const app = await applicationRoot(candidate, h.platform);
+    if (app) return { app, requestedApp: null };
+  }
+  return { app: null, requestedApp: null };
+}
+
 export async function paths(options = {}) {
-  const selectedHome = options.dshHome ?? (process.env.DSH_HOME?.trim() || join(homedir(), '.dsh'));
-  const expandedHome = selectedHome === '~' ? homedir() : selectedHome.startsWith('~/') ? join(homedir(), selectedHome.slice(2)) : selectedHome;
+  const h = host(options);
+  const selectedHome = options.dshHome ?? (h.env.DSH_HOME?.trim() || join(h.home, '.dsh'));
+  const expandedHome = selectedHome === '~' ? h.home : selectedHome.startsWith('~/') ? join(h.home, selectedHome.slice(2)) : selectedHome;
   const dshHome = resolve(expandedHome);
-  const enhancerHome = resolve(options.enhancerHome ?? join(homedir(), 'Library/Application Support/AIYOU Harness Enhancer'));
+  const enhancerHome = resolve(options.enhancerHome ?? (h.platform === 'win32' ? join(h.env.LOCALAPPDATA || join(h.home, 'AppData/Local'), 'AIYOUDSH') : join(h.home, 'Library/Application Support/AIYOU Harness Enhancer')));
   let runtime = options.runtime;
   if (!runtime) {
     for (const candidate of [join(here, 'runtime'), join(here, '../runtime'), join(here, '../dist/addon/runtime')]) {
@@ -47,10 +95,10 @@ export async function paths(options = {}) {
     }
   }
   return {
-    dshHome, enhancerHome,
+    dshHome, enhancerHome, platform: h.platform, arch: h.arch,
     profile: resolve(options.profile ?? join(dshHome, 'profiles/desktop')),
     runtime: runtime ? resolve(runtime) : null,
-    app: resolve(options.app ?? '/Applications/DeepSeek Harness.app'),
+    ...await discoverApplication(options, h),
     backupRoot: join(dshHome, 'backups/aiyou-enhancer'),
     stateFile: join(enhancerHome, 'install-state.json'),
   };
@@ -83,8 +131,11 @@ async function fileHash(file) {
   for await (const chunk of createReadStream(file)) digest.update(chunk);
   return digest.digest('hex');
 }
-export async function probeApplication(app, manifest) {
-  const archive = join(app, 'Contents/Resources/app.asar');
+export async function probeApplication(app, manifest, options = {}) {
+  const platform = validatePlatform(manifest, options);
+  const selected = await applicationRoot(app, host(options).platform);
+  if (!selected) throw fail('APP_NOT_FOUND', 'Official DeepSeek Harness was not found. Select its installation directory or executable with --app; nothing was installed');
+  const archive = join(selected, platform.startsWith('win32-') ? 'resources/app.asar' : 'Contents/Resources/app.asar');
   const reader = await readAsar(archive);
   try {
     const info = JSON.parse((await reader.read('package.json')).toString());
@@ -92,10 +143,10 @@ export async function probeApplication(app, manifest) {
     const digest = await fileHash(archive);
     if (digest !== manifest.upstream.appAsarSha256) throw fail('APP_HASH', 'The installed application archive differs from the supported build; nothing was installed');
     for (const entry of manifest.upstream.compatibility ?? []) {
-      if (!/^@deepseek-ai\/[a-z0-9-]+$/.test(entry.package) || !/^lib\/[a-zA-Z0-9/._-]+$/.test(entry.file) || entry.file.includes('..')) throw fail('MANIFEST', 'Invalid compatibility record');
+      if (!/^@deepseek-ai\/[a-z0-9-]+$/.test(entry.package) || !(entry.file === 'package.json' || /^lib\/[a-zA-Z0-9/._-]+$/.test(entry.file)) || entry.file.includes('..')) throw fail('MANIFEST', 'Invalid compatibility record');
       if (hash(await reader.read(`dsh/node_modules/${entry.package}/${entry.file}`)) !== entry.sha256) throw fail('APP_COMPATIBILITY', 'A native replacement compatibility check failed; nothing was installed');
     }
-    return { version: info.version, buildCommit: info.dshBuildCommit, appAsarSha256: digest, compatible: true };
+    return { version: info.version, buildCommit: info.dshBuildCommit, appAsarSha256: digest, platform, app: selected, compatible: true };
   } finally { await reader.close(); }
 }
 
@@ -192,32 +243,43 @@ async function linkState(file) {
   if (info.isSymbolicLink()) return { type: 'symlink', target: await readlink(file) };
   return { type: 'other' };
 }
-const sameLink = (left, right) => left.type === right.type && left.target === right.target;
-async function safeParents(file, root) {
+async function safeParents(file, root, platform = process.platform) {
   let current = dirname(file);
-  while (current !== dirname(root)) {
+  while (!samePath(current, dirname(root), platform)) {
     const info = await metadata(current);
     if (info?.isSymbolicLink() || info && !info.isDirectory()) throw fail('PROFILE_PATH', 'A profile module parent is a symlink or not a directory; nothing was overwritten');
-    if (current === root) return;
-    current = dirname(current);
+    if (samePath(current, root, platform)) return;
+    const parent = dirname(current);
+    if (samePath(parent, current, platform)) break;
+    current = parent;
   }
   throw fail('PROFILE_PATH', 'Module path is outside the profile');
 }
-async function installLinks(plan) {
+async function createModuleLink(target, file, platform) {
+  // Windows directory junctions do not require elevation or Developer Mode.
+  // symlink() remains exclusive: an arriving user-owned path is never replaced.
+  await symlink(target, file, platform === 'win32' ? 'junction' : 'dir');
+}
+async function installLinks(plan, touched) {
   for (const row of plan) {
-    if (!sameLink(await linkState(row.path), row.current)) throw fail('LINK_CHANGED', 'A profile module path changed during installation');
-    await safeParents(row.path, row.profile);
+    if (!sameLink(await linkState(row.path), row.current, row.platform)) throw fail('LINK_CHANGED', 'A profile module path changed during installation');
+    await safeParents(row.path, row.profile, row.platform);
     await mkdir(dirname(row.path), { recursive: true });
-    const temporary = `${row.path}.aiyou-${randomUUID()}`;
-    try { await symlink(row.target, temporary, 'dir'); await rename(temporary, row.path); }
-    finally { await rm(temporary, { force: true }); }
+    if (sameLink(row.current, { type: 'symlink', target: row.target }, row.platform)) continue;
+    if (!sameLink(await linkState(row.path), row.current, row.platform)) throw fail('LINK_CHANGED', 'A profile module path changed before replacement');
+    if (row.current.type === 'symlink') {
+      await unlink(row.path);
+      touched.push(row); // rollback can restore an old link if creation fails
+    }
+    await createModuleLink(row.target, row.path, row.platform);
+    if (row.current.type === 'absent') touched.push(row);
   }
 }
 async function removeRetiredLinks(plan, removed) {
   for (const row of plan) {
-    await safeParents(row.path, row.profile);
+    await safeParents(row.path, row.profile, row.platform);
     const current = await linkState(row.path);
-    if (!sameLink(current, row.current)) throw fail('LINK_CHANGED', 'A retired module path changed during installation; the new owner was preserved');
+    if (!sameLink(current, row.current, row.platform)) throw fail('LINK_CHANGED', 'A retired module path changed during installation; the new owner was preserved');
     if (current.type === 'absent') continue;
     await unlink(row.path);
     removed.push(row);
@@ -226,33 +288,35 @@ async function removeRetiredLinks(plan, removed) {
 async function restoreRetiredLinks(rows, conflicts) {
   for (const row of [...rows].reverse()) {
     try {
-      await safeParents(row.path, row.profile);
+      await safeParents(row.path, row.profile, row.platform);
       const current = await linkState(row.path);
-      if (sameLink(current, row.current)) continue;
+      if (sameLink(current, row.current, row.platform)) continue;
       if (current.type !== 'absent') {
         conflicts.push({ component: 'retired-module-link', name: row.name });
         continue;
       }
-      // Create directly rather than rename over the path: EEXIST preserves an
-      // owner that appears after the absence check, including dangling links.
-      await symlink(row.target, row.path, 'dir');
+      await createModuleLink(row.target, row.path, row.platform);
     } catch {
       let restored = false;
-      try { restored = sameLink(await linkState(row.path), row.current); } catch { /* Preserve unreadable paths and continue rolling back the other links. */ }
+      try { restored = sameLink(await linkState(row.path), row.current, row.platform); } catch { /* Preserve unreadable paths and continue rolling back the other links. */ }
       if (!restored) conflicts.push({ component: 'retired-module-link', name: row.name });
     }
   }
 }
 async function restoreLinks(rows, conflicts) {
   for (const row of [...rows].reverse()) {
-    const current = await linkState(row.path);
-    if (current.type === 'absent' || sameLink(current, row.before)) continue;
-    if (!sameLink(current, { type: 'symlink', target: row.target })) { conflicts.push({ component: 'module-link', name: row.name }); continue; }
-    if (row.before.type === 'absent') await unlink(row.path);
-    else if (row.before.type === 'symlink') {
-      const temporary = `${row.path}.aiyou-${randomUUID()}`;
-      await symlink(row.before.target, temporary, 'dir'); await rename(temporary, row.path);
-    }
+    try {
+      await safeParents(row.path, row.profile, row.platform);
+      const current = await linkState(row.path);
+      if (sameLink(current, row.before, row.platform)) continue;
+      if (current.type === 'absent') {
+        if (row.before.type === 'symlink') await createModuleLink(row.before.target, row.path, row.platform);
+        continue;
+      }
+      if (!sameLink(current, { type: 'symlink', target: row.target }, row.platform)) { conflicts.push({ component: 'module-link', name: row.name }); continue; }
+      await unlink(row.path);
+      if (row.before.type === 'symlink') await createModuleLink(row.before.target, row.path, row.platform);
+    } catch { conflicts.push({ component: 'module-link', name: row.name }); }
   }
 }
 async function withLock(location, operation) {
@@ -264,24 +328,29 @@ async function withLock(location, operation) {
 
 function validateState(p, state) {
   if (!state) return;
-  if (state.schemaVersion !== 1 || state.profile !== p.profile || !/^[a-f0-9]{64}$/.test(state.runtimeDigest) || state.runtimePath !== join(p.enhancerHome, 'runtime', state.runtimeDigest) || state.patch?.file !== join(p.profile, 'cordis.patch.yml') || !Array.isArray(state.links)) throw fail('RECEIPT_INVALID', 'The installation receipt does not match this enhancer/profile');
+  if (state.schemaVersion !== 1 || !samePath(state.profile, p.profile, p.platform) || !/^[a-f0-9]{64}$/.test(state.runtimeDigest) || !samePath(state.runtimePath, join(p.enhancerHome, 'runtime', state.runtimeDigest), p.platform) || !samePath(state.patch?.file, join(p.profile, 'cordis.patch.yml'), p.platform) || !Array.isArray(state.links)) throw fail('RECEIPT_INVALID', 'The installation receipt does not match this enhancer/profile');
   for (const file of [state.patch.restoreBackup, state.patch.rawBackup]) within(p.backupRoot, relative(p.backupRoot, file));
   for (const row of state.links) {
-    if (!/^@local\/[a-z0-9-]+$/.test(row.name) || row.path !== join(p.profile, 'node_modules', row.name) || row.before?.type !== 'absent') throw fail('RECEIPT_INVALID', 'The module receipt is inconsistent');
+    if (!/^@local\/[a-z0-9-]+$/.test(row.name) || !samePath(row.path, join(p.profile, 'node_modules', row.name), p.platform) || row.before?.type !== 'absent') throw fail('RECEIPT_INVALID', 'The module receipt is inconsistent');
     within(state.runtimePath, relative(state.runtimePath, row.target));
   }
 }
 
+export const __testing = Object.freeze({ normalizeWindowsPath, sameLink });
+
 export async function install(options = {}) {
   const p = await paths(options);
+  // Platform and app discovery must fail before even creating the lock directory.
+  const preflight = await runtimeInfo(p.runtime);
+  await probeApplication(p.app, preflight.manifest, options);
   const perform = async () => {
     const runtime = await runtimeInfo(p.runtime);
-    const application = await probeApplication(p.app, runtime.manifest);
+    const application = await probeApplication(p.app, runtime.manifest, options);
     const profileMeta = await json(join(p.profile, 'package.json'));
     if (!Array.isArray(profileMeta?.dsh?.profile?.bundles)) throw fail('PROFILE_FORMAT', 'The selected desktop profile is not initialized; open official Harness once first');
     const state = await json(p.stateFile);
     validateState(p, state);
-    if (state && state.profile !== p.profile) throw fail('PROFILE_CONFLICT', 'This enhancer installation belongs to a different profile');
+    if (state && !samePath(state.profile, p.profile, p.platform)) throw fail('PROFILE_CONFLICT', 'This enhancer installation belongs to a different profile');
     const patchFile = join(p.profile, 'cordis.patch.yml');
     const patchInfo = await metadata(patchFile);
     if (patchInfo && (!patchInfo.isFile() || patchInfo.isSymbolicLink())) throw fail('PATCH_PATH', 'The user patch is not a regular file');
@@ -292,23 +361,23 @@ export async function install(options = {}) {
     for (const module of runtime.manifest.modules) {
       const file = join(p.profile, 'node_modules', module.name);
       const current = await linkState(file);
-      const previous = state?.links?.find(row => row.path === file);
-      if (current.type !== 'absent' && (!previous || !sameLink(current, { type: 'symlink', target: previous.target }))) throw fail('LINK_CONFLICT', 'A module path belongs to another installation; nothing was overwritten');
-      await safeParents(file, p.profile);
-      links.push({ name: module.name, path: file, target: within(runtimePath, module.directory), current, before: previous?.before ?? { type: 'absent' }, profile: p.profile });
+      const previous = state?.links?.find(row => samePath(row.path, file, p.platform));
+      if (current.type !== 'absent' && (!previous || !sameLink(current, { type: 'symlink', target: previous.target }, p.platform))) throw fail('LINK_CONFLICT', 'A module path belongs to another installation; nothing was overwritten');
+      await safeParents(file, p.profile, p.platform);
+      links.push({ name: module.name, path: file, target: within(runtimePath, module.directory), current, before: previous?.before ?? { type: 'absent' }, profile: p.profile, platform: p.platform });
     }
-    const activePaths = new Set(links.map(row => row.path));
+    const activePaths = links.map(row => row.path);
     const retiredLinks = [];
     for (const previous of state?.links ?? []) {
-      if (activePaths.has(previous.path)) continue;
+      if (activePaths.some(file => samePath(file, previous.path, p.platform))) continue;
       const current = await linkState(previous.path);
-      if (current.type !== 'absent' && !sameLink(current, { type: 'symlink', target: previous.target })) throw fail('LINK_CONFLICT', 'A retired module path belongs to another owner; nothing was removed');
-      await safeParents(previous.path, p.profile);
-      retiredLinks.push({ ...previous, current, profile: p.profile });
+      if (current.type !== 'absent' && !sameLink(current, { type: 'symlink', target: previous.target }, p.platform)) throw fail('LINK_CONFLICT', 'A retired module path belongs to another owner; nothing was removed');
+      await safeParents(previous.path, p.profile, p.platform);
+      retiredLinks.push({ ...previous, current, profile: p.profile, platform: p.platform });
     }
     const runtimeUnchanged = Boolean(await metadata(runtimePath)) && hash(JSON.stringify(await inventory(runtimePath))) === runtime.digest;
-    const unchanged = !retiredLinks.length && runtimeUnchanged && state?.status === 'installed' && state.runtimeDigest === runtime.digest && raw && hash(raw) === state.patch.afterHash && links.every(row => sameLink(row.current, { type: 'symlink', target: row.target }));
-    const result = { action: 'install', version: runtime.manifest.version, modules: links.length, removedModules: retiredLinks.filter(row => row.current.type !== 'absent').map(row => row.name), profile: p.profile, enhancerHome: p.enhancerHome, compatible: application.compatible, legacyDisabled: patch.legacyDisabled, needsRestart: !unchanged, refreshRecommended: !unchanged, appTerminated: false };
+    const unchanged = !retiredLinks.length && runtimeUnchanged && state?.status === 'installed' && state.runtimeDigest === runtime.digest && raw && hash(raw) === state.patch.afterHash && links.every(row => sameLink(row.current, { type: 'symlink', target: row.target }, p.platform));
+    const result = { action: 'install', version: runtime.manifest.version, modules: links.length, removedModules: retiredLinks.filter(row => row.current.type !== 'absent').map(row => row.name), profile: p.profile, enhancerHome: p.enhancerHome, platform: application.platform, app: application.app, compatible: application.compatible, legacyDisabled: patch.legacyDisabled, needsRestart: !unchanged, refreshRecommended: !unchanged, appTerminated: false };
     if (options.dryRun || unchanged) return { ...result, dryRun: Boolean(options.dryRun), changed: false, ...(unchanged ? { alreadyInstalled: true } : {}) };
     let restore = patch.restore;
     if (restore === null) {
@@ -327,12 +396,12 @@ export async function install(options = {}) {
       schemaVersion: 1, status: 'installed', transaction, version: runtime.manifest.version,
       profile: p.profile, runtimePath, runtimeDigest: runtime.digest, application,
       patch: { file: patchFile, afterHash: hash(patch.after), managedHash: patch.managedHash, restoreExisted: patch.restoreExisted, restoreHash: hash(restore), restoreBackup, rawBackup, mode: patchInfo?.mode & 0o777 || 0o600 },
-      links: links.map(({ current, profile, ...row }) => row),
+      links: links.map(({ current, profile, platform, ...row }) => row),
     };
     await writeFile(join(backup, 'transaction.json'), `${JSON.stringify(receipt, null, 2)}\n`, { mode: 0o600, flag: 'wx' });
     const stage = join(p.enhancerHome, `.runtime-${transaction}`);
     let patchWritten = false;
-    const removedLinks = [];
+    const removedLinks = [], touchedLinks = [];
     try {
       if (!await metadata(runtimePath)) {
         await cp(p.runtime, stage, { recursive: true, dereference: false });
@@ -340,7 +409,7 @@ export async function install(options = {}) {
         await mkdir(dirname(runtimePath), { recursive: true });
         await rename(stage, runtimePath);
       } else if (hash(JSON.stringify(await inventory(runtimePath))) !== runtime.digest) throw fail('RUNTIME_CHANGED', 'The installed runtime directory was edited; it was preserved');
-      await installLinks(links);
+      await installLinks(links, touchedLinks);
       await removeRetiredLinks(retiredLinks, removedLinks);
       await options.hooks?.beforePatchWrite?.();
       const latest = await optional(patchFile);
@@ -359,7 +428,7 @@ export async function install(options = {}) {
         conflicts.push({ component: 'patch' });
       }
       await restoreRetiredLinks(removedLinks, conflicts);
-      await restoreLinks(links.map(row => ({ ...row, before: row.current })), conflicts);
+      await restoreLinks(touchedLinks.map(row => ({ ...row, before: row.current })), conflicts);
       if (conflicts.length) throw fail('ROLLBACK_CONFLICT', 'Installation stopped; later module edits were preserved. Inspect installer status before retrying');
       throw error;
     } finally { await rm(stage, { recursive: true, force: true }); }
@@ -373,7 +442,7 @@ export async function uninstall(options = {}) {
     const state = await json(p.stateFile);
     validateState(p, state);
     if (!state) return { action: 'uninstall', installed: false, changed: false, needsRestart: false, appTerminated: false };
-    if (state.profile !== p.profile) throw fail('PROFILE_CONFLICT', 'This receipt belongs to a different desktop profile');
+    if (!samePath(state.profile, p.profile, p.platform)) throw fail('PROFILE_CONFLICT', 'This receipt belongs to a different desktop profile');
     const raw = await optional(state.patch.file), text = raw?.toString('utf8') ?? '';
     const block = managed(text);
     if (block && hash(block.text) !== state.patch.managedHash) return { action: 'uninstall', installed: true, changed: false, conflicts: ['managed-patch-edited'], needsRestart: false, appTerminated: false };
@@ -396,7 +465,7 @@ export async function uninstall(options = {}) {
       changed = true;
     }
     const conflicts = [];
-    await restoreLinks(state.links, conflicts);
+    await restoreLinks(state.links.map(row => ({ ...row, profile: p.profile, platform: p.platform })), conflicts);
     if (!conflicts.length) {
       if (await metadata(state.runtimePath)) {
         if (hash(JSON.stringify(await inventory(state.runtimePath))) === state.runtimeDigest) await rm(state.runtimePath, { recursive: true });
@@ -416,7 +485,7 @@ export async function status(options = {}) {
   if (!state) return { action: 'status', installed: false, profile: p.profile, needsRestart: false };
   const raw = await optional(state.patch.file), block = raw ? managed(raw.toString()) : null;
   const runtimeUnchanged = Boolean(await metadata(state.runtimePath)) && hash(JSON.stringify(await inventory(state.runtimePath))) === state.runtimeDigest;
-  const linked = await Promise.all(state.links.map(async row => ({ name: row.name, matches: sameLink(await linkState(row.path), { type: 'symlink', target: row.target }) })));
+  const linked = await Promise.all(state.links.map(async row => ({ name: row.name, matches: sameLink(await linkState(row.path), { type: 'symlink', target: row.target }, p.platform) })));
   return { action: 'status', installed: state.status === 'installed' && Boolean(block) && hash(block.text) === state.patch.managedHash && linked.every(row => row.matches), version: state.version, profile: state.profile, enhancerHome: p.enhancerHome, runtimeDigest: state.runtimeDigest, runtimeUnchanged, patchUnchanged: raw ? hash(raw) === state.patch.afterHash : false, managedPatchUnchanged: Boolean(block) && hash(block.text) === state.patch.managedHash, modules: linked.length, moduleLinks: linked, needsRestart: false };
 }
 

@@ -2,7 +2,9 @@
 
 [返回首页](../README.md) · [主题实现与媒体接口](../aiyou/modules/theme/BACKGROUNDS.md)
 
-![主题与动效配置页](screenshots/theme-settings.jpg)
+![macOS v0.4.0 主题与动效配置页](screenshots/theme-settings.jpg)
+
+配置和素材为两平台共用。Windows v0.5.0 使用该平台官方组件的语义 CSS 映射适配主题，保留 Windows 原生 shell；上图是 macOS 实机，不是 Windows 宿主截图。映射核对和安装器 CI 不代替 Windows 动态背景及交互实测，见[验证范围](releases/v0.5.0.md#验证范围)。
 
 ## 配置方式
 

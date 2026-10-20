@@ -22,9 +22,10 @@ import { guardContext } from '../../runtime.mjs';
  *   · failures are explicit; the code does not silently fall back to the whole
  *     project directory and then claim the rule worked.
  */
-import { mkdir, readFile, rename, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rename, stat, lstat, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
+import { absoluteDirectory, sameDirectory, directChildOf, sessionDirectory } from '../../lib/platform-paths.mjs';
 
 import { MARKER, conversationFolderName, renderConversationFolderContext } from './folders.mjs';
 
@@ -118,9 +119,8 @@ export function titleOf(rows) {
   return '';
 }
 
-export function cwdOf(identity) {
-  const cwd = identity?.cwd;
-  return typeof cwd === 'string' && cwd.startsWith('/') ? cwd : '';
+export function cwdOf(identity, platform = process.platform) {
+  return absoluteDirectory(identity?.cwd, platform);
 }
 
 async function pathInfo(file) {
@@ -134,11 +134,11 @@ async function pathInfo(file) {
 
 /** A directory is OURS only if it carries a marker naming exactly this thread. */
 export async function ownedBy(directory, sessionId) {
-  const info = await pathInfo(directory);
-  if (!info?.isDirectory()) return false;
+  const info = await lstat(directory).catch(error => { if (error.code === 'ENOENT') return null; throw error; });
+  if (!info?.isDirectory() || info.isSymbolicLink()) return false;
   const marker = join(directory, MARKER);
-  const markerInfo = await pathInfo(marker);
-  if (!markerInfo?.isFile() || markerInfo.size > 4096) return false;
+  const markerInfo = await lstat(marker).catch(error => { if (error.code === 'ENOENT') return null; throw error; });
+  if (!markerInfo?.isFile() || markerInfo.isSymbolicLink() || markerInfo.size > 4096) return false;
   try {
     const value = JSON.parse(await readFile(marker, 'utf8'));
     return value?.schemaVersion === 1 && value.threadId === sessionId;
@@ -153,18 +153,27 @@ export async function ownedBy(directory, sessionId) {
  * is ours, so a same-named folder belonging to something else is never adopted.
  */
 export async function ensureFolder({ sessionId, workspace, title }) {
-  if (!sessionId) throw new Error('sessionId required');
-  if (!workspace || !resolve(workspace).startsWith('/')) throw new Error('an absolute workspace path is required');
+  workspace = absoluteDirectory(workspace);
+  if (!workspace) throw new Error('an absolute workspace path is required');
+  // Validate the id before any projection/store path can use it.
+  sessionDirectory(workspace, sessionId);
   const store = await readStore();
-  const existing = store[sessionId] ?? null;
+  const existing = Object.hasOwn(store, sessionId) ? store[sessionId] : null;
+  if (existing && (!sameDirectory(existing.workspace, workspace) || !directChildOf(workspace, existing.path))) throw new Error('the existing output folder belongs to a different workspace');
   const desiredName = conversationFolderName(title, sessionId);
   const desiredPath = join(workspace, desiredName);
+  if (!directChildOf(workspace, desiredPath)) throw new Error('the output folder escapes its workspace');
+  const createOwnedFolder = async () => {
+    const info = await lstat(desiredPath).catch(error => { if (error.code === 'ENOENT') return null; throw error; });
+    if (info && !(await ownedBy(desiredPath, sessionId))) throw new Error('the output folder exists and is not owned by this conversation');
+    await mkdir(desiredPath, { recursive: true });
+  };
 
   let entry = existing;
   if (!existing) {
-    await mkdir(desiredPath, { recursive: true });
+    await createOwnedFolder();
     entry = { threadId: sessionId, path: desiredPath, workspace, title: title ?? '', createdAt: Date.now() };
-  } else if (existing.path !== desiredPath) {
+  } else if (!sameDirectory(existing.path, desiredPath)) {
     const previousExists = await pathInfo(existing.path);
     if (previousExists && await ownedBy(existing.path, sessionId)) {
       // Only rename when the target is free; otherwise keep the old path rather
@@ -176,16 +185,17 @@ export async function ensureFolder({ sessionId, workspace, title }) {
         entry = { ...existing, title: title ?? '', collision: desiredPath };
       }
     } else if (!previousExists) {
-      await mkdir(desiredPath, { recursive: true });
+      await createOwnedFolder();
       entry = { ...existing, path: desiredPath, title: title ?? '' };
     } else {
       // A directory exists but is not provably ours: do not touch it.
-      entry = { ...existing, title: title ?? '', unowned: existing.path };
+      throw new Error('the bound output folder is no longer owned by this conversation');
     }
   } else {
     entry = { ...existing, title: title ?? '' };
   }
 
+  if (!(await ownedBy(entry.path, sessionId)) && existing && await pathInfo(existing.path)) throw new Error('the bound output folder ownership changed');
   await mkdir(entry.path, { recursive: true });
   await writeFile(join(entry.path, MARKER), `${JSON.stringify({ schemaVersion: 1, threadId: sessionId, boundAt: entry.createdAt ?? Date.now() }, null, 2)}\n`);
   store[sessionId] = entry;
@@ -200,13 +210,15 @@ export async function ensureFolder({ sessionId, workspace, title }) {
 const resolutionCache = new Map();
 
 export async function resolveForSession(sessionId) {
+  sessionDirectory(PROJ_DIR, sessionId);
   const cached = resolutionCache.get(sessionId);
   if (cached && Date.now() - cached.at < 15000) return cached.entry;
   const projection = await readProjection(sessionId);
   if (!projection) return null;
   const { rows, identity } = projection;
   const title = titleOf(rows);
-  const workspace = cwdOf(identity) || process.cwd();
+  const workspace = cwdOf(identity);
+  if (!workspace) throw new Error('the session has no absolute workspace path');
   const entry = await ensureFolder({ sessionId, workspace, title });
   resolutionCache.set(sessionId, { at: Date.now(), entry });
   return entry;

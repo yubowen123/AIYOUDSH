@@ -532,6 +532,24 @@
       "scope": "pinned-offline-host-test-runtime"
     },
     {
+      "name": "node-addon-require-builtin-win32-x64-msvc",
+      "version": "0.1.9",
+      "license": "MIT",
+      "directory": "test/runtime/node_modules/node-addon-require-builtin-win32-x64-msvc",
+      "upstream": {
+        "type": "git",
+        "url": "git+https://github.com/deepseek-ai/dsh-node-addon-require-builtin.git",
+        "directory": "packages/require-builtin/win32-x64-msvc"
+      },
+      "notices": [
+        {
+          "file": "test/runtime/node_modules/node-addon-require-builtin-win32-x64-msvc/LICENSE",
+          "sha256": "75bd0a6d6b9f9f0a6c792ca89832360b19749ebe16af0222e34387f262baa95e"
+        }
+      ],
+      "scope": "pinned-offline-host-test-runtime"
+    },
+    {
       "name": "on-headers",
       "version": "1.1.0",
       "license": "MIT",

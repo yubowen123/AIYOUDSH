@@ -76,7 +76,10 @@ workspace module. It includes DeepSeek host libraries and the supporting npm
 libraries listed in
 [`THIRD_PARTY_DEPENDENCIES.json`](THIRD_PARTY_DEPENDENCIES.json). Each dependency's
 original license is retained in its package directory. Licenses include MIT,
-ISC and Python-2.0; the inventory links to the exact files.
+ISC and Python-2.0; the inventory links to the exact files. The pinned native
+binding fixtures include both `node-addon-require-builtin-darwin-arm64` and
+`node-addon-require-builtin-win32-x64-msvc` under their original MIT notices;
+the matching operating system and architecture are required to execute them.
 
 The installer's YAML dependency is
 [`yaml`](addon/vendor/yaml/package.json), under the original

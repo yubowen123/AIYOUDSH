@@ -1,6 +1,6 @@
 {
   "name": "aiyoudsh",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "description": "AIYOUDSH removable UI and extension enhancement for the official DeepSeek Harness application.",
@@ -8,7 +8,8 @@
     "build": "node scripts/build-addon.mjs",
     "verify": "node scripts/verify-addon.mjs",
     "test": "node --test test/*.test.mjs packages/dsh-client-ui-workspace/test/*.test.mjs addon/test/*.test.mjs",
-    "package": "node scripts/package-addon.mjs"
+    "package": "node scripts/package-addon.mjs",
+    "package:windows": "node scripts/package-windows.mjs"
   },
   "engines": {
     "node": ">=24"
@@ -25,6 +26,7 @@
   "keywords": [
     "deepseek-harness",
     "macos",
+    "windows",
     "desktop",
     "themes",
     "ai-workspace",

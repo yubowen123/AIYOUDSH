@@ -2,6 +2,23 @@
 
 版本描述按可交付行为记录；完整兼容要求见[安装指南](docs/installation.md)。
 
+## v0.5.0
+
+### 新增
+
+- Windows 10/11 x64 独立安装包与 C#/WinForms 中文安装器，使用系统 .NET Framework 4.8 编译器。
+- 官方安装目录探测与选择；优先 Node.js 24，支持检测官方内嵌 Node 24.21.0 的 RunAsNode 回退。
+- 当前用户目录 junction 接入，无需管理员权限；共享安装器保留升级、卸载和后续编辑保护。
+- 独立 Windows 官方 ASAR/组件基线，以及 335 个语义 CSS class 映射和主题适配。
+- `win32-x64` / `darwin-arm64` 目标构建、Windows 打包入口与双平台发布校验文件。
+
+### 兼容与验证
+
+- 两平台精确适配官方 `0.2.1-rc.2 / 332895e`；支持 Windows 10/11 x64、macOS Apple Silicon arm64。
+- 继续使用 15 个运行模块；Mac v0.4.0 安装目录与 schema 1 回执保持兼容。
+- Windows CI 编译、自测、隔离 junction 与宿主界面验收分开记录，不将安装器截图当作宿主实测。
+- [v0.5.0 完整说明](docs/releases/v0.5.0.md)；[已发布 v0.4.0](https://github.com/yubowen123/AIYOUDSH/releases/tag/v0.4.0) 保留。
+
 ## v0.4.0
 
 ### 新增
