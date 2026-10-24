@@ -615,7 +615,17 @@ function renderLibrarySearchStatus() {
 
 function createAssetCard(asset) {
   const renderer = { text: renderTextCard, image: renderImageCard, audio: renderAudioCard, video: renderVideoCard }[asset.kind];
-  return renderer?.(asset);
+  const card=renderer?.(asset);
+  if(card){
+    card.draggable=true;
+    card.addEventListener('dragstart',event=>{
+      const current=assetById(card.dataset.assetId)||asset;
+      if(!event.dataTransfer)return;
+      event.dataTransfer.effectAllowed='copy';
+      event.dataTransfer.setData('application/x-aiyou-dsh-asset',JSON.stringify({assetId:current.canonicalAssetId||current.id}));
+    });
+  }
+  return card;
 }
 
 function disposeAssetCard(card) {

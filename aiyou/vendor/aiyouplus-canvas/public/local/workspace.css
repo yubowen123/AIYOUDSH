@@ -1,0 +1,87 @@
+#aiyouplus-local{position:fixed;inset:36px 8px 8px 246px;z-index:110;background:#111713;color:#eef3ea;border:1px solid #354036;border-radius:20px;overflow:auto;font:14px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;color-scheme:dark}
+#aiyouplus-local[hidden]{display:none!important}
+#aiyouplus-local *{box-sizing:border-box}
+#aiyouplus-local .lp-head{position:sticky;top:0;z-index:2;padding:24px 30px 0;background:#111713f5;backdrop-filter:blur(14px);border-bottom:1px solid #354036}
+#aiyouplus-local .lp-eyebrow{color:#c0f66b;font-size:12px;letter-spacing:2px}
+#aiyouplus-local h1{font-size:30px;letter-spacing:-1px;margin:6px 0}
+#aiyouplus-local h2{font-size:20px;margin:0 0 8px}
+#aiyouplus-local p{margin:6px 0;color:#abb7a9}
+#aiyouplus-local .lp-tabs{display:flex;gap:6px;margin-top:20px;flex-wrap:wrap}
+#aiyouplus-local button{border:1px solid #3c483d;background:#202a22;color:#ecf2e8;padding:9px 15px;border-radius:9px;font:inherit;cursor:pointer;transition:.15s}
+#aiyouplus-local button:hover{border-color:#c0f66b;background:#2e3b2c}
+#aiyouplus-local button:disabled{opacity:.45;cursor:wait}
+#aiyouplus-local .lp-primary,#aiyouplus-local button[aria-selected=true]{background:#c0f66b;color:#152010;border-color:#c0f66b}
+#aiyouplus-local .lp-tabs button{border-radius:9px 9px 0 0;border-bottom:0;padding:10px 18px}
+#aiyouplus-local .lp-body{padding:28px 30px}
+#aiyouplus-local .lp-grid{display:grid;grid-template-columns:minmax(260px,360px) minmax(300px,1fr);gap:20px}
+#aiyouplus-local .lp-card{border:1px solid #354036;border-radius:14px;padding:20px;background:#18201a;margin-bottom:18px}
+#aiyouplus-local .lp-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0}
+#aiyouplus-local label{display:block;font-size:12px;color:#bec9ba;margin:12px 0 5px}
+#aiyouplus-local input,#aiyouplus-local select,#aiyouplus-local textarea{width:100%;padding:10px 12px;border:1px solid #425041;background:#101611;color:#f0f6eb;border-radius:8px;font:inherit;outline:none}
+#aiyouplus-local input:focus,#aiyouplus-local textarea:focus,#aiyouplus-local select:focus{border-color:#c0f66b}
+#aiyouplus-local textarea{min-height:105px;resize:vertical}
+#aiyouplus-local .lp-fields{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+#aiyouplus-local .lp-assets{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:12px}
+#aiyouplus-local .lp-asset{border:1px solid #3c483d;border-radius:11px;overflow:hidden;background:#101611}
+#aiyouplus-local .lp-asset img,#aiyouplus-local .lp-asset video{width:100%;height:130px;object-fit:contain;background:#0b100d;display:block}
+#aiyouplus-local .lp-asset audio{width:100%;height:70px}
+#aiyouplus-local .lp-asset-meta{padding:10px;overflow:hidden}
+#aiyouplus-local .lp-asset-meta strong{font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#aiyouplus-local .lp-asset-meta button{padding:5px 8px;font-size:12px}
+#aiyouplus-local .lp-muted{color:#92a18e;font-size:12px;overflow-wrap:anywhere}
+#aiyouplus-local .lp-result{white-space:pre-wrap;overflow-wrap:anywhere;border-left:3px solid #c0f66b;padding:12px 14px;background:#0e150e;border-radius:0 8px 8px 0;margin-top:16px;max-height:300px;overflow:auto}
+#aiyouplus-local .lp-error{border-left-color:#ed9e8e;color:#ffc7bc}
+#aiyouplus-local .lp-empty{padding:36px;text-align:center;color:#9cac97;border:1px dashed #45513e;border-radius:12px}
+#aiyouplus-local .lp-jobs{display:grid;gap:10px}
+#aiyouplus-local .lp-job{padding:14px;border:1px solid #3c483d;border-radius:10px}
+#aiyouplus-local .lp-status{display:inline-block;border:1px solid #52634a;border-radius:20px;padding:2px 9px;color:#c0f66b;font-size:12px}
+#aiyouplus-local .lp-progress{height:4px;background:#323e2e;margin:10px 0;border-radius:5px;overflow:hidden}
+#aiyouplus-local .lp-progress span{display:block;height:100%;background:#c0f66b}
+#aiyouplus-local .lp-world{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:15px}
+#aiyouplus-local .lp-world-viewport{position:relative;min-height:430px;background:#0b100e;border-radius:12px;overflow:hidden}
+#aiyouplus-local .lp-world-viewport canvas{width:100%;height:100%;display:block}
+#aiyouplus-local .lp-object-list{max-height:180px;overflow:auto}
+#aiyouplus-local .lp-object-list button{width:100%;text-align:left;margin:3px 0}
+#aiyouplus-local .lp-color{height:40px;padding:2px}
+#aiyouplus-local .lp-prompt{min-height:150px}
+#aiyouplus-local .lp-ref{padding:8px 10px;border:1px solid #43523b;border-radius:8px;display:inline-flex;gap:10px;align-items:center}
+#aiyouplus-local .lp-triple{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+@media(max-width:1100px){#aiyouplus-local{left:220px}#aiyouplus-local .lp-grid,#aiyouplus-local .lp-world{grid-template-columns:1fr}#aiyouplus-local .lp-body{padding:20px}}
+@media(max-width:750px){#aiyouplus-local{left:8px}#aiyouplus-local .lp-head{padding:18px 18px 0}#aiyouplus-local h1{font-size:24px}}
+
+#aiyouplus-local input[type=checkbox]{width:auto;display:inline-block;vertical-align:middle;margin-right:6px}
+#aiyouplus-local [data-recipe-node]{display:grid;grid-template-columns:minmax(0,1fr) 130px;gap:10px;align-items:center}
+#aiyouplus-local [data-recipe-node] span{overflow-wrap:anywhere}
+
+#aiyouplus-local .lp-model-layout{display:grid;grid-template-columns:minmax(250px,310px) minmax(360px,1fr);gap:20px;align-items:start}
+#aiyouplus-local .lp-services{position:sticky;top:162px;max-height:calc(100vh - 220px);overflow:auto}
+#aiyouplus-local .lp-service-item{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;padding:12px;text-align:left;margin:8px 0;background:#101611}
+#aiyouplus-local .lp-service-item[aria-pressed=true]{border-color:#c0f66b;background:#23321f}
+#aiyouplus-local .lp-service-item>span:first-child{min-width:0}
+#aiyouplus-local .lp-service-item strong{display:block;font-size:14px}
+#aiyouplus-local small{display:block;font-size:11px;color:#92a18e;overflow-wrap:anywhere;margin-top:3px}
+#aiyouplus-local .lp-service-item .lp-status{flex-shrink:0;padding:2px 7px}
+#aiyouplus-local h3{font-size:15px;margin:16px 0 8px}
+#aiyouplus-local hr{border:0;border-top:1px solid #354036;margin:20px 0}
+#aiyouplus-local details{border-top:1px solid #354036;margin-top:16px;padding-top:12px}
+#aiyouplus-local summary{cursor:pointer;color:#c6d4bd;padding:5px 0;font-weight:500}
+#aiyouplus-local details[open]>summary{color:#c0f66b;margin-bottom:8px}
+#aiyouplus-local a{color:#c0f66b;overflow-wrap:anywhere;text-decoration:underline;text-underline-offset:3px}
+#aiyouplus-local .lp-code-input{font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;min-height:180px;tab-size:2}
+#aiyouplus-local .lp-reference-input{min-height:70px}
+#aiyouplus-local .lp-table-scroll{overflow:auto;margin-top:16px;border:1px solid #354036;border-radius:9px}
+#aiyouplus-local .lp-model-table{width:100%;border-collapse:collapse;font-size:12px;text-align:left}
+#aiyouplus-local .lp-model-table th{font-weight:500;color:#a7b8a0;background:#101611}
+#aiyouplus-local .lp-model-table td,#aiyouplus-local .lp-model-table th{padding:9px 10px;border-bottom:1px solid #354036;vertical-align:top;overflow-wrap:anywhere}
+#aiyouplus-local .lp-model-table tr:last-child td{border-bottom:0}
+#aiyouplus-local .lp-notice{padding:12px;border:1px solid #7b7449;border-radius:9px;background:#29291d;margin:12px 0}
+#aiyouplus-local .lp-notice p{color:#d3ccaa}
+#aiyouplus-local .lp-model-history-item{border-top:1px solid #354036;padding:12px 0}
+#aiyouplus-local .lp-model-history-item .lp-status{margin-left:10px}
+#aiyouplus-local input[readonly]{color:#bac6b4;background:#1c261d}
+#aiyouplus-local input[type=password]{font-family:ui-monospace,monospace}
+#aiyouplus-local #lp-discovery-progress{min-height:22px;margin-top:12px}
+#aiyouplus-local #lp-discovery-preview:empty{display:none}
+#aiyouplus-local #lp-service-editor input[type=checkbox]{margin-top:16px}
+#aiyouplus-local #lp-service-editor [hidden]{display:none!important}
+@media(max-width:1150px){#aiyouplus-local .lp-model-layout{grid-template-columns:1fr}#aiyouplus-local .lp-services{position:static;max-height:none}#aiyouplus-local #lp-service-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0 10px}}

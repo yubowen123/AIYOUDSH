@@ -107,10 +107,11 @@ export function normalizeDeduplication(raw = {}, { defaultQuarantinePath = "" } 
 }
 
 export class ExactDuplicateCleaner {
-  constructor({ ledgerPath }) {
+  constructor({ ledgerPath, guardMutation = (_filePath, operation) => operation() }) {
     this.ledgerPath = path.resolve(ledgerPath);
     this.pending = new Map();
     this.queue = Promise.resolve();
+    this.guardMutation = guardMutation;
   }
 
   async readLedger() {
@@ -157,6 +158,10 @@ export class ExactDuplicateCleaner {
   }
 
   async moveToQuarantine(filePath, keeperPath, project, config, contentHash) {
+    return this.guardMutation(filePath, () => this.moveToQuarantineUnprotected(filePath, keeperPath, project, config, contentHash));
+  }
+
+  async moveToQuarantineUnprotected(filePath, keeperPath, project, config, contentHash) {
     const projectRoot = path.resolve(project?.path || path.dirname(filePath));
     const relative = isInside(projectRoot, filePath) ? path.relative(projectRoot, filePath) : path.basename(filePath);
     const safeRelative = relative.split(path.sep).map((segment) => cleanSegment(segment)).join(path.sep);
@@ -222,7 +227,8 @@ export class ExactDuplicateCleaner {
     for (const duplicate of matches.slice(1)) {
       if (duplicate.protected || !await exists(duplicate.path) || await hasGenerationSidecar(duplicate.path)) continue;
       if (await hashFile(duplicate.path) !== candidateHash) continue;
-      quarantined.push(await this.moveToQuarantine(duplicate.path, keeper.path, project, config, candidateHash));
+      const moved=await this.moveToQuarantine(duplicate.path, keeper.path, project, config, candidateHash);
+      if(moved)quarantined.push(moved);
     }
     if (quarantined.length) {
       const ledger = await this.readLedger();

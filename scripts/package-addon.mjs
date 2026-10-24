@@ -6,7 +6,10 @@ import { fileURLToPath } from 'node:url';
 import { prepareDistributionDocuments, rewriteDistributionLinks } from './release-documents.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const delivery = resolve(root, '..');
+const packageArgs=process.argv.slice(2);
+if(packageArgs.length && (packageArgs.length!==2 || packageArgs[0]!=='--out'))throw new Error('Use --out DIRECTORY');
+const delivery=packageArgs.length?resolve(packageArgs[1]):resolve(root,'..');
+await mkdir(delivery,{recursive:true});
 const { version } = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
 if (process.platform !== 'darwin' || process.arch !== 'arm64') throw new Error('The macOS installer package requires macOS arm64; use package-windows.mjs on Windows x64.');
 const manifest = JSON.parse(await readFile(join(root, 'dist/addon/runtime/manifest.json'), 'utf8'));

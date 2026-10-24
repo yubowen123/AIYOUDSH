@@ -2,6 +2,8 @@ import {cp,mkdir,readFile,writeFile} from 'node:fs/promises';
 import {dirname,join,resolve,sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
 const SOURCE=dirname(fileURLToPath(import.meta.url));
+// Rebuild recovered shared-scope canvas from its maintained source on every build.
+await import('./vendor/aiyouplus-canvas/scripts/build.mjs');
 export async function buildAiyou(appDir){
   const app=resolve(appDir);const dsh=join(app,'dsh');const domain=join(dsh,'aiyou');
   await mkdir(domain,{recursive:true});

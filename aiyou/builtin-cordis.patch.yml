@@ -40,3 +40,12 @@
 - insert:
     id: "aiyou-enhancer-session-transcript"
     name: "@local/aiyou-enhancer-session-transcript"
+- insert:
+    id: "aiyou-enhancer-canvas"
+    name: "@local/aiyou-enhancer-canvas"
+- insert:
+    id: "aiyou-enhancer-media-tools"
+    name: "@local/aiyou-enhancer-media-tools"
+- insert:
+    id: "aiyou-enhancer-media-models"
+    name: "@local/aiyou-enhancer-media-models"

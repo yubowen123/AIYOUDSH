@@ -120,6 +120,65 @@ test('edited managed block is never overwritten or partially disconnected', asyn
   await assert.rejects(install(options), { code: 'PATCH_CONFLICT' });
 }));
 
+async function nativeSettingsRewrite(options) {
+  const file=join(options.profile,'cordis.patch.yml'),doc=YAML.parseDocument(await readFile(file,'utf8'));
+  doc.add({id:'agent-default-model',name:'@deepseek-ai/dsh-agent',config:{model:'fixture-model',preferences:{reasoning:'high'}}});
+  doc.add({id:'ui-settings-account',name:'@deepseek-ai/dsh-client-ui-settings-account',config:{welcomeCompleted:true}});
+  await writeFile(file,doc.toString({lineWidth:0}));
+  return file;
+}
+
+test('native settings rewrite inside markers upgrades a legacy receipt and CLI uninstall preserves those settings',async()=>fixture(async({options,appHash})=>{
+  await install(options);
+  const stateFile=join(options.enhancerHome,'install-state.json'),oldState=JSON.parse(await readFile(stateFile));delete oldState.patch.owned;
+  await writeFile(stateFile,JSON.stringify(oldState));
+  const file=await nativeSettingsRewrite(options),rewritten=await readFile(file,'utf8');
+  assert(rewritten.indexOf('id: agent-default-model')<rewritten.indexOf('# <<< AIYOU HARNESS'));
+  const current=await status(options);assert.equal(current.installed,true);assert.equal(current.managedPatchUnchanged,true);assert.equal(current.patchUnchanged,false);
+  const next=JSON.parse(await readFile(join(options.runtime,'manifest.json')));next.version='0.2.0';await writeFile(join(options.runtime,'manifest.json'),JSON.stringify(next));
+  const flags=Object.entries({'--runtime':options.runtime,'--profile':options.profile,'--enhancer-home':options.enhancerHome,'--dsh-home':options.dshHome,'--app':options.app}).flat();
+  const invoke=action=>JSON.parse(execFileSync(process.execPath,[join(root,'addon/installer.mjs'),action,...flags],{encoding:'utf8'}));
+  assert.equal(invoke('install').version,'0.2.0');
+  const upgraded=JSON.parse(await readFile(stateFile));assert.equal(upgraded.patch.owned.schemaVersion,1);assert.match(upgraded.patch.owned.hash,/^[a-f0-9]{64}$/);
+  // Repeating the official serializer on the new schema must remain safe too.
+  const doc=YAML.parseDocument(await readFile(file,'utf8'));doc.add({id:'ui-settings',config:{theme:'fixture-dark'}});await writeFile(file,doc.toString({lineWidth:0}));
+  assert.equal(invoke('status').installed,true);assert.equal(invoke('uninstall').installed,false);
+  const restored=await readFile(file,'utf8'),rows=YAML.parseDocument(restored).toJS();
+  assert.equal(rows.find(row=>row.id==='agent-default-model').config.model,'fixture-model');assert.equal(rows.find(row=>row.id==='ui-settings-account').config.welcomeCompleted,true);assert.equal(rows.find(row=>row.id==='ui-settings').config.theme,'fixture-dark');
+  assert.equal(rows.find(row=>row.insert)?.insert[0].id,'old-addon');assert.match(restored,/!!js/);assert.match(restored,/user trailing comment/);assert.doesNotMatch(restored,/AIYOU HARNESS ENHANCER MANAGED|id: ui-sidebar|@local\/aiyou-native/);
+  assert.equal(hash(await readFile(archivePath(options.app))),appHash);assert.equal(await readFile(join(options.profile,'credentials.json'),'utf8'),'fixture-private-file\n');
+}));
+
+test('direct uninstall after native YAML settings rewrite preserves every unrelated row and comment',async()=>fixture(async({options})=>{
+  await install(options);const file=await nativeSettingsRewrite(options);const result=await uninstall(options);assert.equal(result.installed,false);
+  const restored=await readFile(file,'utf8');assert.match(restored,/agent-default-model/);assert.match(restored,/ui-settings-account/);assert.match(restored,/Preserve this comment/);assert.match(restored,/user trailing comment/);assert.doesNotMatch(restored,/AIYOU HARNESS ENHANCER MANAGED/);
+}));
+
+test('recovered unrelated YAML aliases and tagged settings are preserved as exact inert bytes',async()=>fixture(async({options})=>{
+  await install(options);const file=await nativeSettingsRewrite(options);
+  const userRows='# independent user settings\n- id: user-setting-defaults\n  config: &user_defaults\n    enabled: false\n- id: user-setting-alias\n  config: *user_defaults\n- id: user-inert-expression\n  config: !!js "process.env.FIXTURE_ONLY"\n';
+  await writeFile(file,(await readFile(file,'utf8')).replace('# <<< AIYOU HARNESS',userRows+'# <<< AIYOU HARNESS'));
+  assert.equal((await uninstall(options)).installed,false);assert((await readFile(file,'utf8')).includes(userRows));
+}));
+
+for(const altered of ['prior-runtime','owned-receipt'])test(`settings recovery refuses unverifiable ${altered}`,async()=>fixture(async({options})=>{
+  await install(options);const file=await nativeSettingsRewrite(options),stateFile=join(options.enhancerHome,'install-state.json'),receipt=JSON.parse(await readFile(stateFile));
+  if(altered==='prior-runtime')await writeFile(join(receipt.runtimePath,'modules/aiyou-native-sidebar/index.js'),'export const modified = true;\n');
+  else{receipt.patch.owned={schemaVersion:1,hash:'0'.repeat(64),rowHashes:[]};await writeFile(stateFile,JSON.stringify(receipt));}
+  const before=await readFile(file);assert.equal((await status(options)).installed,false);await assert.rejects(install(options),{code:altered==='prior-runtime'?'RUNTIME_CHANGED':'PATCH_CONFLICT'});assert.deepEqual((await uninstall(options)).conflicts,['managed-patch-edited']);assert.deepEqual(await readFile(file),before);
+}));
+
+for(const alteration of ['disabled-value','module-name','duplicate-owned-row','tagged-owned-value'])test(`settings recovery still refuses ${alteration}`,async()=>fixture(async({options})=>{
+  await install(options);const file=await nativeSettingsRewrite(options);let edited=await readFile(file,'utf8');
+  if(alteration==='disabled-value')edited=edited.replace('id: ui-sidebar\n  disabled: true','id: ui-sidebar\n  disabled: false');
+  if(alteration==='module-name')edited=edited.replace('name: "@local/aiyou-native-sidebar"','name: "@local/user-replacement"');
+  if(alteration==='duplicate-owned-row')edited=edited.replace('# <<< AIYOU HARNESS','- id: ui-sidebar\n  disabled: true\n# <<< AIYOU HARNESS');
+  if(alteration==='tagged-owned-value')edited=edited.replace('id: ui-sidebar\n  disabled: true','id: ui-sidebar\n  disabled: !!js "true"');
+  await writeFile(file,edited);const before=await readFile(file),receipt=await readFile(join(options.enhancerHome,'install-state.json'));
+  assert.equal((await status(options)).installed,false);await assert.rejects(install(options),{code:'PATCH_CONFLICT'});assert.deepEqual((await uninstall(options)).conflicts,['managed-patch-edited']);
+  assert.deepEqual(await readFile(file),before);assert.deepEqual(await readFile(join(options.enhancerHome,'install-state.json')),receipt);assert((await lstat(join(options.profile,'node_modules/@local/aiyou-native-sidebar'))).isSymbolicLink());
+}));
+
 test('upgrade retains independent later edits and uninstalls without reverting them', async () => fixture(async ({ options }) => {
   await install(options);
   const file = join(options.profile, 'cordis.patch.yml');

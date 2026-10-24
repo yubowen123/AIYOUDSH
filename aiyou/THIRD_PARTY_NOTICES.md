@@ -31,3 +31,9 @@ The complete dependency and theme/media scope notices for this public distributi
 recorded in [`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md). Original
 licenses for the prebuilt web dependencies are retained in
 [`vendor/codex-taskboard/third-party-licenses/`](vendor/codex-taskboard/third-party-licenses/).
+
+## AIYOUPLUS canvas and local media engines
+
+This integration selectively ports recovered AIYOUPLUS 1.3.1 canvas source and local engines. Source identity, exact provenance and adaptation boundaries are retained in `vendor/aiyouplus-canvas/provenance.json` and its README. This does not change the ownership or media rights of the source application. No account credentials, runtime, user profile or model weights are bundled.
+
+The macOS arm64 media tooling includes FFmpeg 8.1 and its linked codecs. Their original GPL/LGPL and other notices, build configuration, and component licenses are retained in `vendor/media-tools/darwin-arm64/licenses/`. These binary components are not relicensed under the root MIT license. Their declared minimum macOS version is 26.0; no Intel or Windows execution claim is made for these binaries.

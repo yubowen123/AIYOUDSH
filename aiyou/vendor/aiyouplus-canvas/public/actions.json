@@ -1,0 +1,29 @@
+{
+  "schema": "dsh-canvas-actions.v1",
+  "source": "Recovered renderer-020 KDi/LDi/VLi; all examples undergo actual current-capability validation",
+  "envelope": {"requestId":"unique-stable-id","projectId":"DSH-project-id","expectedRevision":1,"action":"create_node","payload":{}},
+  "supportedActions": ["snapshot","flush_save","import_asset","create_node","update_node","delete_node","connect_nodes","connect_multi_refs","select_node","execute_node","run_generation","undo","redo","write_text","batch_actions","create_image_series","gen_image","cleanup_orphan_nodes"],
+  "unsupportedActions": ["disconnect_nodes","export"],
+  "modelPolicy": "Model IDs must be exact enabled snapshot.visibleModels IDs of matching kind. Host chat uses dsh-current through its published native ID; image/video/audio/music require configured media service. Never invent a default vendor model or a Key.",
+  "nodeTypes": ["text-node","input-image","preview","gen-image","gen-video","gen-speech","gen-music"],
+  "examples": [
+    {"action":"create_node","payload":{"type":"text-node","nodeName":"脚本文本","x":80,"y":80,"settings":{"text":"这里是待编辑文本"},"run":false}},
+    {"action":"create_node","payload":{"type":"gen-image","nodeName":"场景图","prompt":"用户确认的图像描述","x":600,"y":80,"settings":{"model":"<exact enabled Image model ID from snapshot>","batchSize":1},"run":false}},
+    {"action":"create_node","payload":{"type":"gen-video","nodeName":"镜头","prompt":"用户确认的视频描述","x":600,"y":600,"settings":{"model":"<exact enabled Video model ID from snapshot>","duration":5,"batchSize":1},"run":false}},
+    {"action":"create_node","payload":{"type":"gen-speech","nodeName":"配音","prompt":"要朗读的实际文本","x":80,"y":600,"settings":{"model":"<exact enabled Speech model ID from snapshot>","speechTaskMode":"tts","batchSize":1},"run":false}},
+    {"action":"update_node","payload":{"nodeId":"<existing node ID>","nodeName":"新名称","x":120,"y":160,"prompt":"新的提示词"}},
+    {"action":"write_text","payload":{"nodeId":"<existing text-node ID>","content":"完整替换后的文本"}},
+    {"action":"write_text","payload":{"nodeName":"新文本","content":"未提供 nodeId 时创建实际 text-node"}},
+    {"action":"connect_nodes","payload":{"from":"<actual upstream node ID>","to":"<actual downstream node ID>","inputType":"default"}},
+    {"action":"select_node","payload":{"nodeId":"<actual node ID>","focus":true}},
+    {"action":"execute_node","payload":{"nodeId":"<existing configured generation node ID>"}},
+    {"action":"import_asset","payload":{"assetId":"<DSH canonical original asset ID>"}},
+    {"action":"delete_node","payload":{"nodeId":"<actual node ID>"}},
+    {"action":"undo","payload":{}},
+    {"action":"redo","payload":{}},
+    {"action":"snapshot","payload":{}},
+    {"action":"flush_save","payload":{}}
+  ],
+  "completionSemantics": "Graph edits return real graph state and durable save receipt. execute_node/run_generation can start asynchronous work; their command receipt does not prove supplier output exists. Inspect original node state and actual model job/artifact before claiming media completion.",
+  "connectionPolicy": "Original capabilities and uAt validate allowed source/target types and reference counts; default references preserve order. agent_sequence is display ordering, not model input."
+}

@@ -116,3 +116,9 @@ test('retired Claude diagnostic tabs close only in the exact active conversation
   close(ctx,'old');assert.equal(retired.length,0);
   close(ctx,'current');assert.deepEqual(retired,['retired']);
 });
+
+test('creation menus open native global plugin panels when no conversation exists',()=>{
+ for(const [id,kind] of [['aiyou-canvas','aiyoucodex-canvas'],['aiyou-media-tools','aiyoucodex-media-tools'],['aiyou-media-models','aiyoucodex-media-models']]){
+  const{ctx,calls}=context({});assert.equal(load().openAiyouFeature(ctx,id),kind);assert.deepEqual(calls,[['select',kind]]);
+ }
+});
