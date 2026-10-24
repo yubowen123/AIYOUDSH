@@ -2,6 +2,7 @@ import { defaultManualSmartGroup, mergeManualTags } from "./asset-metadata-ui.js
 import { assetMediaRevision, createAssetCardReconciler, createLatestRequestGate, createRevisionPoller } from "./asset-library-state.js";
 import { createMediaPlaybackManager } from "./asset-media-lifecycle.js";
 import { descriptorFromImage, visualSimilarity } from "./character-visual.js";
+import { createCanvasAssetPicker } from "./canvas-asset-picker.js";
 
 const libraryRequests = createLatestRequestGate();
 const bootstrapRequests = createLatestRequestGate();
@@ -68,6 +69,15 @@ const els = Object.fromEntries([
   "thumbnailViewButton", "detailViewButton", "relatedAssetsToggle", "clearCharacterFilter",
   "characterDialog", "characterForm", "characterDialogTitle", "characterPreviewImage", "characterName", "characterState", "characterStyle", "characterParent", "characterEvidence", "characterFamilyTitle", "characterFamilyList", "characterCandidateList", "characterError", "saveCharacterButton", "findSimilarCharacters", "viewCharacterFamily", "excludeCharacterImage",
 ].map((id) => [id, document.getElementById(id)]));
+
+const canvasPicker = createCanvasAssetPicker({ assetGrid: els.assetGrid, getAssetById: assetById });
+if (canvasPicker.defaultKind) state.kind = canvasPicker.defaultKind;
+if (canvasPicker.requested) {
+  state.searchMode = "keyword";
+  els.librarySearchMode.value = "keyword";
+  els.librarySearchMode.disabled = true;
+  els.librarySearchInput.placeholder = "搜索名称、分类、标签或正文";
+}
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -671,7 +681,7 @@ const reconcileAssetCards = createAssetCardReconciler({
 });
 
 function renderAssets() {
-  const matchingAssets = visibleAssets();
+  const matchingAssets = visibleAssets().filter(asset => canvasPicker.acceptsKind(asset.kind));
   const assets = matchingAssets.slice(0, state.visibleLimit);
   const filteredTotal = state.serverPaging ? state.filteredTotal : matchingAssets.length;
   const hasMore = state.serverPaging ? state.pageStart + assets.length < filteredTotal : matchingAssets.length > assets.length;
@@ -684,6 +694,7 @@ function renderAssets() {
   els.clearCharacterFilter.hidden = !state.characterId;
   els.assetGrid.className = `asset-grid ${state.view === "detail" && !state.related && ["image", "video"].includes(state.kind) ? "masonry" : ""}`;
   reconcileAssetCards(assets, state.assetsProjectId);
+  canvasPicker.decorate();
   let more = els.assetGrid.querySelector(".load-more-card");
   if (hasMore && (!state.serverPaging || assets.length < MAX_ASSET_WINDOW)) {
     if (!more) {
@@ -859,6 +870,15 @@ async function loadBootstrap() {
     setColumns(state.settings.columns);
     renderProjects();
     await loadLibrary({ quiet: true });
+    await canvasPicker.focus({ projects: state.projects, currentProjectId: state.selectedProject,
+      readPage: (projectId, offset, signal) => api(`/aiyoucodex-dsh/asset-console/ui/api/library?${new URLSearchParams({ project: projectId, limit: String(ASSET_PAGE_SIZE), offset: String(offset), kind: "all", smartGroup: "", searchMode: "keyword", sort: "newest", related: "0" })}`, { signal }),
+      openRow: async (row, projectId) => {
+        state.selectedProject = projectId; state.smartGroup = row.smartGroup || "asset"; state.kind = row.kind; state.category = "";
+        state.query = row.name; state.searchMode = "keyword"; els.librarySearchInput.value = row.name; els.librarySearchMode.value = "keyword";
+        els.assetKindTabs.querySelectorAll("[data-asset-kind]").forEach(button => button.classList.toggle("active", button.dataset.assetKind === row.kind));
+        renderProjects(); await loadLibrary({ quiet: true, reset: true });
+      },
+    });
     return true;
   } catch (error) {
     if (!request.isCurrent() || error.name === "AbortError") return;
@@ -1169,7 +1189,7 @@ function bindEvents() {
     state.searchTimer = setTimeout(resetAssetWindow, 180);
   });
   els.librarySearchMode.addEventListener('change', () => {
-    state.searchMode = els.librarySearchMode.value === 'keyword' ? 'keyword' : 'laya';
+    state.searchMode = canvasPicker.requested || els.librarySearchMode.value === 'keyword' ? 'keyword' : 'laya';
     libraryRequests.cancel(); clearTimeout(state.searchTimer); resetAssetWindow();
   });
   els.librarySortSelect.addEventListener("change", () => { state.sort = els.librarySortSelect.value; resetAssetWindow(); });

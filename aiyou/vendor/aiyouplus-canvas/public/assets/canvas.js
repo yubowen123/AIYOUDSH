@@ -345221,6 +345221,7 @@ function lSi(e, t, n = r => r()) {
   const r = {};
   for (const a of Gcn) r[a] = i => {
     if (i == null || i.preventDefault(), i == null || i.stopPropagation(), a === "pose" || a === "material") {
+      if(window.__DSH_CANVAS_OPEN_ASSET_LIBRARY__){e[a].close();window.__DSH_CANVAS_OPEN_ASSET_LIBRARY__();return;}
       e[a].toggle();
       return;
     }
@@ -346225,6 +346226,7 @@ function BSi({
       syncRoles: t.syncFromMaterialLibrary
     }), [t.syncFromMaterialLibrary, e.clearAllPreviews, e.refresh, e.isCurrentScanResult]),
     v = g.useCallback(I => {
+      if(window.__DSH_CANVAS_SAVE_ASSET_LIBRARY__)return window.__DSH_CANVAS_SAVE_ASSET_LIBRARY__([I],OSi).catch(error=>p(error.message));
       f([I]), d(!0);
     }, [d]),
     _ = g.useCallback(async (I, E, M) => {
@@ -346233,6 +346235,7 @@ function BSi({
         p("选中的节点中没有可保存到素材库的图片、视频或音频");
         return;
       }
+      if(window.__DSH_CANVAS_SAVE_ASSET_LIBRARY__)return window.__DSH_CANVAS_SAVE_ASSET_LIBRARY__(T,OSi).catch(error=>p(error.message));
       f(T), d(!0);
     }, [d, p]);
   g.useEffect(() => {
@@ -346242,7 +346245,9 @@ function BSi({
         url: M.url,
         name: M.name,
         type: M.type,
-        assetId: M.assetId
+        assetId: M.assetId,
+        originalUrl: M.originalUrl,
+        thumbnailUrl: M.thumbnailUrl
       });
     };
     return window.addEventListener("open-save-to-material-library", I), () => window.removeEventListener("open-save-to-material-library", I);
@@ -366825,7 +366830,7 @@ const Xkt = "qiaodoumayi-toolbar-sidebar-pins-changed",
     label: "个人记忆"
   }, {
     key: "pose-library",
-    label: "本地资料查阅"
+    label: "素材库"
   }, {
     key: "project-panel",
     label: "项目管理"
@@ -367288,7 +367293,7 @@ const QMi = new Map(VFt.map(e => [e.key, e.label])),
         show: !!G
       }, {
         key: "pose-library",
-        label: "本地资料查阅",
+        label: "素材库",
         icon: c.jsx(mc, {
           ...yc,
           className: Zl
@@ -367662,7 +367667,8 @@ const QMi = new Map(VFt.map(e => [e.key, e.label])),
           },
           className: Ee,
           "data-toolbar-active": s ? "true" : "false",
-          "data-tip": x("本地资料查阅"),
+          "data-tip": x("素材库"),
+          "aria-label": x("素材库"),
           children: c.jsx(mc, {
             ...yc,
             className: Zl
@@ -376940,7 +376946,7 @@ function xNi(e) {
         addFilterDimension: rt.addFilterDimension
       })
     }), Ft), c.jsx($9i, {
-      open: Ke,
+      open: window.__DSH_CANVAS_SAVE_ASSET_LIBRARY__ ? !1 : Ke,
       isDark: t,
       library: ze,
       onClose: De,
@@ -380770,7 +380776,7 @@ function qji({
             onCreateCharacter: () => n.setCreateCharacterOpen(!0),
             onDeleteCharacter: y => n.setCharacterLibrary(b => b.filter(v => v.id !== y))
           }), c.jsx(Zf, {
-            show: n.poseLibraryOpen,
+            show: window.__DSH_CANVAS_OPEN_ASSET_LIBRARY__ ? !1 : n.poseLibraryOpen,
             children: c.jsx(hOr, {
               isOpen: !0,
               isDark: n.isDark,
@@ -380780,7 +380786,7 @@ function qji({
               toastError: n.toastError
             })
           }), c.jsx(nMi, {
-            open: l.open,
+            open: window.__DSH_CANVAS_OPEN_ASSET_LIBRARY__ ? !1 : l.open,
             isDark: n.isDark,
             library: l.library,
             setOpen: l.setOpen,
@@ -383235,7 +383241,7 @@ function dDi({
   projectPanelOpen: e,
   aiRoleLibraryOpen: t
 }) {
-  const [n, r] = g.useState(() => NSi(Zi.POSE_LIBRARY_PANEL).open),
+  const [n, r] = g.useState(() => window.__DSH_CANVAS_OPEN_ASSET_LIBRARY__ ? !1 : NSi(Zi.POSE_LIBRARY_PANEL).open),
     [a, i] = O_(Zi.LEFT_TOOLBAR_COLLAPSED, !0),
     [o, s] = k0e(Zi.LEFT_TOOLBAR_DOCK, "side"),
     l = o === "bottom" ? "bottom" : "side",

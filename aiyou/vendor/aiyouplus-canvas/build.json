@@ -43,8 +43,8 @@
     "renderer-041.js"
   ],
   "sharedScope": true,
-  "bytes": 42729653,
-  "sha256": "16c6589069232e3f9ab3370d62d68ecf4cb2daa7dd7ef5190b5e15f39459b5ff",
+  "bytes": 42730324,
+  "sha256": "e8048075709fc9f40e06c892b427b25bcca2fde4ef96acad64653c2e782a9ffe",
   "patches": [
     "Canvas-only root $Oi/fdi/GOi; no TJt app shell",
     "Expose actual WLi executor and eOi snapshot in original GOi lifecycle",

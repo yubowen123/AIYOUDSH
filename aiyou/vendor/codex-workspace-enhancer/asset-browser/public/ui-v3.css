@@ -423,3 +423,49 @@ dialog.character-modal { width: min(760px, calc(100vw - 24px)); max-height: calc
 :root[data-aiyou-motion="off"] .aiyou-loading-fill, :root[data-aiyou-motion="off"] .aiyou-loading-track i { animation: none !important; transform: scaleY(.55); }
 :root[data-aiyou-motion="off"] .aiyou-loading-track i { transform: none; }
 @media (prefers-reduced-motion: reduce) { .aiyou-loading-fill, .aiyou-loading-track i { animation: none !important; transform: scaleY(.55); } .aiyou-loading-track i { transform: none; } }
+
+/* Canvas selects from this same library; default standalone layout is untouched. */
+body[data-asset-picker="canvas"] .app-shell { display: block; }
+body[data-asset-picker="canvas"] .library-sidebar { position: static; width: auto; height: auto; max-height: none; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+body[data-asset-picker="canvas"] .sidebar-brand,
+body[data-asset-picker="canvas"] .sidebar-section-heading,
+body[data-asset-picker="canvas"] .project-folders-panel,
+body[data-asset-picker="canvas"] .header-actions,
+body[data-asset-picker="canvas"] .workspace-title .eyebrow,
+body[data-asset-picker="canvas"] #workspaceSubtitle,
+body[data-asset-picker="canvas"] .local-rule-note,
+body[data-asset-picker="canvas"] .column-control,
+body[data-asset-picker="canvas"] .search-box kbd,
+body[data-asset-picker="canvas"] #librarySearchMode,
+body[data-asset-picker="canvas"] .browse-hint,
+body[data-asset-picker="canvas"] .asset-menu,
+body[data-asset-picker="canvas"] .review-actions,
+body[data-asset-picker="canvas"] .character-identity,
+body[data-asset-picker="canvas"] #emptyCreateProjectButton { display: none !important; }
+body[data-asset-picker="canvas"] .project-list { display: flex; gap: 5px; overflow-x: auto; margin: 0 0 5px; }
+body[data-asset-picker="canvas"] .project-item { flex: 0 0 150px; min-width: 0; }
+body[data-asset-picker="canvas"] .category-chips { display: flex; overflow-x: auto; padding: 0; gap: 4px; }
+body[data-asset-picker="canvas"] .category-chips button { flex: none; gap: 5px; }
+body[data-asset-picker="canvas"] .library-main { padding: 10px; }
+body[data-asset-picker="canvas"] .workspace-header { margin-bottom: 10px; }
+body[data-asset-picker="canvas"] .title-row { flex-wrap: wrap; gap: 6px; }
+body[data-asset-picker="canvas"] .workspace-title h1 { font-size: 16px; overflow-wrap: anywhere; }
+body[data-asset-picker="canvas"] .toolbar-row { grid-template-columns: minmax(0, 1fr) auto; }
+body[data-asset-picker="canvas"] .smart-group-tabs,
+body[data-asset-picker="canvas"] .kind-tabs { min-width: 0; }
+body[data-asset-picker="canvas"] .sort-control { padding: 0 5px; }
+body[data-asset-picker="canvas"] .library-view-row { gap: 6px; }
+body[data-asset-picker="canvas"] .asset-grid,
+body[data-asset-picker="canvas"][data-library-view="thumbnail"] .asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr)); gap: 8px; }
+body[data-asset-picker="canvas"] .asset-grid.masonry .asset-card { margin: 0; }
+body[data-asset-picker="canvas"] .image-card .asset-card-header { bottom: 40px; }
+body[data-asset-picker="canvas"] .text-card { height: 300px; }
+body[data-asset-picker="canvas"] .card-hint { overflow-wrap: anywhere; }
+body[data-asset-picker="canvas"] .library-search-status { overflow-wrap: anywhere; }
+body[data-asset-picker="canvas"] .empty-state { margin: 24px 0; padding: 24px 14px; }
+body[data-asset-picker="canvas"] .aiyou-module-loading { padding: 16px 12px; gap: 12px; }
+.canvas-picker-banner { margin: 0 0 12px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+.canvas-picker-banner strong { font-size: 14px; }
+.canvas-picker-banner p { margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.canvas-picker-select { display: block; width: calc(100% - 12px); margin: 6px; min-height: 34px; flex: none; border: 1px solid var(--accent); border-radius: 6px; background: var(--accent); color: white; cursor: pointer; font-size: 12px; }
+body[data-asset-picker="canvas"] .canvas-picker-focused { outline: 2px solid var(--accent); outline-offset: 2px; }

@@ -1964,16 +1964,20 @@
       "Saved graph payload plus matching autosave patch determines canonical asset references, including timeline settings",
       "Global perspective captures carry the same original/cache asset identifiers as imported image nodes",
       "Three retained local module types gain create/update for layout and name only, with original Ki defaults and no supplier execution",
-      "Two original UI input-image edges to global-perspective/preview gain exact capability support and default-slot checks; global accepts one input"
+      "Two original UI input-image edges to global-perspective/preview gain exact capability support and default-slot checks; global accepts one input",
+      "Original magnifier and material entry invoke one DSH library bridge; central toggle and persisted panel mounting cannot reopen old pose/material libraries",
+      "Original save-to-library callbacks resolve a canonical original first, otherwise upload the actual original Blob and ingest through the DSH gateway; thumbnail-only inputs fail",
+      "Timeline picker embeds the existing DSH asset-console with video/audio filtering and source/origin/request validation; authorized legacy aliases resolve to canonical originals",
+      "UTF-8 txt/md/markdown originals up to 4 MiB create actual text nodes with canonical reference IDs and real project-save receipts; other document formats fail before import"
     ],
     "files": [
       {
         "path": "README.md",
-        "sha256": "8f64b9c7f5263b964d770da74f47105d9ffa6ece6343c62b7b19daf38eee6a39"
+        "sha256": "05d4e73d473fdb95706bd0e2124477ec1a2377e7b41ebc9a04a6537fa525ac9f"
       },
       {
         "path": "scripts/build.mjs",
-        "sha256": "ff330600882fced935de57bfc5d88cc3a06209f67661914c9e65154f6c7244d1"
+        "sha256": "6611f0f53dceb76e35cb885585df18707606c9c20185eb99fd3efc8734a97483"
       },
       {
         "path": "public/index.html",
@@ -1981,7 +1985,7 @@
       },
       {
         "path": "public/embedded.js",
-        "sha256": "621a90789633d7a096ecffb76ce3f233f58a44aa726cfb0599cf1a9cce318469"
+        "sha256": "c4af28f1881afe2916c7e58a748961520f479e4ee6748ac3f9387b5a0f89b808"
       },
       {
         "path": "public/embedded.css",
@@ -2025,7 +2029,7 @@
       },
       {
         "path": "build.json",
-        "sha256": "38b946a5b6ee1309abc328ed9263d45d4fb2a8a901641141b3f250a0d0da268b"
+        "sha256": "c98fc9561d52454860b9c4352a39e5207b0d784d331e741337b718f0366122de"
       },
       {
         "path": "test/verify-submit-sync.mjs",
@@ -2057,11 +2061,33 @@
       },
       {
         "path": "test/verify-more-tools.mjs",
-        "sha256": "c901d87f33b2578109ab65cc9100e04600d13da7f7d7300e11e11af38ea723b9"
+        "sha256": "6393ccf526a93317e0ab729d2ed3cb5f8a6dd04e06fe474e3d33753cd61f3f26"
       },
       {
         "path": "test/verify-tool-functions.mjs",
         "sha256": "03c2aabd30ab58692e42d377c260e0fbf0e6752fdcc7dd3b3d763c98383fd914"
+      },
+      {
+        "path": "test/verify-library-entry.mjs",
+        "sha256": "6e877daf2ba3f6fe0b1ce9d2494e5ccd0f11027b18577b539048c75b6aa673d4"
+      }
+    ],
+    "hostIntegrationFiles": [
+      {
+        "path": "aiyou/modules/canvas/client.js",
+        "sha256": "47cabdf8d2d6cdfef2b2196429f6afd9fc8e40c2e8f0315f6041677a08eb83bc"
+      },
+      {
+        "path": "aiyou/modules/canvas/index.js",
+        "sha256": "847da74b6bb7d84a044bae72e27a67787bd7ed73a1c5199f8ff1602d6505e326"
+      },
+      {
+        "path": "aiyou/vendor/codex-workspace-enhancer/asset-browser/public/canvas-asset-picker.js",
+        "sha256": "fc153bb20db66470106fc04f9eaae47e2625b4e2733c917dbe86b4add521a067"
+      },
+      {
+        "path": "aiyou/vendor/codex-workspace-enhancer/asset-browser/public/app.js",
+        "sha256": "1d6f966e73f24166b66ca8ff065c418200442c695147067b4c3265abc07fe164"
       }
     ]
   }

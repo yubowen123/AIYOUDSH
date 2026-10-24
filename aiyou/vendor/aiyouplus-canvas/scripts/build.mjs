@@ -6,6 +6,7 @@ const base=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const files=Array.from({length:41},(_,i)=>`renderer-${String(i+1).padStart(3,'0')}.js`);
 let source=(await Promise.all(files.map(f=>fs.readFile(path.join(base,'src/js',f),'utf8')))).join('\n');
 function replace(a,b){if(!source.includes(a))throw Error('Recovered integration anchor missing: '+a.slice(0,90));source=source.replaceAll(a,b);}
+function replaceOnce(a,b){const count=source.split(a).length-1;if(count!==1)throw Error('Recovered single integration anchor count '+count+': '+a.slice(0,90));source=source.replace(a,b);}
 replace('cWt.createRoot(n).render(c.jsx(PJt, {\n      children: c.jsx(TJt, {})\n    }))','(window.__DSH_CANVAS_REACT_ROOT__=cWt.createRoot(n)).render(c.jsx(window.__DSH_CREATIVE_TOOLS__ ? DSHCreativeRoot : $Oi, {}))');
 replace('cWt.createRoot(a).render(c.jsx(PJt, {\n          children: c.jsx(TJt, {})\n        }))','(window.__DSH_CANVAS_REACT_ROOT__=cWt.createRoot(a)).render(c.jsx(window.__DSH_CREATIVE_TOOLS__ ? DSHCreativeRoot : $Oi, {}))');
 replace('  Rmi({\n    document: je,','  window.__DSH_CANVAS_BINDINGS__ = {execute: II, snapshot: qb, invalidate: M9, assetStore: ni, localCache: Ur, capabilities:()=>L1t(), openDirector3D:(...args)=>_o(...args), closeDirector3D:(...args)=>Ao(...args)};\n  Rmi({\n    document: je,');
@@ -49,6 +50,20 @@ replace('async function fG(e, t, n) {\n  try {', 'async function fG(e, t, n) {\n
 // The embedded script workspace is local; old PLUS cloud accounts and OSS backups are not exposed.
 replace("c.jsx(\"button\", {\n        \"aria-pressed\": w.listTab === \"cloud\",\n        onClick: () => {\n          w.setListTab(\"cloud\"), w.settings.enabled || f(!0);\n        },\n        children: x(\"云端\")\n      })", 'null');
 replace("c.jsx(\"button\", {\n        title: x(\"备份设置\"),\n        \"aria-label\": x(\"备份设置\"),\n        onClick: () => f(!m),\n        children: c.jsx(Wp, {\n          size: 14\n        })\n      })", 'null');
+// The original magnifier/local files and bottom materials button open the host's one asset UI.
+replaceOnce('    if (i == null || i.preventDefault(), i == null || i.stopPropagation(), a === "pose" || a === "material") {\n      e[a].toggle();', '    if (i == null || i.preventDefault(), i == null || i.stopPropagation(), a === "pose" || a === "material") {\n      if(window.__DSH_CANVAS_OPEN_ASSET_LIBRARY__){e[a].close();window.__DSH_CANVAS_OPEN_ASSET_LIBRARY__();return;}\n      e[a].toggle();');
+replaceOnce('    key: "pose-library",\n    label: "本地资料查阅"\n  }, {\n    key: "project-panel",', '    key: "pose-library",\n    label: "素材库"\n  }, {\n    key: "project-panel",');
+replaceOnce('        key: "pose-library",\n        label: "本地资料查阅",', '        key: "pose-library",\n        label: "素材库",');
+replaceOnce('          "data-tip": x("本地资料查阅"),', '          "data-tip": x("素材库"),\n          "aria-label": x("素材库"),');
+// Persisted old panel-open state must not resurrect either independent file library.
+replaceOnce('g.useState(() => NSi(Zi.POSE_LIBRARY_PANEL).open)', 'g.useState(() => window.__DSH_CANVAS_OPEN_ASSET_LIBRARY__ ? !1 : NSi(Zi.POSE_LIBRARY_PANEL).open)');
+replaceOnce('            show: n.poseLibraryOpen,\n            children: c.jsx(hOr, {', '            show: window.__DSH_CANVAS_OPEN_ASSET_LIBRARY__ ? !1 : n.poseLibraryOpen,\n            children: c.jsx(hOr, {');
+replaceOnce('          }), c.jsx(nMi, {\n            open: l.open,', '          }), c.jsx(nMi, {\n            open: window.__DSH_CANVAS_OPEN_ASSET_LIBRARY__ ? !1 : l.open,');
+replaceOnce('    }), Ft), c.jsx($9i, {\n      open: Ke,', '    }), Ft), c.jsx($9i, {\n      open: window.__DSH_CANVAS_SAVE_ASSET_LIBRARY__ ? !1 : Ke,');
+replaceOnce('        type: M.type,\n        assetId: M.assetId\n      });\n    };\n    return window.addEventListener("open-save-to-material-library", I)', '        type: M.type,\n        assetId: M.assetId,\n        originalUrl: M.originalUrl,\n        thumbnailUrl: M.thumbnailUrl\n      });\n    };\n    return window.addEventListener("open-save-to-material-library", I)');
+// Preserve the save operation: reuse existing canonical originals or actually ingest legacy blob bytes.
+replaceOnce('    v = g.useCallback(I => {\n      f([I]), d(!0);', '    v = g.useCallback(I => {\n      if(window.__DSH_CANVAS_SAVE_ASSET_LIBRARY__)return window.__DSH_CANVAS_SAVE_ASSET_LIBRARY__([I],OSi).catch(error=>p(error.message));\n      f([I]), d(!0);');
+replaceOnce('      f(T), d(!0);\n    }, [d, p]);', '      if(window.__DSH_CANVAS_SAVE_ASSET_LIBRARY__)return window.__DSH_CANVAS_SAVE_ASSET_LIBRARY__(T,OSi).catch(error=>p(error.message));\n      f(T), d(!0);\n    }, [d, p]);');
 // The old cloud asset index is intentionally not mounted inside the host.
 replace('async function rZ(e) {\n  if (!s8r()) return !1;', 'async function rZ(e) {\n  return !1;\n  if (!s8r()) return !1;');
 // Pinned and expanded toolbar entries must share the same native project/character boundaries.
