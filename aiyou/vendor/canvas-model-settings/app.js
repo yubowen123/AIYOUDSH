@@ -36,59 +36,27 @@ $('catalog-refresh').addEventListener('click',()=>run(async()=>{if(!selected)thr
 $('delete').addEventListener('click',()=>run(async()=>{if(!selected)throw new Error('请先选择服务。');config=await invoke('aiyouplus_model_delete',{provider:selected});selected=null;render();fill();status('服务配置已删除。');}));
 void run(refresh);
 
-// Connection state is scoped to this Host session/project. Answers stay in this
-// form until a one-way reply; they are never added to media settings or history.
-let codexState=null,codexBusy=false,codexGeneration=0,codexPromptId=null,codexTimer=null,codexClosed=false,codexError='',codexPendingBeginId=null;
-const codexActive=()=>['starting','running','cancelling'].includes(codexState?.status);
+// Local CLI metadata only. No OAuth, login URL, authorization code or API Key.
+let codexState=null,codexBusy=false,codexGeneration=0,codexOperation=0,codexError='',codexPathDirty=false;
 function renderCodex(){
- const state=codexState||{},labels={idle:'尚未在本页面连接。',starting:'正在启动宿主授权…',running:'请完成下方的宿主授权步骤。',cancelling:'正在撤回授权，等待宿主确认…',cancelled:'已取消本次连接。',failed:'本次连接未完成。',authorized:'宿主已确认本次授权凭证保存成功。请在 DSH 模型选择器选择 Codex；实际模型调用尚未验证。'};
- if(!codexBusy&&['authorized','cancelled','failed'].includes(state.status))codexPendingBeginId=null;
- $('codex-status').textContent=!state.flowAvailable?'当前宿主尚未提供 Codex OAuth 连接流程。':(state.enabled?'Codex 模型通道已启用。':'Codex 模型通道尚未启用。')+' '+(labels[state.status]||'正在读取…');
- $('codex-enable').hidden=Boolean(state.enabled);$('codex-enable').disabled=codexBusy||codexActive()||!state.catalogSupported;
- $('codex-begin').disabled=codexBusy||codexActive()||!state.flowAvailable;
- $('codex-refresh').disabled=codexBusy;$('codex-cancel').hidden=!codexActive();$('codex-cancel').disabled=codexBusy||state.status==='cancelling';
- $('codex-error').textContent=codexError||state.error?.message||'';
- $('codex-notices').replaceChildren();
- for(const notice of state.notices||[]){
-  const div=document.createElement('p');div.textContent=notice.message||'';
-  if(notice.code){const code=document.createElement('code');code.textContent=' '+notice.code;div.append(code);}
-  if(notice.url){try{const u=new URL(notice.url);if(u.protocol==='https:'&&!u.username&&!u.password){const a=document.createElement('a');a.href=u.href;a.target='_blank';a.rel='noopener noreferrer';a.referrerPolicy='no-referrer';a.textContent=' 打开官方授权页面';div.append(a);}}catch{}}
-  $('codex-notices').append(div);
- }
- const prompt=state.prompt;$('codex-prompt').hidden=!prompt;
- if(!prompt){codexPromptId=null;$('codex-question').replaceChildren();}
- else if(codexPromptId!==prompt.id){
-  codexPromptId=prompt.id;const label=$('codex-question');label.replaceChildren();const title=document.createElement('span');title.textContent=prompt.message;label.append(title);
-  const input=document.createElement(prompt.kind==='select'?'select':'input');input.id='codex-answer';input.autocomplete='off';
-  if(prompt.kind==='select'){for(const option of prompt.options||[]){const node=document.createElement('option');node.value=option.id;node.textContent=option.label;input.append(node);}}
-  else{input.type=prompt.kind==='secret'?'password':'text';input.placeholder=prompt.placeholder||'';input.spellcheck=false;input.maxLength=16000;}
-  label.append(input);input.focus();
- }
- for(const button of $('codex-prompt').querySelectorAll('button'))button.disabled=codexBusy||state.status==='cancelling';
- clearTimeout(codexTimer);if(codexActive()&&!codexClosed)codexTimer=setTimeout(()=>void refreshCodex(),1000);
+ const state=codexState||{};
+ if(!codexPathDirty&&state.executablePath)$('codex-path').value=state.executablePath;
+ $('codex-status').textContent=!state.installed?'本机尚未检测到可用 Codex CLI。':('CLI '+(state.version||'版本未知')+' · '+(state.loggedIn?'已检测到本机已有登录':'本机 CLI 尚未登录')+' · '+(state.connected?'已接入 DSH 模型通道':'尚未连接'));
+ $('codex-models').textContent=state.models?.length?('模型：'+state.models.map(m=>m.name||m.id).join('、')+'。'+(state.modelCallVerified?'本次已完成模型调用。':'实际模型调用尚未验证。')):'检测和连接只读取 CLI 元数据，不会提交模型请求。';
+ const messages={CLI_NOT_INSTALLED:'未找到 CLI，请安装后填写可执行路径。',CLI_NOT_LOGGED_IN:'请先在终端完成 Codex CLI 登录；插件不会自动登录。',INVALID_CLI:'所选文件不是可识别的 Codex CLI。',CLI_TIMEOUT:'CLI 检测超时，请检查本机程序状态。'};
+ const detection=state.detection?(state.detection.diagnostic?(messages[state.detection.diagnostic]||state.detection.diagnostic):'新路径已检测到 CLI '+(state.detection.version||'')+'，点击连接后才会切换。'):'';
+ $('codex-error').textContent=codexError||messages[state.diagnostic]||state.diagnostic||detection;
+ for(const id of ['codex-refresh','codex-begin'])$(id).disabled=codexBusy;
+ $('codex-cancel').disabled=!state.enabled&&!codexBusy;
+ $('codex-cancel').hidden=!state.enabled&&!codexBusy;
 }
 async function codexRequest(kind,args={}){
  const generation=++codexGeneration,result=await invoke('dsh_codex_'+kind,args);
- if(codexClosed||generation!==codexGeneration)return;codexState=result;codexError='';renderCodex();return result;
+ if(generation!==codexGeneration)return;codexState=result;codexError='';renderCodex();return result;
 }
-async function refreshCodex(){if(codexClosed||codexBusy)return;try{await codexRequest('status');}catch(e){codexError=e.message;renderCodex();}}
-async function runCodex(action){
- if(codexBusy||codexClosed)return;codexBusy=true;clearTimeout(codexTimer);renderCodex();
- try{await action();}catch(e){codexError=e.message;}
- finally{codexBusy=false;renderCodex();}
-}
-$('codex-enable').addEventListener('click',()=>void runCodex(()=>codexRequest('enable')));
-$('codex-begin').addEventListener('click',()=>{if(codexBusy||codexClosed)return;codexPendingBeginId=crypto.randomUUID();void runCodex(async()=>{try{return await codexRequest('begin',{requestId:codexPendingBeginId});}finally{if(!codexActive())codexPendingBeginId=null;}});});
-$('codex-refresh').addEventListener('click',()=>void refreshCodex());
-$('codex-cancel').addEventListener('click',()=>void runCodex(()=>codexRequest('cancel',{attemptId:codexState.attemptId})));
-$('codex-decline').addEventListener('click',()=>void runCodex(()=>codexRequest('respond',{attemptId:codexState.attemptId,promptId:codexPromptId,decline:true})));
-$('codex-prompt').addEventListener('submit',event=>{
- event.preventDefault();const input=$('codex-answer'),answer=input?.value;if(!input||!codexState?.prompt)return;
- const args={attemptId:codexState.attemptId,promptId:codexPromptId,answer};input.value='';
- void runCodex(()=>codexRequest('respond',args));
-});
-window.addEventListener('pagehide',()=>{
- codexClosed=true;clearTimeout(codexTimer);const input=$('codex-answer');if(input)input.value='';
- if(codexActive()||codexPendingBeginId)void fetch('/aiyoucodex-dsh/canvas/rpc',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:JSON.stringify({command:'dsh_codex_cancel',args:{...(codexActive()?{attemptId:codexState.attemptId}:{}),...(codexPendingBeginId?{requestId:codexPendingBeginId}:{})},...context})}).catch(()=>{});
-});
-void refreshCodex();
+async function runCodex(action,interrupt=false){if(codexBusy&&!interrupt)return;const operation=++codexOperation;codexBusy=true;renderCodex();try{await action();}catch(e){if(operation===codexOperation)codexError=e.message;}finally{if(operation===codexOperation){codexBusy=false;renderCodex();}}}
+$('codex-path').addEventListener('input',()=>{codexPathDirty=true;});
+$('codex-refresh').addEventListener('click',()=>void runCodex(()=>codexRequest('status',{executablePath:$('codex-path').value.trim(),refresh:true})));
+$('codex-begin').addEventListener('click',()=>void runCodex(async()=>{const result=await codexRequest('begin',{executablePath:$('codex-path').value.trim()});if(result?.connected){codexPathDirty=false;renderCodex();}}));
+$('codex-cancel').addEventListener('click',()=>void runCodex(()=>codexRequest('cancel'),true));
+void runCodex(()=>codexRequest('status'));

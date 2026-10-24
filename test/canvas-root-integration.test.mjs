@@ -46,9 +46,9 @@ test('actual RPC uses native injected model service and keeps exact session/proj
  assert.equal(r.response.status,200,JSON.stringify(r.body));assert.equal(r.body.value.chatProvider,'host');assert.equal(r.body.value.profiles.host.credentialManagedByHost,true);
  const other=await f.api('/bind',{sessionId:'session-b',cwd:path.join(f.temp,'other')});
  const rejected=await f.api('/rpc',{sessionId:'session-a',projectId:other.body.value.projectId,command:'aiyouplus_model_config',args:{}});assert.equal(rejected.response.status,409);assert.match(rejected.body.error,/其他画布项目/);
- assert.equal(f.tools.length,6);for(const tool of f.tools){assert.equal(tool.parameters.type,'object');assert.equal(tool.parameters.additionalProperties,false);assert.equal(tool.output.schema.type,'string');assert.equal(typeof tool.output.render,'function');assert.equal(typeof tool.execute,'function');}
+ assert.equal(f.tools.length,7);for(const tool of f.tools){assert.equal(tool.parameters.type,'object');assert.equal(tool.parameters.additionalProperties,false);assert.equal(tool.output.schema.type,'string');assert.equal(typeof tool.output.render,'function');assert.equal(typeof tool.execute,'function');}
  await assert.rejects(f.tools[0].execute({},{}),e=>e.code==='SESSION_REQUIRED');
- const opened=JSON.parse(await f.tools.find(t=>t.name==='canvas_open').execute({sessionId:'forged'}, {agent:{session:f.ctx.agents.get('session-a').session},signal:new AbortController().signal}));assert.equal(opened.projectId,f.projectId);
+ const opened=JSON.parse(await f.tools.find(t=>t.name==='canvas_open').execute({projectId:f.projectId,sessionId:'forged'}, {agent:{session:f.ctx.agents.get('session-a').session},signal:new AbortController().signal}));assert.equal(opened.projectId,f.projectId);
 });
 test('save receipt rejects another owned file and patch mismatch; canonical payload reply completes and remains replayable',async t=>{
  const f=await fixture(t),panel={...f.context,panelId:'panel_fixture_123',revision:0,snapshot:{nodes:[],edges:[]},documentRef:'project:doc-a'};
@@ -91,4 +91,63 @@ test('explicit panel close releases its local command waiter immediately and per
  assert.equal((await f.api('/panel',{...panel,panelId:'panel_close_new'})).response.status,200);
  await new Promise(resolve=>setTimeout(resolve,30));assert.equal(settled,true,'old command must stop waiting instead of blocking the project queue for 45 seconds');
  const actual=await running;assert.equal(actual.response.status,409);assert.match(actual.body.error,/关闭|停止等待/);
+});
+
+test('project-first native tools refuse an implicit target and support list/create/open exact project',async t=>{
+ const f=await fixture(t),exec={agent:{session:f.ctx.agents.get('session-a').session},signal:new AbortController().signal},invoke=async(name,args={})=>JSON.parse(await f.tools.find(t=>t.name===name).execute(args,exec));
+ await assert.rejects(invoke('canvas_snapshot'),{code:'PROJECT_NOT_BOUND'});
+ const request=await invoke('canvas_open');assert.equal(request.status,'project_list_requested');
+ const listed=await invoke('canvas_projects',{operation:'list'});assert.equal(listed.selectedProjectId,null);assert.ok(listed.projects.some(p=>p.projectId===f.projectId));
+ const created=await invoke('canvas_projects',{operation:'create',title:'测试新项目'});assert.notEqual(created.projectId,f.projectId);assert.deepEqual(created.documents,[]);
+ const opened=await invoke('canvas_open',{projectId:created.projectId});assert.equal(opened.projectId,created.projectId);assert.equal(opened.status,'open_requested');
+ const inherited=await f.api('/bind',{sessionId:'session-a',cwd:'/different'});assert.equal(inherited.body.value.projectId,created.projectId);
+ const current=await invoke('canvas_projects',{operation:'list'});assert.equal(current.selectedProjectId,created.projectId);assert.equal(current.projects.length,2);
+});
+test('switching projects verifies actual flush, persists real document metadata and cannot leak old RPC or lease',async t=>{
+ const f=await fixture(t),a=f.projectId,created=await f.api('/projects',{title:'目标 B',cwd:f.temp}),b=created.body.value.projectId;
+ assert.equal((await f.api('/projects/open',{sessionId:'session-a',projectId:a})).response.status,200);
+ const panel={...f.context,panelId:'switch_panel_old',revision:2,snapshot:{nodes:[{id:'A-only'}],edges:[]},documentRef:'project:actual-A'};assert.equal((await f.api('/panel',panel)).response.status,200);
+ const switching=f.api('/projects/open',{sessionId:'session-a',projectId:b}),event=await f.api('/events?'+new URLSearchParams({...f.context,panelId:panel.panelId,cursor:'0'})),command=event.body.value.events.find(e=>e.type==='command').command;assert.equal(command.action,'flush_save');
+ const during=await f.api('/command',{...f.context,requestId:'forbidden-during-switch',action:'undo'});assert.equal(during.response.status,409);assert.match(during.body.error,/项目正在保存|已关闭/);
+ const bytes=Buffer.from('actual legacy graph'),file=path.join(f.temp,'aiyou-enhancer/canvas/projects',a,'MediaCache/project management/actual-A/payload.json');await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,bytes);
+ const value={revision:3,snapshot:{projectId:'actual-A',nodes:[{id:'A-only'}],edges:[]},documentRef:'project:actual-A',saveReceipt:{projectId:a,documentRef:'project:actual-A',path:file,sha256:sha(bytes),bytes:bytes.length,patchSha256:null}};
+ assert.equal((await f.api('/reply',{...panel,requestId:command.requestId,ok:true,value})).response.status,200);
+ const actual=await switching;assert.equal(actual.response.status,200,JSON.stringify(actual.body));assert.equal(actual.body.value.projectId,b);
+ assert.match((await f.api('/panel',panel)).body.error,/面板已关闭/);
+ assert.match((await f.api('/rpc',{...f.context,command:'aiyouplus_model_config',args:{}})).body.error,/其他画布项目/);
+ const newPanel={...panel,projectId:b,panelId:'switch_panel_new',revision:0,snapshot:{nodes:[],edges:[]}};assert.equal((await f.api('/panel',newPanel)).response.status,200);
+ const list=(await f.api('/projects?sessionId=session-a')).body.value;assert.equal(list.selectedProjectId,b);const previous=list.projects.find(p=>p.projectId===a);assert.equal(previous.documentRef,'project:actual-A');assert.equal(previous.documents[0].documentId,'actual-A');assert.equal((await fs.readFile(file,'utf8')),'actual legacy graph');
+});
+test('creative tool text reaches the selected real executor and returns only after verified save',async t=>{
+ const f=await fixture(t);const unselected=await f.api('/rpc',{...f.context,command:'canvas_tool_send',args:{text:'actual tool text'}});assert.equal(unselected.response.status,409);assert.match(unselected.body.error,/先从项目列表选择/);
+ await f.api('/projects/open',{...f.context});const panel={...f.context,panelId:'tool_send_panel_123',revision:0,snapshot:{projectId:'tool-doc',nodes:[],edges:[]},documentRef:'project:tool-doc'};await f.api('/panel',panel);
+ let done=false;const sending=f.api('/rpc',{...f.context,panelId:panel.panelId,command:'canvas_tool_send',args:{text:'actual tool text'}}).then(r=>(done=true,r));
+ const first=(await f.api('/events?'+new URLSearchParams({...f.context,panelId:panel.panelId,cursor:'0'}))).body.value;assert.equal(first.events[0].command.action,'snapshot');await f.api('/reply',{...panel,requestId:first.events[0].command.requestId,ok:true,value:{revision:7,snapshot:{...panel.snapshot,nodes:[{id:'manual-newer-state'}]},documentRef:panel.documentRef}});
+ const second=(await f.api('/events?'+new URLSearchParams({...f.context,panelId:panel.panelId,cursor:String(first.cursor)}))).body.value,command=second.events.find(e=>e.type==='command').command;assert.equal(command.action,'write_text');assert.equal(command.payload.content,'actual tool text');assert.equal(command.expectedRevision,7,'tool send must use the actual renderer snapshot, never cached panel revision 0');assert.equal(done,false);
+ const bytes=Buffer.from('real executor output with tool text'),file=path.join(f.temp,'aiyou-enhancer/canvas/projects',f.projectId,'MediaCache/project management/tool-doc/payload.json');await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,bytes);
+ const value={revision:8,snapshot:{projectId:'tool-doc',nodes:[{id:'real-text',text:'actual tool text'}],edges:[]},documentRef:'project:tool-doc',saveReceipt:{projectId:f.projectId,documentRef:'project:tool-doc',path:file,sha256:sha(bytes),bytes:bytes.length,patchSha256:null}};await f.api('/reply',{...panel,requestId:command.requestId,ok:true,value});
+ const result=await sending;assert.equal(result.response.status,200,JSON.stringify(result.body));assert.equal(result.body.value.status,'completed');assert.equal(result.body.value.receipts.length,1);assert.equal(result.body.value.receipts[0].saveReceipt.path,file);
+});
+test('two native session panels share one writer and stale renderer RPC cannot write after an actual saved handover',async t=>{
+ const f=await fixture(t),projectId=f.projectId;for(const sessionId of ['session-a','session-b'])assert.equal((await f.api('/projects/open',{sessionId,projectId})).response.status,200);
+ const a={sessionId:'session-a',projectId,panelId:'http_shared_writer_A'},b={sessionId:'session-b',projectId,panelId:'http_shared_viewer_B'};
+ a.writerToken=(await f.api('/join',a)).body.value.writerToken;assert.ok(a.writerToken);const joinedB=await f.api('/join',b);assert.equal(joinedB.response.status,200);assert.equal(joinedB.body.value.role,'follower');
+ assert.equal((await f.api('/panel',{...a,revision:1,documentRef:'project:shared-http',snapshot:{projectId:'shared-http',nodes:[{id:'shared-node',x:40,y:60,textPreview:'同步文本'}],connections:[]}})).response.status,200);
+ const mirrored=(await f.api('/collaboration?'+new URLSearchParams(b))).body.value;assert.equal(mirrored.snapshot.nodes[0].id,'shared-node');assert.equal(mirrored.revision,1);
+ const file=path.join(f.temp,'aiyou-enhancer/canvas/projects',projectId,'MediaCache/project management/shared-http/payload.json'),bytes=Buffer.from('canonical saved shared graph');await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,bytes);
+ const taking=f.api('/take-control',b),events=(await f.api('/events?'+new URLSearchParams({...a,cursor:'0'}))).body.value,command=events.events.find(e=>e.command).command;
+ await f.api('/reply',{...a,requestId:command.requestId,ok:true,value:{revision:2,snapshot:{projectId:'shared-http',nodes:[{id:'shared-node',x:40,y:60,textPreview:'同步文本'}],connections:[]},documentRef:'project:shared-http',saveReceipt:{projectId,documentRef:'project:shared-http',path:file,sha256:sha(bytes),bytes:bytes.length,patchSha256:null}}});
+ const taken=await taking;assert.equal(taken.response.status,200,JSON.stringify(taken.body));b.writerToken=taken.body.value.writerToken;assert.equal(taken.body.value.baseRevision,2);
+ const late=await f.api('/rpc',{...a,command:'write_text_file_atomic',args:{path:file,body:'forbidden old renderer overwrite'}});assert.equal(late.response.status,409);assert.match(late.body.error,/协同查看|编辑权/);assert.equal(await fs.readFile(file,'utf8'),'canonical saved shared graph');
+ const ignored=await f.api('/close',a);assert.equal(ignored.body.value.staleWriter,true);assert.equal((await f.api('/collaboration?'+new URLSearchParams({...a,writerToken:undefined}))).body.value.role,'follower');
+ assert.equal((await f.api('/panel',{...b,revision:3,documentRef:'project:shared-http',snapshot:{projectId:'shared-http',nodes:[{id:'shared-node',x:40,y:60}],connections:[]}})).response.status,200);
+ const fromA=f.api('/command',{sessionId:a.sessionId,projectId,requestId:'from-viewer-A',action:'snapshot'}),nextEvents=(await f.api('/events?'+new URLSearchParams({...b,cursor:'0'}))).body.value,nextCommand=nextEvents.events.find(e=>e.command?.requestId==='from-viewer-A').command;assert.equal(nextCommand.action,'snapshot');await f.api('/reply',{...b,requestId:nextCommand.requestId,ok:true,value:{revision:3,snapshot:{projectId:'shared-http',nodes:[{id:'shared-node',x:40,y:60}],connections:[]},documentRef:'project:shared-http'}});assert.equal((await fromA).body.value.snapshot.nodes[0].id,'shared-node');await f.api('/close',{sessionId:a.sessionId,projectId,panelId:a.panelId});assert.equal((await f.api('/collaboration?'+new URLSearchParams(b))).body.value.role,'writer');
+});
+test('production facade reads the actual renderer revision after manual edits before executing',async t=>{
+ const f=await fixture(t);await f.api('/projects/open',{...f.context});const panel={...f.context,panelId:'production_fresh_revision',revision:0,snapshot:{projectId:'production-doc',nodes:[],connections:[]},documentRef:'project:production-doc'};await f.api('/panel',panel);
+ const running=f.api('/rpc',{...f.context,panelId:panel.panelId,command:'canvas_production',args:{method:'snapshot',requestId:'production-request-fresh'}}),first=(await f.api('/events?'+new URLSearchParams({...f.context,panelId:panel.panelId,cursor:'0'}))).body.value,read=first.events.find(e=>e.command).command;assert.equal(read.action,'snapshot');assert.equal(read.expectedRevision,undefined);
+ const current={projectId:'production-doc',nodes:[{id:'manual-production-state'}],connections:[]};await f.api('/reply',{...panel,requestId:read.requestId,ok:true,value:{revision:9,snapshot:current,documentRef:panel.documentRef}});
+ const events=(await f.api('/events?'+new URLSearchParams({...f.context,panelId:panel.panelId,cursor:String(first.cursor)}))).body.value,command=events.events.find(e=>e.command).command;assert.equal(command.action,'production');assert.equal(command.expectedRevision,9);assert.equal(command.payload.method,'snapshot');
+ const file=path.join(f.temp,'aiyou-enhancer/canvas/projects',f.projectId,'MediaCache/project management/production-doc/payload.json'),bytes=Buffer.from('actual production current document');await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,bytes);await f.api('/reply',{...panel,requestId:command.requestId,ok:true,value:{revision:9,snapshot:current,documentRef:panel.documentRef,saveReceipt:{projectId:f.projectId,documentRef:panel.documentRef,path:file,sha256:sha(bytes),bytes:bytes.length,patchSha256:null},actionResult:{result:{actualProductionFacadeResult:true}}}});
+ assert.deepEqual((await running).body.value,{actualProductionFacadeResult:true});
 });

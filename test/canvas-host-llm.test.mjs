@@ -6,7 +6,7 @@ function fixture({pending=null,header={config:{provider:'old',model:'old-model'}
  const calls=[],events=[],session={id:'session-a',requestHeader:()=>header,append:(type,data)=>events.push({type,data})};
  const ctx={agents:{get:id=>id===session.id?{session}:undefined},sessionProjections:{stateOf:()=>({pending})},agentDefaultModel:{currentSelection:()=>({provider:'default',model:'default-model'})},
   attachments:{admitPromptContent:async parts=>parts.map(p=>({type:'image',attachment:{attachmentId:'sha-original',mediaType:p.mediaType}}))},
-  llm:{listProviders:()=>['old','new','default','openai-codex'].map(id=>({id})),resolveModelInfo:async()=>({inputModalities:['text','image']}),
+  llm:{listProviders:()=>['old','new','default','codex-cli'].map(id=>({id})),resolveModelInfo:async()=>({inputModalities:['text','image']}),
    prepareCall:async(config,signal)=>({config,inputModalities:['text','image'],stream:options=>{calls.push({config,options,signal});return stream?stream(options):async function*(){yield{type:'text-delta',index:0,text:'done'};yield{type:'finish',reason:{kind:'stop'}};}();}})}};
  return{ctx,calls,events,llm:createHostLlm({ctx,record:async(_session,type,data)=>events.push({type,data})}),context:{sessionId:session.id,projectId:'project-a'}};
 }
@@ -22,8 +22,8 @@ test('stored header precedes default; adapter-provided reasoning default is not 
  const d=fixture({header:null});await d.llm({prompt:'x'},d.context);assert.equal(d.calls[0].config.provider,'default');
 });
 test('Codex route reuses host preparation; status never claims OAuth authenticated',async()=>{
- const f=fixture({pending:{provider:'openai-codex',model:'codex-model'}}),caps=await f.llm.capabilities(f.context);
- assert.equal(caps.codex.supported,true);assert.equal(caps.authorizationVerified,false);await f.llm({prompt:'x'},f.context);assert.equal(f.calls[0].config.provider,'openai-codex');assert.equal(f.calls[0].options.apiKey,undefined);
+ const f=fixture({pending:{provider:'codex-cli',model:'codex-model'}}),caps=await f.llm.capabilities(f.context);
+ assert.equal(caps.codex.supported,true);assert.equal(caps.authorizationVerified,false);await f.llm({prompt:'x'},f.context);assert.equal(f.calls[0].config.provider,'codex-cli');assert.equal(f.calls[0].options.apiKey,undefined);
 });
 test('unsupported forcing/structured controls reject before model dispatch; none removes tools',async()=>{
  const f=fixture();for(const request of [{tool_choice:'required'},{response_format:{type:'json_object'}},{top_p:0.5}])await assert.rejects(f.llm({prompt:'x',...request},f.context),e=>e.code==='UNSUPPORTED_OPTION');

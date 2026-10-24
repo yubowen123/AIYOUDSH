@@ -15975,6 +15975,7 @@ function s5n(e) {
 }
 
 async function rZ(e) {
+  return !1;
   if (!s8r()) return !1;
   const t = s5n(e);
   return aH && kae === t ? !0 : (kae !== t && (aH = !1), rH || (rH = (async () => {
@@ -133300,7 +133301,7 @@ try {
     },
     n = document.getElementById("root");
   n ? LJt().finally(() => {
-    (window.__DSH_CANVAS_REACT_ROOT__=cWt.createRoot(n)).render(c.jsx($Oi, {})), OJt(), t();
+    (window.__DSH_CANVAS_REACT_ROOT__=cWt.createRoot(n)).render(c.jsx(window.__DSH_CREATIVE_TOOLS__ ? DSHCreativeRoot : $Oi, {})), OJt(), t();
   }) : window.addEventListener("DOMContentLoaded", () => {
     try {
       window.__LINGOAPP_RENDERED__ = !0;
@@ -133309,7 +133310,7 @@ try {
       const a = document.getElementById("root");
       if (!a) return;
       LJt().finally(() => {
-        (window.__DSH_CANVAS_REACT_ROOT__=cWt.createRoot(a)).render(c.jsx($Oi, {})), OJt(), t();
+        (window.__DSH_CANVAS_REACT_ROOT__=cWt.createRoot(a)).render(c.jsx(window.__DSH_CREATIVE_TOOLS__ ? DSHCreativeRoot : $Oi, {})), OJt(), t();
       });
     } catch (r) {
       console.error("[main] DOMContentLoaded render failed:", r);
@@ -133439,6 +133440,7 @@ function fva() {
 }
 
 async function gva(e) {
+  if(window.__DSH_CREATIVE_TOOLS__){const url=new URL(e,location.href);if(url.origin===location.origin&&url.pathname==="/aiyoucodex-dsh/canvas/file"){const response=await fetch(url.href);if(!response.ok)throw Error("读取 DSH 原件失败");return nU(new Uint8Array(await response.arrayBuffer()));}}
   try {
     const t = await Fr("download_file_bypass_cors", {
         url: e
@@ -181287,6 +181289,7 @@ const Hvt = "#f7f7f7",
       },
       wn = vt + 8,
       at = wn + 52;
+    window.__DSH_DIRECTOR3D__={state:y,actions:v,capture:()=>h.current?.capture(),close:t};
     return c.jsxs("div", {
       ref: p,
       "data-director3d-workbench": !0,
@@ -207136,6 +207139,14 @@ const DRa = !0,
     to: "preview",
     purpose: "Preview ID-V2V video results."
   }, {
+    from: "input-image",
+    to: "global-perspective",
+    purpose: "Use one local original image in the global-perspective viewer."
+  }, {
+    from: "input-image",
+    to: "preview",
+    purpose: "Preview and compose local original images."
+  }, {
     from: "gen-image",
     to: "preview",
     purpose: "Preview image outputs."
@@ -207153,6 +207164,11 @@ const DRa = !0,
     purpose: "Save image outputs."
   }],
   FRa = [{
+    to: "global-perspective",
+    allowedFrom: ["input-image"],
+    maxIncoming: 1,
+    summary: "A global-perspective viewer reads exactly one default-slot original image reference."
+  }, {
     to: "gen-image",
     allowedFrom: ["input-image", "preview", "text-node"],
     referenceFrom: ["input-image", "preview"],
@@ -207363,7 +207379,7 @@ function hXe() {
 }
 
 const eNa = "1.2",
-  cf = qRa,
+  cf = (()=>{const caps=qRa;for(const type of ["director-3d","global-perspective","video-timeline"]){const existing=caps.nodes.find(node=>node.type===type),entry={type,label:type==="video-timeline"?"剪辑时间线":type==="director-3d"?"3D导演台":"全局视角",purpose:"Retained local canvas workspace; only layout and name are editable through the host bridge.",canCreate:!0,canUpdate:!0,publicParams:["nodeName","x","y","width","height"]};if(existing)Object.assign(existing,entry);else caps.nodes.push(entry);}return caps;})(),
   oLt = new Set(cf.nodes.filter(e => e.canCreate).map(e => e.type)),
   Gnn = new Set(["textNodeChatModel", "model", "ratio", "resolution", "duration", "batchCount", "batchSize", "chatModel", "text", "useOss", "ossUploadEnabled", "isAsync", "run", "seedanceVolcIsUploadAsset", "seedanceVolcGenerateAudio", "seedanceGenerateAudio", "mediaType", "platformGroup", "gptImage2Resolution", "gptImage2AspectRatio", "gptImage2CustomSize", "gptImageQuality", "gptImageModeration", "gptImageBackground", "background", "seedreamBackground", "gptImageOutputFormat", "falSyncMode", "virtualTryOnNumImages", "virtualTryOnAspectRatio", "virtualTryOnSeed", "virtualTryOnMode", "threeDOutputType", "threeDMaterial", "threeDInputImageType", "threeDNodeRole", "isPano", "idV2vMode", "idV2vResolution", "idV2vNumFrames", "idV2vSegmentationPrompt", "gptImageInputFidelity", "grokImageQuality", "mjVersion", "huyaMjVersion", "mjMode", "mjMotion", "mjOrefUrl", "mjSrefUrl", "falSafetyTolerance", "falEnableWebSearch", "negativePrompt", "seed", "imageCount", "maxImages", "useAsyncMode", "imageAsyncMode", "enableInterleave", "useStream", "referenceImages", "inputImageOrder", "multiAngle", "lighting", "cinemaConfig", "movementConfig", "seedanceVolcMcpWebSearch", "seedanceVolcNsfw", "seedanceVolcCameraFixed", "seedanceOutputFormat", "seedanceBitrateMode", "seedanceMaterials", "wan27ThinkingMode", "textNodeReasoningEffort", "agentReasoningEffort", "videoAnalyzeReasoningEffort", "huyaWanAudio", "promptExtend", "huyaWanWatermark", "wan30Prime", "enableThinking", "wan26MultiShot", "wan26AudioConfig", "wan26Resolution", "huyaKlingSound", "klingV3Sound", "klingV26Sound", "klingNative4kWorkflowMode", "klingNative4kSound", "klingNative4kKeepAudio", "happyHorseWorkflowMode", "happyHorseAudioSetting", "viduQ3MixAudio", "viduQ3FalAudio", "viduQ4FalAudio", "flux3WorkflowMode", "flux3GenerateAudio", "klingV25Resolution", "klingV26Resolution", "klingV3MultiShot", "klingV3ShotType", "klingV3MultiPrompt", "klingSubjects", "klingImages", "klingVideoUrl", "klingVideoReferType", "klingVideoSegment", "klingMotionControlMode", "klingMotionControlCharacterOrientation", "klingMotionControlWatermarkEnabled", "klingVideoKeepSound", "veoFramesMode", "veoGenerateAudio", "isHD", "characterId", "voiceId", "speechTaskMode", "speechSpeed", "speechVol", "speechPitch", "emotion", "languageBoost", "qwenTtsLanguage", "audioSampleRate", "audioBitrate", "audioFormat", "audioChannel", "speechCloneVoiceId", "speechCloneSourceData", "speechCloneSourceUrl", "speechCloneSourceAssetId", "speechCloneFileId", "seedAudioFormat", "seedAudioSampleRate", "seedAudioSpeechRate", "seedAudioLoudnessRate", "seedAudioPitchRate", "mode", "lyrics", "instrumentalDescription", "tags", "title", "continueClipId", "clipId", "continueAt", "isInstrumental", "refAudioUsage", "continueAudioPublicUrl", "coverUploadUrl", "audioUrl", "audioDescription", "projectAssetRole", "projectVersionGroup", "projectAssetNote", "disableThumbnailCreationOnImport", "_assetId", "_contentAssetId", "_localCacheAssetId", "_blobUrl", "_codexSourceUrl"]),
   ZXn = [...cf.actions];
@@ -229936,22 +229952,9 @@ function qBa({
         "aria-pressed": w.listTab === "local",
         onClick: () => w.setListTab("local"),
         children: x("本地")
-      }), c.jsx("button", {
-        "aria-pressed": w.listTab === "cloud",
-        onClick: () => {
-          w.setListTab("cloud"), w.settings.enabled || f(!0);
-        },
-        children: x("云端")
-      }), c.jsx("span", {
+      }), null, c.jsx("span", {
         className: "sw-spacer"
-      }), c.jsx("button", {
-        title: x("备份设置"),
-        "aria-label": x("备份设置"),
-        onClick: () => f(!m),
-        children: c.jsx(Wp, {
-          size: 14
-        })
-      }), w.listTab === "cloud" && c.jsx("button", {
+      }), null, w.listTab === "cloud" && c.jsx("button", {
         title: x("刷新云端历史"),
         "aria-label": x("刷新云端历史"),
         disabled: w.ossBusy || !w.ossAvailable,
@@ -310634,6 +310637,7 @@ async function jui() {
 }
 
 async function CBt() {
+  if(document.body.dataset.dshEmbedded) return !1;
   if (!Nui()) return !1;
   try {
     return await Fr("ensure_extension_bridge");
@@ -339923,6 +339927,7 @@ function Z_i(e, t) {
 }
 
 async function fG(e, t, n) {
+  if(window.__DSH_CREATIVE_TOOLS__?.downloadBlob) return window.__DSH_CREATIVE_TOOLS__.downloadBlob(e,t,n);
   try {
     if (!e.size) throw new Error("文件为空");
     const r = Edr(t, e, n);
@@ -367298,7 +367303,7 @@ const QMi = new Map(VFt.map(e => [e.key, e.label])),
           ...yc,
           className: Zl
         }),
-        onClick: ue(F),
+        onClick: ue(()=>window.__DSH_CANVAS_OPEN_PROJECTS__?.()),
         active: o,
         show: !!F
       }, ...(H ? [{
@@ -367468,7 +367473,7 @@ const QMi = new Map(VFt.map(e => [e.key, e.label])),
           ...yc,
           className: Zl
         }),
-        onClick: ue(R),
+        onClick: ue(()=>window.__DSH_CANVAS_OPEN_CHARACTERS__?.()),
         active: Q
       }, {
         key: "kling-subjects",
@@ -367524,7 +367529,7 @@ const QMi = new Map(VFt.map(e => [e.key, e.label])),
         show: !!D
       }], [Q, u, W, q, H, L, D, O, U, R, V, P, j, N, G, F, B, z, s, l, o, ne, d, aiyouToggleProduction]),
       ke = g.useMemo(() => new Set(J), [J]),
-      ve = g.useMemo(() => zMi(_e, de).filter(me => !ke.has(me.key)), [_e, de, ke]),
+      ve = g.useMemo(() => {const items=["video-timeline","director-3d","global-perspective","preview","characters","save","project-panel"].map(key=>_e.find(item=>item.key===key)).filter(Boolean).map(item=>item.key==="project-panel"?{...item,onClick:()=>window.__DSH_CANVAS_OPEN_PROJECTS__?.()}:item.key==="characters"?{...item,onClick:()=>window.__DSH_CANVAS_OPEN_CHARACTERS__?.()}:item);window.__DSH_CANVAS_MORE_TOOLS__=items;return items;}, [_e, de, ke]),
       Te = g.useMemo(() => {
         const me = new Map();
         for (const Ae of _e) Ae.show !== !1 && me.set(Ae.key, Ae);
@@ -367555,7 +367560,7 @@ const QMi = new Map(VFt.map(e => [e.key, e.label])),
           orientation: e,
           isDark: r,
           items: ve,
-          onOpenOrderSettings: () => we(!0)
+          onOpenOrderSettings: undefined
         }), J.map(me => Ne(me))]
       }), c.jsx(XMi, {
         isOpen: ce,
@@ -367642,7 +367647,7 @@ const QMi = new Map(VFt.map(e => [e.key, e.label])),
           })
         }), c.jsx("button", {
           onClick: me => {
-            me.preventDefault(), me.stopPropagation(), R(me);
+            me.preventDefault(), me.stopPropagation(), window.__DSH_CANVAS_OPEN_CHARACTERS__?.();
           },
           className: Ee,
           "data-toolbar-active": Q ? "true" : "false",
@@ -367686,7 +367691,7 @@ const QMi = new Map(VFt.map(e => [e.key, e.label])),
           })
         }), F && c.jsx("button", {
           onClick: me => {
-            me.preventDefault(), me.stopPropagation(), F(me);
+            me.preventDefault(), me.stopPropagation(), window.__DSH_CANVAS_OPEN_PROJECTS__?.();
           },
           className: Ee,
           "data-toolbar-active": o ? "true" : "false",
@@ -372243,7 +372248,7 @@ function zJe(e, t, n = {}) {
 }
 
 function YFt(e, t) {
-  return kQe(e.filter(n => n.type === "Image" && (zRi(n.id) || n.localComfy && n.localComfy.model !== "h3" && n.enabled !== !1)), t);
+  return kQe(e.filter(n => n.type === "Image" && n.enabled !== !1 && (window.__AIYOUPLUS_CANVAS_MODEL_ADAPTER__?.getMediaModel(n.id) || zRi(n.id) || n.localComfy && n.localComfy.model !== "h3")), t);
 }
 
 function Mpe(e, t, n, r) {
@@ -378542,6 +378547,7 @@ function c$e() {
 }
 
 async function T7i() {
+  if(document.body.dataset.dshEmbedded) return;
   if (!y$ || !epr() || c$e() && !WJe) return;
   const e = Ppe().settings;
   try {
@@ -378555,6 +378561,7 @@ async function T7i() {
 }
 
 async function tpr() {
+  if(document.body.dataset.dshEmbedded) return;
   if (!(!y$ || hj || !epr() || !Ppe().settings.enabled)) try {
     await Fr("production_api_gateway_sync_state", {
       snapshot: E7i({
@@ -384575,9 +384582,11 @@ function aV(e, t) {
   return !!(!r && !a || r != null && r.has(n) || a != null && a.length && mXe(n, a, "any"));
 }
 
+function dshLocalLayoutError(payload,updating){const allowed=new Set(updating?["nodeId","id","nodeName","x","y","width","height","settings"]:["type","nodeName","x","y","width","height","settings","run"]);for(const key of Object.keys(payload))if(!allowed.has(key))return "local canvas workspace accepts only layout and name: "+key;if(payload.settings!==undefined&&(!payload.settings||typeof payload.settings!=="object"||Array.isArray(payload.settings)||Object.keys(payload.settings).length))return "local canvas workspace settings are managed by its original UI";if(payload.run!==undefined&&payload.run!==!1)return "local canvas workspace does not run supplier generation";for(const key of ["x","y","width","height"])if(payload[key]!==undefined&&(!Number.isFinite(payload[key])||((key==="width"||key==="height")&&payload[key]<=0)))return "invalid local canvas layout: "+key;if(payload.nodeName!==undefined&&(typeof payload.nodeName!=="string"||!payload.nodeName.trim()||payload.nodeName.length>200))return "invalid local canvas workspace name";return null;}
 function uAt(e, t, n) {
   var o, s, l, d, u, h, p, m, f, y, b, v;
   const r = String(e || "").trim();
+  if(r==="execute_node"||r==="run_generation"){const payload=_0(t),target=n?.nodeTypesById?.get(String(payload.nodeId||payload.id||""));if(["video-timeline","director-3d","global-perspective"].includes(target))return {ok:!1,error:"local canvas workspace does not run supplier generation"};}
   if (r === "create_gen_image" || r === "execute_node") return {
     ok: !0
   };
@@ -384719,6 +384728,7 @@ function uAt(e, t, n) {
           ok: !1,
           error: `node type not creatable by Codex: ${_}`
         };
+        if(["video-timeline","director-3d","global-perspective"].includes(_)){const error=dshLocalLayoutError(a,!1);if(error)return {ok:!1,error};}
         const w = u$e(a.settings);
         for (const S of Object.keys(w)) if (!Gnn.has(S)) return {
           ok: !1,
@@ -384742,6 +384752,7 @@ function uAt(e, t, n) {
           ok: !1,
           error: `node not found on canvas: ${_}; use find_canvas_nodes to get real node ids`
         };
+        if(["video-timeline","director-3d","global-perspective"].includes(n?.nodeTypesById?.get(_))){const error=dshLocalLayoutError(a,!0);if(error)return {ok:!1,error};}
         const w = u$e(a.settings);
         for (const S of Object.keys(w)) if (!Gnn.has(S)) return {
           ok: !1,
@@ -384771,6 +384782,7 @@ function uAt(e, t, n) {
         }
         const k = (d = n == null ? void 0 : n.nodeTypesById) == null ? void 0 : d.get(_),
           A = (u = n == null ? void 0 : n.nodeTypesById) == null ? void 0 : u.get(w);
+        if(k === "input-image" && (A === "global-perspective" || A === "preview") && a.inputType !== undefined && a.inputType !== "default") return {ok:!1,error:"local image viewer references require the default input slot"};
         if (k && A && !Lie(k, A)) return {
           ok: !1,
           error: `connection not allowed by capabilities: ${k} → ${A}`
@@ -384837,6 +384849,7 @@ function uAt(e, t, n) {
           };
           for (const E of k) {
             const M = (b = n == null ? void 0 : n.nodeTypesById) == null ? void 0 : b.get(E);
+            if(M === "input-image" && (A === "global-perspective" || A === "preview") && a.inputType !== undefined && a.inputType !== "default") return {ok:!1,error:"local image viewer references require the default input slot"};
             if (M && !Lie(M, A)) return {
               ok: !1,
               error: `connection not allowed by capabilities: ${M} → ${A}`
@@ -388295,6 +388308,20 @@ function ihn(e) {
   e && (e.preventDefault(), e.stopPropagation());
 }
 
+function DSHGenericToolPortal({host,toolId,onBack}) {g.useEffect(()=>{if(!host)return;let alive=true,dispose;window.__DSH_CREATIVE_TOOLS__.mountGeneric(host,{toolId,onBack}).then(fn=>{if(alive)dispose=fn;else fn?.();}).catch(error=>{if(alive){const p=document.createElement('p');p.setAttribute('role','alert');p.textContent=error.message;host.append(p);dispose=()=>p.remove();}});return()=>{alive=false;dispose?.();};},[host,toolId]);return null;}
+function DSHCreativeRoot() {
+  window.__DSH_CREATIVE_TOOLS__.makePsd=(...args)=>$0r(...args);
+  X1("toolbox");
+  const [host, setHost] = g.useState(null);
+  const [configs,setConfigs] = g.useState(()=>Qa.getConfigs());
+  g.useEffect(()=>Qa.subscribe(()=>setConfigs(Qa.getConfigs())),[]);
+  const scriptConfigs=g.useMemo(()=>configs.filter(v=>v.type==="Chat"),[configs]);
+  const [history, setHistory] = g.useState(() => {try {return JSON.parse(localStorage.getItem("dsh.tools.history") || "[]");} catch {return [];}});
+  window.__DSH_CREATIVE_STATE__={history,configs};
+  g.useEffect(()=>{let active=true;window.__DSH_CREATIVE_TOOLS__.loadAssets().then(rows=>{if(active)setHistory(previous=>[...rows,...previous.filter(item=>!rows.some(row=>row.id===item.id))]);}).catch(error=>window.__DSH_CREATIVE_TOOLS__.notice(error.message));return()=>{active=false;};},[]);
+  g.useEffect(() => {localStorage.setItem("dsh.tools.history", JSON.stringify(history));void window.__DSH_CREATIVE_TOOLS__.adoptHistory(history);}, [history]);
+  return c.jsxs(c.Fragment, {children:[c.jsx("div", {className:"dsh-tools-integration-note",children:"22 个创作工具 · 结果进入 DSH 统一素材库 · 文字使用当前 DSH 模型；生图与视频请先配置对应媒体模型。"}), c.jsx("main", {id:"dsh-creative-host",ref:setHost}), host && c.jsx(Olo,{host,apiConfigs:configs,scriptApiConfigs:scriptConfigs,globalApiKey:"",history,setHistory,getCanvasNodes:()=>[],onSendMediaToCanvas:window.__DSH_CREATIVE_TOOLS__.sendMedia,onSendScriptToCanvas:window.__DSH_CREATIVE_TOOLS__.sendScript})]});
+}
 function $Oi() {
   return c.jsx(fdi, {
     children: c.jsx(GOi, {})
@@ -389446,7 +389473,7 @@ function GOi() {
       resizingNodeId: Xo,
       draggingSelectionRef: Kl
     });
-  window.__DSH_CANVAS_BINDINGS__ = {execute: II, snapshot: qb, invalidate: M9, assetStore: ni, localCache: Ur};
+  window.__DSH_CANVAS_BINDINGS__ = {execute: II, snapshot: qb, invalidate: M9, assetStore: ni, localCache: Ur, capabilities:()=>L1t(), openDirector3D:(...args)=>_o(...args), closeDirector3D:(...args)=>Ao(...args)};
   Rmi({
     document: je,
     nodesRef: ns,
@@ -456745,12 +456772,13 @@ function Olo({
       generateId: () => crypto.randomUUID(),
       canvasBackground: !1
     }, D);
+  if(window.__DSH_CREATIVE_TOOLS__ && ["image-wash","image-upscale","product","relight","motion","layers","cutout-repair","local-edit"].includes(h)) return c.jsx(DSHGenericToolPortal,{host:e,toolId:h,onBack:()=>p("home")});
   return c.jsxs(c.Fragment, {
     children: [W, e ? Da.createPortal(c.jsx(Alo, {
       screen: h,
       setScreen: p,
       apiConfigs: t,
-      runEditImage: K,
+      runEditImage: window.__DSH_CREATIVE_TOOLS__?.runEditImage || K,
       history: a,
       setHistory: i
     }), e) : null, P && c.jsx(g.Suspense, {
@@ -508713,6 +508741,7 @@ function uvo({
     }, [ke]),
     Ft = X && X.width > 0 && X.height > 0 ? X.width / X.height : 16 / 9,
     We = Ft < .85 ? "55%" : "78%";
+  window.__DSH_TIMELINES__??=new Map();window.__DSH_TIMELINES__.set(e.id,{state:()=>timelineLive.current,addSource:source=>he(source,l.sources.length===0),trim:Ce,move:He,export:it,undo:undoTimelineEdit,redo:redoTimelineEdit});
   return c.jsxs("div", {
     className: `video-timeline-node ${n ? "is-dark" : "is-light"} ${r ? "is-selected" : ""}`,
     style: {
@@ -508728,7 +508757,7 @@ function uvo({
     onDragOver: Ge => {
       Ge.preventDefault(), Ge.stopPropagation(), Ge.dataTransfer.dropEffect = "copy";
     },
-    children: [c.jsx("input", {
+    children: [c.jsx("button",{type:"button",className:"dsh-timeline-assets",onPointerDown:event=>event.stopPropagation(),onClick:async(event)=>{event.preventDefault();event.stopPropagation();try{const source=await window.__DSH_CANVAS_PICK_TIMELINE_ASSET__?.();if(source)he(source,l.sources.length===0);}catch(error){Ai("error",error.message,4000);}},children:"从 DSH 素材库添加"}),c.jsx("input", {
       ref: ue,
       className: "hidden",
       type: "file",
@@ -513750,9 +513779,12 @@ const e1o = ({
       be = Math.max(120, Math.round(be)), Ee = Math.max(90, Math.round(Ee));
       const xe = h(),
         he = Ki(xe, "input-image", J, pe, le, void 0, ce);
-      return he.width = be, he.height = Ee, he.content = fe, he.settings = {
+      return he.width = be, he.height = Ee, he.content = fe, he._contentAssetId = Z, he.settings = {
         ...(he.settings || {}),
         mediaType: "image",
+        _localCacheAssetId: Z,
+        _assetId: Z,
+        _useCanvasPreviewDisplay: !0,
         _contentAssetId: Z,
         hasCustomSize: !0,
         imageSize: `${ne}×${de}`
@@ -562462,6 +562494,7 @@ function TSo({
   const ke = async (Te, Ne) => {
     Ne === "canvas" ? (await i(Te), Dx()) : xUt(NBa(Te));
   };
+  window.__DSH_SCRIPT_WRITER__={project:o,setOutline:f,addEpisode:w,updateEpisode:A,sendToCanvas:i};
   return c.jsxs(c.Fragment, {
     children: [c.jsx(rOr, {
       isOpen: t,

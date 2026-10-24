@@ -31,7 +31,7 @@ export function createHostLlm({ctx,select,emit=()=>{},record}={}){
   let modelInfo,diagnostic;
   if(registered)try{modelInfo=await ctx.llm.resolveModelInfo(selected.provider,selected.model,context.signal);}catch(e){diagnostic=e.code||'MODEL_UNAVAILABLE';}
   return {available:registered&&!diagnostic,selected:publicSelection(selected),credentialManagedByHost:true,authorizationVerified:false,
-   codex:{supported:providers.some(p=>p.id==='openai-codex'),selected:selected?.provider==='openai-codex',authorization:'host-owned-not-probed'},
+   codex:{supported:providers.some(p=>p.id==='codex-cli'),selected:selected?.provider==='codex-cli',connectionType:'local-cli',authorization:'existing-cli-login-not-probed'},
    inputModalities:modelInfo?.inputModalities||['text'],tools:true,toolChoice:['auto','none'],
    ...(diagnostic?{diagnostic}:{}),cancellation:'local-signal',source:'DSH configured adapters'};
  }

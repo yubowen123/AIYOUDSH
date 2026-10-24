@@ -62,6 +62,7 @@ function normalizeCatalog(input){
     if(row.parameterSchema)out.parameterSchema=safeJson(row.parameterSchema);
     if(row.inputModalities){if(!Array.isArray(row.inputModalities)||row.inputModalities.some(x=>!['text','image','video','audio'].includes(x)))throw new Error('输入模态无效');out.inputModalities=[...new Set(row.inputModalities)];}
     if(row.maxReferences!==undefined){if(!Number.isInteger(row.maxReferences)||row.maxReferences<0||row.maxReferences>100)throw new Error('参考数量无效');out.maxReferences=row.maxReferences;}
+    if(row.maskSupported!==undefined){if(typeof row.maskSupported!=='boolean')throw new Error('蒙版能力须为布尔值');out.maskSupported=row.maskSupported;}
     return out;
   });
 }
@@ -231,7 +232,8 @@ function parseOpenApi(doc,root,allowLoopback){
     const inputFields=fields(root,schema).map(f=>f.path),inputModalities=['text'];
     for(const [modality,re]of [['image',/image|firstFrame|lastFrame/i],['video',/video.*url|referenceVideo/i],['audio',/audio.*url|referenceAudio/i]])if(inputFields.some(p=>re.test(p)))inputModalities.push(modality);
     const imageLimit=fields(root,schema).find(f=>f.type==='array'&&/image|references/i.test(f.path)&&Number.isInteger(f.maxItems)&&f.maxItems<=64)?.maxItems;
-    for(const id of validIds)catalog.push({id,name:id,kind,request:{method:'POST',path:route,template:built.template},response,...(polling?{polling}:{}),parameters:built.parameters,parameterSchema:built.parameterSchema,inputModalities,...(imageLimit===undefined?{}:{maxReferences:imageLimit})});
+    const maskSupported=inputFields.some(p=>/(?:^|\.)(?:mask|mask_image|maskImage|mask_url|maskUrl|mask_base64|maskBase64)$/.test(p));
+    for(const id of validIds)catalog.push({id,name:id,kind,request:{method:'POST',path:route,template:built.template},response,...(polling?{polling}:{}),parameters:built.parameters,parameterSchema:built.parameterSchema,inputModalities,...(maskSupported?{maskSupported:true}:{}),...(imageLimit===undefined?{}:{maxReferences:imageLimit})});
     evidence.push({url:doc.url,type:'openapi-operation',path:route,kind,confidence:0.95,parameterSchema:built.parameterSchema,...(output.binary?{responseMediaType:output.mimeType||'audio/*'}:{})});
   }
   const catalogRoute=routes.find(p=>/\/models$/.test(p)&&paths[p]?.get);

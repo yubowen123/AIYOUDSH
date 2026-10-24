@@ -62,6 +62,17 @@ test('Chat always uses host without media credential; discovery GET cannot auto-
  const result=await f.service.invoke('aiyouplus_model_discover',{url:f.baseUrl+'/docs',autoConfigure:true},context);assert.equal(result.discovery.readyToConfigure,false);assert.equal(result.configuration,undefined);assert.ok(result.discovery.issues.length>0);assert.equal(f.requests.every(r=>r.method==='GET'&&!r.auth),true);
  const config=await f.service.invoke('aiyouplus_model_config',{},context);assert.equal(config.models.chat,'dsh-current');assert.equal(Object.keys(config.profiles).length,1);
 });
+test('API discovery omits its internal token default for local CLI while preserving other provider defaults',async t=>{
+ const f=await fixture(t,(_req,res)=>{res.writeHead(200,{'content-type':'text/html'});res.end('<h1>Unknown API</h1><p>Manual configuration required.</p>');});
+ for(const provider of ['codex-cli','deepseek']){
+  await f.service.dispose();const calls=[];
+  const llm=Object.assign(async request=>{calls.push(request);return{text:'{}'};},{capabilities:async()=>({available:true,selected:{provider}})});
+  f.service=createModelService({...f.options,llm});
+  await f.service.invoke('aiyouplus_model_discover',{url:f.baseUrl+'/docs'},context);
+  assert.equal(calls.length,1);assert.equal(Object.hasOwn(calls[0],'max_tokens'),provider!=='codex-cli');
+  if(provider!=='codex-cli')assert.equal(calls[0].max_tokens,6000);
+ }
+});
 test('stop only ends local waiting; persisted taskId permits GET-only resume',async t=>{
  let ready;const querySeen=new Promise(r=>{ready=r;});let done=false;
  const f=await fixture(t,(req,res)=>{if(req.url==='/original.png'){res.writeHead(200,{'content-type':'image/png'});return res.end(PNG);}if(req.method==='POST')return json(res,{taskId:'stoppable'});ready();return json(res,done?{status:'done',url:f.baseUrl+'/original.png'}:{status:'running'});});

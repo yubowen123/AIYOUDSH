@@ -1,29 +1,271 @@
 {
   "schema": "dsh-canvas-actions.v1",
   "source": "Recovered renderer-020 KDi/LDi/VLi; all examples undergo actual current-capability validation",
-  "envelope": {"requestId":"unique-stable-id","projectId":"DSH-project-id","expectedRevision":1,"action":"create_node","payload":{}},
-  "supportedActions": ["snapshot","flush_save","import_asset","create_node","update_node","delete_node","connect_nodes","connect_multi_refs","select_node","execute_node","run_generation","undo","redo","write_text","batch_actions","create_image_series","gen_image","cleanup_orphan_nodes"],
-  "unsupportedActions": ["disconnect_nodes","export"],
+  "envelope": {
+    "requestId": "unique-stable-id",
+    "projectId": "DSH-project-id",
+    "expectedRevision": 1,
+    "action": "create_node",
+    "payload": {}
+  },
+  "supportedActions": [
+    "snapshot",
+    "flush_save",
+    "import_asset",
+    "create_node",
+    "update_node",
+    "delete_node",
+    "connect_nodes",
+    "connect_multi_refs",
+    "select_node",
+    "execute_node",
+    "run_generation",
+    "undo",
+    "redo",
+    "write_text",
+    "batch_actions",
+    "create_image_series",
+    "gen_image",
+    "cleanup_orphan_nodes"
+  ],
+  "unsupportedActions": [
+    "disconnect_nodes",
+    "export"
+  ],
   "modelPolicy": "Model IDs must be exact enabled snapshot.visibleModels IDs of matching kind. Host chat uses dsh-current through its published native ID; image/video/audio/music require configured media service. Never invent a default vendor model or a Key.",
-  "nodeTypes": ["text-node","input-image","preview","gen-image","gen-video","gen-speech","gen-music"],
+  "nodeTypes": [
+    "text-node",
+    "input-image",
+    "preview",
+    "gen-image",
+    "gen-video",
+    "gen-speech",
+    "gen-music",
+    "video-timeline",
+    "director-3d",
+    "global-perspective"
+  ],
   "examples": [
-    {"action":"create_node","payload":{"type":"text-node","nodeName":"脚本文本","x":80,"y":80,"settings":{"text":"这里是待编辑文本"},"run":false}},
-    {"action":"create_node","payload":{"type":"gen-image","nodeName":"场景图","prompt":"用户确认的图像描述","x":600,"y":80,"settings":{"model":"<exact enabled Image model ID from snapshot>","batchSize":1},"run":false}},
-    {"action":"create_node","payload":{"type":"gen-video","nodeName":"镜头","prompt":"用户确认的视频描述","x":600,"y":600,"settings":{"model":"<exact enabled Video model ID from snapshot>","duration":5,"batchSize":1},"run":false}},
-    {"action":"create_node","payload":{"type":"gen-speech","nodeName":"配音","prompt":"要朗读的实际文本","x":80,"y":600,"settings":{"model":"<exact enabled Speech model ID from snapshot>","speechTaskMode":"tts","batchSize":1},"run":false}},
-    {"action":"update_node","payload":{"nodeId":"<existing node ID>","nodeName":"新名称","x":120,"y":160,"prompt":"新的提示词"}},
-    {"action":"write_text","payload":{"nodeId":"<existing text-node ID>","content":"完整替换后的文本"}},
-    {"action":"write_text","payload":{"nodeName":"新文本","content":"未提供 nodeId 时创建实际 text-node"}},
-    {"action":"connect_nodes","payload":{"from":"<actual upstream node ID>","to":"<actual downstream node ID>","inputType":"default"}},
-    {"action":"select_node","payload":{"nodeId":"<actual node ID>","focus":true}},
-    {"action":"execute_node","payload":{"nodeId":"<existing configured generation node ID>"}},
-    {"action":"import_asset","payload":{"assetId":"<DSH canonical original asset ID>"}},
-    {"action":"delete_node","payload":{"nodeId":"<actual node ID>"}},
-    {"action":"undo","payload":{}},
-    {"action":"redo","payload":{}},
-    {"action":"snapshot","payload":{}},
-    {"action":"flush_save","payload":{}}
+    {
+      "action": "create_node",
+      "payload": {
+        "type": "text-node",
+        "nodeName": "脚本文本",
+        "x": 80,
+        "y": 80,
+        "settings": {
+          "text": "这里是待编辑文本"
+        },
+        "run": false
+      }
+    },
+    {
+      "action": "create_node",
+      "payload": {
+        "type": "gen-image",
+        "nodeName": "场景图",
+        "prompt": "用户确认的图像描述",
+        "x": 600,
+        "y": 80,
+        "settings": {
+          "model": "<exact enabled Image model ID from snapshot>",
+          "batchSize": 1
+        },
+        "run": false
+      }
+    },
+    {
+      "action": "create_node",
+      "payload": {
+        "type": "gen-video",
+        "nodeName": "镜头",
+        "prompt": "用户确认的视频描述",
+        "x": 600,
+        "y": 600,
+        "settings": {
+          "model": "<exact enabled Video model ID from snapshot>",
+          "duration": 5,
+          "batchSize": 1
+        },
+        "run": false
+      }
+    },
+    {
+      "action": "create_node",
+      "payload": {
+        "type": "gen-speech",
+        "nodeName": "配音",
+        "prompt": "要朗读的实际文本",
+        "x": 80,
+        "y": 600,
+        "settings": {
+          "model": "<exact enabled Speech model ID from snapshot>",
+          "speechTaskMode": "tts",
+          "batchSize": 1
+        },
+        "run": false
+      }
+    },
+    {
+      "action": "update_node",
+      "payload": {
+        "nodeId": "<existing node ID>",
+        "nodeName": "新名称",
+        "x": 120,
+        "y": 160,
+        "prompt": "新的提示词"
+      }
+    },
+    {
+      "action": "write_text",
+      "payload": {
+        "nodeId": "<existing text-node ID>",
+        "content": "完整替换后的文本"
+      }
+    },
+    {
+      "action": "write_text",
+      "payload": {
+        "nodeName": "新文本",
+        "content": "未提供 nodeId 时创建实际 text-node"
+      }
+    },
+    {
+      "action": "connect_nodes",
+      "payload": {
+        "from": "<actual upstream node ID>",
+        "to": "<actual downstream node ID>",
+        "inputType": "default"
+      }
+    },
+    {
+      "action": "select_node",
+      "payload": {
+        "nodeId": "<actual node ID>",
+        "focus": true
+      }
+    },
+    {
+      "action": "execute_node",
+      "payload": {
+        "nodeId": "<existing configured generation node ID>"
+      }
+    },
+    {
+      "action": "import_asset",
+      "payload": {
+        "assetId": "<DSH canonical original asset ID>"
+      }
+    },
+    {
+      "action": "delete_node",
+      "payload": {
+        "nodeId": "<actual node ID>"
+      }
+    },
+    {
+      "action": "undo",
+      "payload": {}
+    },
+    {
+      "action": "redo",
+      "payload": {}
+    },
+    {
+      "action": "snapshot",
+      "payload": {}
+    },
+    {
+      "action": "flush_save",
+      "payload": {}
+    },
+    {
+      "action": "create_node",
+      "payload": {
+        "type": "video-timeline",
+        "nodeName": "本地剪辑",
+        "x": 80,
+        "y": 80,
+        "run": false
+      }
+    },
+    {
+      "action": "create_node",
+      "payload": {
+        "type": "director-3d",
+        "nodeName": "分镜导演台",
+        "x": 850,
+        "y": 80,
+        "run": false
+      }
+    },
+    {
+      "action": "create_node",
+      "payload": {
+        "type": "global-perspective",
+        "nodeName": "全局视角",
+        "x": 1200,
+        "y": 80,
+        "run": false
+      }
+    },
+    {
+      "action": "create_node",
+      "payload": {
+        "type": "preview",
+        "nodeName": "预览与拼图",
+        "x": 1700,
+        "y": 80,
+        "run": false
+      }
+    },
+    {
+      "action": "connect_nodes",
+      "payload": {
+        "from": "<actual imported input-image node ID>",
+        "to": "<actual global-perspective node ID>",
+        "inputType": "default"
+      }
+    },
+    {
+      "action": "connect_nodes",
+      "payload": {
+        "from": "<actual imported input-image node ID>",
+        "to": "<actual preview node ID>",
+        "inputType": "default"
+      }
+    },
+    {
+      "action": "update_node",
+      "payload": {
+        "nodeId": "<actual local workspace node ID>",
+        "nodeName": "重新命名",
+        "x": 300,
+        "y": 160
+      }
+    }
   ],
   "completionSemantics": "Graph edits return real graph state and durable save receipt. execute_node/run_generation can start asynchronous work; their command receipt does not prove supplier output exists. Inspect original node state and actual model job/artifact before claiming media completion.",
-  "connectionPolicy": "Original capabilities and uAt validate allowed source/target types and reference counts; default references preserve order. agent_sequence is display ordering, not model input."
+  "connectionPolicy": "Original capabilities and uAt validate allowed source/target types and reference counts; default references preserve order. agent_sequence is display ordering, not model input.",
+  "localWorkspacePolicy": "video-timeline/director-3d/global-perspective allow create_node and update_node for nodeName/x/y/width/height only. settings must be empty or omitted; original Ki defaults remain authoritative. run_generation and execute_node are rejected for these local workspaces.",
+  "localReferenceConnections": [
+    {
+      "from": "input-image",
+      "to": "global-perspective",
+      "inputTypes": [
+        "default"
+      ],
+      "omittedInputTypeMeans": "default",
+      "maxIncoming": 1
+    },
+    {
+      "from": "input-image",
+      "to": "preview",
+      "inputTypes": [
+        "default"
+      ],
+      "omittedInputTypeMeans": "default",
+      "multipleImages": "Compose them in the original preview puzzle UI"
+    }
+  ]
 }

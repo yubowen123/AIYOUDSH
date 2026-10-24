@@ -150,6 +150,22 @@ window.__ModuleLoader__.load({
       return current;
     }
 
+    // Native primary controls use opaque fills. Keep the skin's label when it
+    // is readable, with a black/white fallback when hue-preserving correction
+    // runs out of steps. Hover has its own fill and therefore its own label.
+    function controlLabel(preferred, background) {
+      const luminance = (value) => {
+        const c = parse(value);
+        const channels = [c.r, c.g, c.b].map(v => v / 255).map(v => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+        return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+      };
+      const contrast = (a, b) => (Math.max(luminance(a), luminance(b)) + 0.05) / (Math.min(luminance(a), luminance(b)) + 0.05);
+      if (contrast(preferred, background) >= 4.5) return preferred;
+      const corrected = ensureContrast(preferred, background);
+      if (contrast(corrected, background) >= 4.5) return corrected;
+      return contrast('#000000', background) >= contrast('#ffffff', background) ? '#000000' : '#ffffff';
+    }
+
     // ---------- palette → DSH token map ----------
     function buildTokens(theme) {
       const prim = theme?.primitives ?? {};
@@ -334,6 +350,9 @@ window.__ModuleLoader__.load({
         '--dsw-hovercard-bg': elevated,
         '--dsw-mask-blur': alpha(bg, 0.6),
         '--dsw-menu-surface-fill': elevated,
+        // QuestionComposer and PlanReviewPanel are native section cards rather
+        // than role=dialog elements. Their shared fill must follow the skin too.
+        '--dsw-specific-input-major': elevated,
         '--dsw-specific-sidebar-fill': mix(surface, bg, dark ? 0.5 : 0.35),
       };
 
@@ -360,6 +379,9 @@ window.__ModuleLoader__.load({
       const fill = (color, role, fallback) => alpha(color, opacity(role, fallback)*opacity('overall'));
       const { bg, surface, elevated, text, muted, border, accent, userBg, dark } = palette;
       const shadow = opacity('shadow');
+      const questionBadgeFill = mix(elevated, palette.running, 0.12);
+      const questionWarning = theme.controls?.colors?.warning || palette.warn;
+      const questionWarningFill = mix(elevated, questionWarning, 0.12);
       const vars = {
         '--aiyou-harness-bg': bg,
         '--aiyou-harness-chat-fill': fill(bg, 'chat', 0),
@@ -370,6 +392,12 @@ window.__ModuleLoader__.load({
         '--aiyou-harness-card-fill': fill(elevated, 'card', 0.96),
         '--aiyou-harness-menu-fill': fill(elevated, 'menu', 0.98),
         '--aiyou-harness-control-fill': fill(surface, 'control', 0.96),
+        '--aiyou-harness-question-primary-label': controlLabel(bg, accent),
+        '--aiyou-harness-question-primary-hover-label': controlLabel(bg, mix(accent, text, dark ? 0.15 : 0.12)),
+        '--aiyou-harness-question-badge-fill': questionBadgeFill,
+        '--aiyou-harness-question-badge-label': ensureContrast(palette.running, questionBadgeFill),
+        '--aiyou-harness-question-warning-fill': questionWarningFill,
+        '--aiyou-harness-question-warning-label': controlLabel(questionWarning, questionWarningFill),
         '--aiyou-harness-message-fill': fill(elevated, 'message', 0.96),
         '--aiyou-harness-user-fill': fill(userBg, 'message', 0.96),
         '--aiyou-harness-composer-fill': fill(elevated, 'composer', 0.96),
@@ -448,8 +476,15 @@ ${scope} :is(.irMxjq_tabBody,.irMxjq_panel [data-dockkit-host],.irMxjq_panel [da
 ${scope} .irMxjq_panel [data-dockkit-pane]{border-color:var(--aiyou-harness-border)}
 ${scope} :is(.YS3v9W_root,.IzP3Va_fileCard,._0TPaqG_panel,.w9rwOa_root,.y0jqnG_panel,.-Fl-UW_panel,.JXrxFq_preview){background:var(--aiyou-harness-card-fill);color:var(--dsw-alias-label-primary);border-color:var(--aiyou-harness-border);border-radius:var(--aiyou-harness-card-radius);box-shadow:var(--aiyou-harness-shadow)}
 ${scope} :is([data-menu-material],[role="menu"],[role="dialog"]){background:var(--aiyou-harness-menu-fill);color:var(--dsw-alias-label-primary);border-color:var(--aiyou-harness-border);border-radius:var(--aiyou-harness-dialog-radius);box-shadow:var(--aiyou-harness-menu-shadow)}
+${scope} :is(.y21zpG_card,.R7PCuq_card){background:var(--aiyou-harness-panel-fill);color:var(--dsw-alias-label-primary);border-radius:var(--aiyou-harness-dialog-radius);--dsw-elevation-stroke-color:var(--aiyou-harness-border)}
+${scope} .y21zpG_customBlock{background:var(--aiyou-harness-control-fill)}
+${scope} .y21zpG_fieldInput::placeholder{color:var(--dsw-alias-label-secondary)}
+${scope} .y21zpG_badge{background:var(--aiyou-harness-question-badge-fill);color:var(--aiyou-harness-question-badge-label)}
+${scope} .R7PCuq_strip{background:var(--aiyou-harness-question-warning-fill);color:var(--aiyou-harness-question-warning-label)}
+${scope} :is(.y21zpG_card,.R7PCuq_card) ._primary_1rv3m_36{color:var(--aiyou-harness-question-primary-label)}
+${scope} :is(.y21zpG_card,.R7PCuq_card) ._primary_1rv3m_36:hover:not(:disabled){color:var(--aiyou-harness-question-primary-hover-label)}
 ${scope} :is([role="menuitem"],[role="menuitemcheckbox"],[role="menuitemradio"]):focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-2px}
-${scope} :is(.yhfFVG_card,.ST7X_W_header,.irMxjq_tabBody) :is(button,a,select,[role="button"]):focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}
+${scope} :is(.yhfFVG_card,.ST7X_W_header,.irMxjq_tabBody,.y21zpG_card,.R7PCuq_card) :is(button,a,select,[role="button"]):focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}
 /* Navigation owns its grid, card size and icons; only its semantic paint changes. */
 ${scope} [data-aiyou-sidebar]{--aiyou-shortcut-fill:var(--aiyou-harness-card-fill);--aiyou-shortcut-border:var(--aiyou-harness-border);--aiyou-shortcut-ink:var(--dsw-alias-label-primary)}
 ${scope} .aiyou-shortcut-card{background:var(--aiyou-harness-card-fill);border-color:var(--aiyou-harness-border);color:var(--dsw-alias-label-primary)}

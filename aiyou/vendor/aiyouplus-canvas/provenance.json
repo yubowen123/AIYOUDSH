@@ -1940,14 +1940,13 @@
   "hostPort": {
     "host": "AIYOUDSH",
     "runtimeHost": "aiyou/lib/canvas/runtime-host.mjs",
-    "runtimeHostSha256": "5c425f97b2bf8e09b4d5c04ff9899fd4faf63752e83fa5a59085422293851c70",
+    "runtimeHostSha256": "43d2dfdaf364c29fec2997bdf76aa169ee26a0d9636dc3ab5f1575e994f3b532",
     "changes": [
       "Canvas-only original $Oi mount; actual executor/readSnapshot bindings",
       "Frame-scoped Storage/IDB and same-origin RPC/events/file bridge",
       "Host default Chat; host media registry; no renderer supplier calls",
       "Per-project Node owned-root storage and actual media/SQLite engines",
       "Unified asset gateway imports/staging references, read-only shared originals",
-      "Independent media/pipeline/world/production pages without materials/Key settings",
       "Actual save receipts and keepalive panel close",
       "Browser file input + bounded staging uploads and actual saved-file download handles",
       "Original W2i project ZIP file callbacks, source/host revision mapping across import",
@@ -1955,16 +1954,26 @@
       "Document-scoped persistent canonical reference add/remove with conservative legacy migration",
       "Embedded-only header/browser removal and clearer project/file/result UI",
       "Parent/MIME imports await actual panel heartbeat before command revision submission",
-      "Browser upload/export ownership includes the exact native panel identity"
+      "Browser upload/export ownership includes the exact native panel identity",
+      "Complete original Olo 22-card creative-tool module with eight configurable host workspaces",
+      "Exactly seven canvas menu tools; native project manager and DSH character library also replace pinned callbacks",
+      "Canonical timeline source import, original trim/reorder/undo and decoded MP4 export",
+      "Original full 3D director and global perspective rendering; preview puzzle retains original composition",
+      "Original dualAlpha worker recovered unchanged; original script project/episode state and multilayer editor retained",
+      "Owned local image-preview cache with decode/size verification; same-origin media byte bridge only",
+      "Saved graph payload plus matching autosave patch determines canonical asset references, including timeline settings",
+      "Global perspective captures carry the same original/cache asset identifiers as imported image nodes",
+      "Three retained local module types gain create/update for layout and name only, with original Ki defaults and no supplier execution",
+      "Two original UI input-image edges to global-perspective/preview gain exact capability support and default-slot checks; global accepts one input"
     ],
     "files": [
       {
         "path": "README.md",
-        "sha256": "b8d3aeaf3152372329d185bc089971945dd4f1c661a379cc582e62f296ebc0a6"
+        "sha256": "8f64b9c7f5263b964d770da74f47105d9ffa6ece6343c62b7b19daf38eee6a39"
       },
       {
         "path": "scripts/build.mjs",
-        "sha256": "9d3c2a2bad7fbfd39112cbc8164b9c6e0af9d19dfb6324662cd10efbdbb09673"
+        "sha256": "ff330600882fced935de57bfc5d88cc3a06209f67661914c9e65154f6c7244d1"
       },
       {
         "path": "public/index.html",
@@ -1972,15 +1981,15 @@
       },
       {
         "path": "public/embedded.js",
-        "sha256": "a9afd5501f0aa304485e5b6acfa52e28cb1b2acc48bb73553c3a252fa0f5b499"
+        "sha256": "621a90789633d7a096ecffb76ce3f233f58a44aa726cfb0599cf1a9cce318469"
       },
       {
         "path": "public/embedded.css",
-        "sha256": "69d1ecf62a813dc8434de46c9f7ee66d4ba0a903fb96bd9399818974f5eb39ee"
+        "sha256": "533b79bee62b28c7752d10092f552b7973ba4ea3dbba75dcc3cdae97c42bc31c"
       },
       {
         "path": "public/host-shim.js",
-        "sha256": "1c732cb61a5fbacc483b1854546349ff54fd8740acffdfb39bdfc7c7c0ab06d0"
+        "sha256": "03dabb7673b04e466540f6de935208a8a35eff74b28fcef1bf42d833ca02dde5"
       },
       {
         "path": "public/tools.html",
@@ -1996,7 +2005,7 @@
       },
       {
         "path": "public/actions.json",
-        "sha256": "cddf655f7c8c1d37df57b52bdc8d7a7644c0cb13ca1ce90f08cd79cf58c4fb36"
+        "sha256": "ffc6dcc36fc695222489e4c991c2209270f43e7d587bc1bd0d29a780d8898605"
       },
       {
         "path": "public/local/canvas-model-adapter.js",
@@ -2004,7 +2013,7 @@
       },
       {
         "path": "test/runtime-host.test.mjs",
-        "sha256": "353147395248b042483af2fc3bca2766f4ca7c92f6cb52ba642f4d32aea88506"
+        "sha256": "6f0ecef6d1f07a4f943bfab2e193426f530ca439e326ea7a43e47c18a11c08c2"
       },
       {
         "path": "test/verify-browser.mjs",
@@ -2016,11 +2025,43 @@
       },
       {
         "path": "build.json",
-        "sha256": "864d5e20d1b2faadd3d441c23729feaf8995b28df2b926be691035df0b5726bf"
+        "sha256": "38b946a5b6ee1309abc328ed9263d45d4fb2a8a901641141b3f250a0d0da268b"
       },
       {
         "path": "test/verify-submit-sync.mjs",
         "sha256": "935eb4506ff980db32a5e944e0a1727fd1a3969d9dd2a9aa82d1cd7c95eeaf35"
+      },
+      {
+        "path": "public/creative-tools.html",
+        "sha256": "e2f3ddc48ed99e122011adb0f57536e075d8adc85d055d3129600a60b3cbc913"
+      },
+      {
+        "path": "public/creative-tools.js",
+        "sha256": "d29fe535467e7571866d5466d15a7cdef748c70bc45b7aeebc346701d678f67a"
+      },
+      {
+        "path": "public/creative-tools.css",
+        "sha256": "c6c0eed12edaaea195dc458af4821515e987fbe1455dcca4914332fcd0e11844"
+      },
+      {
+        "path": "public/local/generic-tool-workspace.js",
+        "sha256": "e49624f1edf68bc0bcfd4b4cf95cdb3242308cb3942c36e5e96aedf19a7ae453"
+      },
+      {
+        "path": "public/local/character-library.js",
+        "sha256": "00d5f980e1fcd576c218bafedf3bc717ab781f38e488bd285b548bcab1bebb74"
+      },
+      {
+        "path": "test/verify-creative-tools.mjs",
+        "sha256": "8b92d8e2652d2267d93180664d2dd7e051262312601d62cfe877b5d94a8055f6"
+      },
+      {
+        "path": "test/verify-more-tools.mjs",
+        "sha256": "c901d87f33b2578109ab65cc9100e04600d13da7f7d7300e11e11af38ea723b9"
+      },
+      {
+        "path": "test/verify-tool-functions.mjs",
+        "sha256": "03c2aabd30ab58692e42d377c260e0fbf0e6752fdcc7dd3b3d763c98383fd914"
       }
     ]
   }

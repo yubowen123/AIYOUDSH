@@ -69,9 +69,14 @@ function buildGenericRequest(cfg,args,refs={},ctx={}) {
   if(cfg.enabled===false||cfg.legacyArchived)throw new Error('当前模型服务已停用');
   const model=cfg.modelCatalog?.find(item=>item.id===args.model&&item.kind===args.kind);
   if(!model)throw new Error('当前服务未配置该类型的模型，请先补全模型目录');
-  const images=sources(refs),max=model.maxReferences??(model.inputModalities?.includes('image')?5:0);
+  const images=sources(refs),media=refs.referenceMedia||images.map(dataUrl=>({kind:'image',dataUrl})),videos=media.filter(r=>r.kind==='video').map(r=>r.dataUrl),audios=media.filter(r=>r.kind==='audio').map(r=>r.dataUrl),mask=refs.maskImage;
+  const max=model.maxReferences??(model.inputModalities?.some(k=>['image','video','audio'].includes(k))?5:0);
   if(images.length>max)throw new Error('参考图片超过模型配置上限：'+max);
   if(images.length&&!model.inputModalities?.includes('image'))throw new Error('当前模型未声明图片输入能力，请先配置或清空参考图');
+  if(media.length>max)throw new Error('参考素材超过模型配置上限：'+max);
+  for(const r of media)if(!['image','video','audio'].includes(r.kind)||typeof r.dataUrl!=='string'||!model.inputModalities?.includes(r.kind))throw new Error('当前模型未声明对应参考素材输入能力：'+r.kind);
+  if(args.kind==='chat'&&(videos.length||audios.length||mask))throw new Error('该文字协议未配置视频、音频或蒙版输入');
+  if(mask&&(!model.maskSupported||typeof mask!=='string'||!mask.startsWith('data:image/')))throw new Error('当前模型未声明有效蒙版输入能力');
   const supplied=normalizeModelCatalog([{id:args.model,kind:args.kind,parameters:args.parameters||{}}])[0].parameters;
   const parameters={...(model.parameters||{}),...supplied};
   for(const key of ['duration','resolution','aspectRatio','voiceId','speed','volume','pitch','lyrics','instrumental','count','seed','width','height',...CHAT_FIELDS])if(args[key]!==undefined)parameters[key]=args[key];
@@ -79,11 +84,14 @@ function buildGenericRequest(cfg,args,refs={},ctx={}) {
   const nativeChat=chat&&(cfg.protocol==='anthropic-messages'?anthropicPayload(chat,parameters):{...chat,...parameters,...Object.fromEntries(Object.entries(chat).filter(([key])=>args[key]!==undefined)),model:args.model,messages:chat.messages,stream:false});
   const chatImages=chat?.messages.flatMap(m=>Array.isArray(m.content)?m.content:[]).filter(p=>p.type==='image_url').length||0;
   if(chatImages&&(!model.inputModalities?.includes('image')||chatImages>max))throw new Error('当前模型仅接受已声明范围内的文字或参考图片');
-  const variables={...parameters,...args,model:args.model,prompt:args.prompt,parameters,messages:nativeChat?.messages,system:nativeChat?.system,tools:nativeChat?.tools,references:images,referenceImages:images,referenceImageUrls:images,referenceUrls:images.filter(x=>/^https?:/.test(x)),referenceBase64:images.map(x=>x.replace(/^data:[^;]+;base64,/,'')),firstFrame:args.firstFrame||images[0],lastFrame:args.lastFrame};
+  const variables={...parameters,...args,model:args.model,prompt:args.prompt,parameters,messages:nativeChat?.messages,system:nativeChat?.system,tools:nativeChat?.tools,references:images,referenceImages:images,referenceImageUrls:images,referenceUrls:images.filter(x=>/^https?:/.test(x)),referenceBase64:images.map(x=>x.replace(/^data:[^;]+;base64,/,'')),referenceMedia:media.map(r=>({kind:r.kind,dataUrl:r.dataUrl,mimeType:r.mimeType,width:r.width,height:r.height,duration:r.duration})),referenceVideoUrls:videos,referenceAudioUrls:audios,maskImage:mask,maskImageUrl:mask,mask:mask,maskBase64:mask?.replace(/^data:[^;]+;base64,/,''),firstFrame:args.firstFrame||images[0],lastFrame:args.lastFrame};
   if(model.request){
     const mapping=JSON.stringify(model.request.template)+' '+model.request.path;
     if(chatImages&&cfg.protocol==='http-json'&&!/\{\{messages(?:\}\}|\.)/.test(mapping))throw new Error('API请求模板尚未映射对话中的参考图片，未提交生成');
-    if(images.length&&!/\{\{(?:references|referenceImages|referenceImageUrls|referenceUrls|referenceBase64|firstFrame|messages)(?:\}\}|\.)/.test(mapping))throw new Error('API请求模板尚未映射参考图片，未提交生成');
+    if(images.length&&!/\{\{(?:references|referenceImages|referenceImageUrls|referenceUrls|referenceBase64|referenceMedia|firstFrame|messages)(?:\}\}|\.)/.test(mapping))throw new Error('API请求模板尚未映射参考图片，未提交生成');
+    if(videos.length&&!/\{\{(?:referenceMedia|referenceVideoUrls)(?:\}\}|\.)/.test(mapping))throw new Error('API请求模板尚未映射视频参考，未提交生成');
+    if(audios.length&&!/\{\{(?:referenceMedia|referenceAudioUrls)(?:\}\}|\.)/.test(mapping))throw new Error('API请求模板尚未映射音频参考，未提交生成');
+    if(mask&&!/\{\{(?:mask|maskImage|maskImageUrl|maskBase64)(?:\}\}|\.)/.test(mapping))throw new Error('API请求模板尚未映射蒙版，未提交生成');
     for(const [key,value]of Object.entries({...supplied,...Object.fromEntries(['duration','resolution','aspectRatio','voiceId','speed','volume','pitch','lyrics','instrumental','count','seed','width','height',...CHAT_FIELDS].filter(k=>args[k]!==undefined).map(k=>[k,args[k]]))})){
       if(args.kind==='chat'&&['openai-compatible','anthropic-messages'].includes(cfg.protocol)&&CHAT_FIELDS.includes(key))continue;
       const mapped=mapping.includes('{{parameters}}')||mapping.includes('{{parameters.'+key+'}}')||mapping.includes('{{parameters.'+key+'.')||mapping.includes('{{'+key+'}}');
@@ -116,7 +124,12 @@ function buildGenericRequest(cfg,args,refs={},ctx={}) {
     if(typeof value==='number'&&(value<(schema.minimum??schema.min??-Infinity)||value>(schema.maximum??schema.max??Infinity)))throw new Error('模型参数超出范围：'+key);
     if(typeof value==='string'&&(value.length<(schema.minLength??0)||value.length>(schema.maxLength??Infinity)))throw new Error('模型参数文本长度超限：'+key);
   }
-  if(Buffer.byteLength(JSON.stringify(body))>64*1024*1024)throw new Error('模型请求超过64 MiB');
+  const encoded=JSON.stringify(body);
+  if(Buffer.byteLength(encoded)>64*1024*1024)throw new Error('模型请求超过64 MiB');
+  for(const value of [...media.map(r=>r.dataUrl),...(mask?[mask]:[])]){
+    const bare=value.startsWith('data:')?value.replace(/^data:[^;]+;base64,/,''):value;
+    if(!encoded.includes(value)&&!encoded.includes(bare))throw new Error('请求映射遗漏了已选择的参考素材或蒙版，未提交生成');
+  }
   const pathVariables=Object.fromEntries(Object.entries(variables).filter(([,v])=>['string','number','boolean'].includes(typeof v)).map(([k,v])=>[k,encodeURIComponent(String(v))]));
   return {url:address(cfg,render(request.path,pathVariables)),method:'POST',headers:headers(cfg),body,response,polling:model.polling,model};
 }

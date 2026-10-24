@@ -43,13 +43,18 @@
     "renderer-041.js"
   ],
   "sharedScope": true,
-  "bytes": 42722376,
-  "sha256": "ec4251fd6dc906d18ae042fe3214a3be29cd7562d1c68d8e854ae2278555ab7d",
+  "bytes": 42729653,
+  "sha256": "16c6589069232e3f9ab3370d62d68ecf4cb2daa7dd7ef5190b5e15f39459b5ff",
   "patches": [
     "Canvas-only root $Oi/fdi/GOi; no TJt app shell",
     "Expose actual WLi executor and eOi snapshot in original GOi lifecycle",
     "Namespace embedded static URLs",
     "Expose original W2i project file callbacks",
-    "Relabel selected-media downloads; desktop shell hidden by embedded CSS"
+    "Relabel selected-media downloads; desktop shell hidden by embedded CSS",
+    "Complete recovered 22-card toolbox root without independent app shell",
+    "Eight GPU or vendor-bound workspaces rewritten for explicit host media profiles",
+    "Seven retained canvas tools use real graph and native project manager",
+    "DSH originals enter real timeline sources; real director reducer capture exposed",
+    "Single gateway owns tool downloads, history originals and project references"
   ]
 }

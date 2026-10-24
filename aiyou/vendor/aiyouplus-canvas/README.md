@@ -4,11 +4,19 @@
 
 ## 入口与边界
 
-- 宿主静态根是 `public/`。画布入口 `index.html`，工具入口 `tools.html?module=media|pipeline|world|production`。
+- 宿主静态根是 `public/`。画布入口 `index.html`，创作工具入口 `creative-tools.html`，完整显示原 22 个工具；旧 `tools.html?module=media|pipeline|world|production` 仅保留内部兼容入口，不作为 DSH 创作工具菜单。
 - 每个入口必须传 `projectId`，并传入宿主生成的 `panelId` 与可空的 `sessionId`。Storage 和 IndexedDB 在当前 iframe 内按 projectId 分区，父 DSH 的存储对象保持原样。
 - `scripts/build.mjs` 按顺序合并 41 个原始 JS 分片；分片共享词法作用域，不能分别作为模块加载。构建仅在内存中对精确锚点变换，`src/js` 保持冻结来源。
-- 原 `$Oi → fdi → GOi` 画布保留；不挂载原 `TJt` 独立主页。工具菜单为独立页面，不包含原工作台素材库或模型设置表单。
+- 原 `$Oi → fdi → GOi` 画布保留；不挂载原 `TJt` 独立主页。创作工具在原 `Olo` 模块中挂载，不包含原工作台素材库或独立模型设置表单。画布更多工具固定保留剪辑时间线、3D导演台、全局视角、预览与拼图、角色库、导出项目、项目管理七项；项目管理回到 DSH 项目列表，角色库使用 DSH 原件与持久引用。
 - 所有模型、共享原件、项目文件、命令与事件经同源 `/aiyoucodex-dsh/canvas/`。文字默认 `host/dsh-current`，原文字解析入口也委托宿主模型；媒体模型来自宿主启用目录。嵌入 renderer 禁止独立访问远端供应商。
+
+## 创作工具恢复与改写边界
+
+原 12 个图像创作入口和 10 个图形纹理入口完整展示。十个图形纹理、图片平铺、黑白图抠图保留原本地算法；改图保留原多图层编辑器，执行回调改接宿主媒体服务；剧本创作保留原项目与分集编辑持久化，文字模型使用当前 DSH 模型。
+
+质感增强、图像放大、商品合图、光照重置、动作迁移、图层拆分、智能抠补、局部修改的原实现依赖未随包提供的 GPU 模型环境或固定供应商协议，已改写成明确的可配置媒体工作区。没有匹配模型、参考类型或蒙版能力时阻止提交；不会把本地滤镜当成 AI 生成成功。所有输入先注册到 DSH 素材 Gateway，结果要求真实原件回执；图像放大另校验实际输出尺寸。分层输出可保存分层 PSD，透明度与分层质量仍由所配置模型实际结果决定。
+
+剪辑时间线保留原片段状态、裁剪、顺序与导出器，增加 DSH 素材入口。3D导演台保留原完整导演工作区与 Three 渲染器。全局视角与预览拼图保留原节点及本地合成算法。缩略预览只在项目缓存生成，不能覆盖 DSH 原件。浏览器 CORS 兼容仅限同源 blob、媒体 data 和受控 Gateway file URL 的实际字节，不提供远程代理下载。
 
 ## 宿主依赖
 
@@ -33,15 +41,21 @@ pagehide/unmount 调用 POST `/close`（keepalive JSON）释放面板 lease。�
 
 ## 验证
 
-- `node --test aiyou/vendor/aiyouplus-canvas/test/runtime-host.test.mjs`：13 项真实文件、SQLite、Gateway、staging、分块上传/导出、生产 RPC、批量拷贝与多文档素材引用边界回归。
+- `node --test aiyou/vendor/aiyouplus-canvas/test/runtime-host.test.mjs`：16 项真实文件、SQLite、Gateway、staging、分块上传/导出、生产 RPC、批量拷贝与多文档素材引用边界回归。
 - `node aiyou/vendor/aiyouplus-canvas/test/verify-browser.mjs`：隔离 Chrome、本地 HTTP、真实原画布与真实 coordinator。12 项覆盖原项目 ZIP 实际下载/导入/保存重开、3D JSON 文件选择/载入，以及原节点创建/保存、原件 drop/预览、项目重开、立即关闭/重开、图片处理入库、两步流水线、3D JSON/GLB/重开、模板/暂停自动任务/JSON 导出，以及跨项目 Storage/IDB 隔离。
 - `node aiyou/vendor/aiyouplus-canvas/test/verify-file-dialog.mjs`：3 项真实多文件选择/staging、命名保存/实际写入/浏览器下载、目录不支持明确错误。
 - `node aiyou/vendor/aiyouplus-canvas/test/verify-submit-sync.mjs`：手动文件 drop 后立即 parent 素材插入与统一库 MIME drop 的 2 项真实版本同步/执行/保存回归。
 - 浏览器验证依赖开发机 Playwright 和 Chrome；它拒绝模型生成，未读取凭证、未发供应商请求，也不启动正式 DSH app。最终 DSH 官方菜单和 Codex 对话验收由宿主工程另外完成。
 - 稳定证据在任务输出目录 `融合设计/画布专项验证/`，不随生产静态包放置截图、临时 profile 或运行数据库。
 
+- `node aiyou/vendor/aiyouplus-canvas/test/verify-creative-tools.mjs`：22 卡片与 8 个模型工作区未配置门禁共 31 项。
+- `node aiyou/vendor/aiyouplus-canvas/test/verify-tool-functions.mjs`：22 工具功能及分层 PSD 共 23 项；模型调用使用隔离受控本地夹具，实际生成文件、尺寸、alpha、PSD 头与脚本保存重开独立核对。未调用真实供应商。
+- `node aiyou/vendor/aiyouplus-canvas/test/verify-more-tools.mjs`：22 项包含三类本地节点创建、两类图片默认槽连接、受限命名布局/非法操作门禁以及七项菜单、时间线真实导入/裁剪/排序/6 秒音视频导出、3D角色机位与真实取景，以及全局视角/预览实际媒体操作。native 项目管理与角色库宿主流由父工程专项验证。
+
 ## 未移植及未声称通过
 
-旧 OSS/七牛目录、独立浏览器扩展桥、PLUS 自有生产 HTTP 网关、账户与云端均未启用。相应命令明确返回 Unsupported，原初始化有 catch 降级，不能将这些旧入口视为可用。独立工作台模型配置由 DSH 模型服务替代；素材库由 DSH 唯一 Gateway 替代。未复制的 ML 权重、旧本地模型环境、独立浏览器代理和平台专用桌面功能不因画布启动而算通过。
+旧 OSS/七牛目录、独立浏览器扩展桥、PLUS 自有生产 HTTP 网关、账户与云端均未启用。旧初始化在嵌入模式下禁用，相应服务不能视为可用。独立工作台模型配置由 DSH 模型服务替代；素材库由 DSH 唯一 Gateway 替代。未复制的 ML 权重、旧本地模型环境、独立浏览器代理和平台专用桌面功能不因画布启动而算通过。
 
 原始代码及第三方声明见 `notices/`。来源快照与新增移植文件 hash 见 `provenance.json`；保留声明不代表获得新的开源或商业许可。
+
+本轮对话桥仅对 video-timeline/director-3d/global-perspective 增加创建和基础命名布局更新，非空settings与供应商生成执行明确拒绝；input-image到global-perspective/preview只允许默认槽，全局视角单入线。动作有效例见public/actions.json，实际能力表可从原L1t回读。现有production facade是模板/自动任务，不包含时间线/导演台深度操作方法，不把UI验收冒充这些深度对话API已提供。

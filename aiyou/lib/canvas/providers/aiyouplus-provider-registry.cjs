@@ -13,7 +13,7 @@ const BUILTIN_PROFILES=Object.freeze({
 const BAD_PROVIDER=/qiniu|qnaigc|qbox\.me|clouddn\.com|qnssl\.com|qiniucdn\.com|七牛/i;
 const UNSAFE_KEYS=new Set(['__proto__','prototype','constructor']);
 const SECRET_KEYS=/^(authorization|api[-_]?key|x-api-key|password|secret|access[-_]?token|refresh[-_]?token|token|encryptedKey)$/i;
-const TEMPLATE_ROOTS=new Set(['model','prompt','text','messages','system','temperature','max_tokens','maxTokens','tools','tool_choice','response_format','aspectRatio','resolution','duration','referenceUrls','referencePaths','referenceImages','referenceImageUrls','referenceBase64','references','image','imageUrl','firstFrame','lastFrame','lyrics','instrumental','voiceId','speed','volume','pitch','count','width','height','parameters','taskId','userId','userName','projectName','seed','n','format','negativePrompt','input','customParameters']);
+const TEMPLATE_ROOTS=new Set(['model','prompt','text','messages','system','temperature','max_tokens','maxTokens','tools','tool_choice','response_format','aspectRatio','resolution','duration','referenceUrls','referencePaths','referenceImages','referenceImageUrls','referenceBase64','references','referenceMedia','referenceVideoUrls','referenceAudioUrls','maskImage','maskImageUrl','maskBase64','mask','image','imageUrl','firstFrame','lastFrame','lyrics','instrumental','voiceId','speed','volume','pitch','count','width','height','parameters','taskId','userId','userName','projectName','seed','n','format','negativePrompt','input','customParameters']);
 const BLOCKED_HEADERS=new Set(['host','cookie','set-cookie','content-length','content-type','connection','transfer-encoding','proxy-authorization','proxy-authenticate','upgrade','trailer','te','origin','referer']);
 const isObject=value=>value!==null&&typeof value==='object'&&!Array.isArray(value)&&(Object.getPrototypeOf(value)===Object.prototype||Object.getPrototypeOf(value)===null);
 const serviceId=id=>Object.hasOwn(BUILTIN_PROFILES,id)||/^service-[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
@@ -97,6 +97,7 @@ function normalizeModelCatalog(catalog=[],options={}) {
     if(raw.parameters!==undefined){if(!isObject(raw.parameters))throw new Error('模型参数必须为JSON对象');model.parameters=safeJson(raw.parameters);}
     if(raw.parameterSchema!==undefined){if(!isObject(raw.parameterSchema))throw new Error('参数说明必须为安全JSON对象');model.parameterSchema=safeJson(raw.parameterSchema);}
     if(raw.referencePurpose!==undefined)model.referencePurpose=text(raw.referencePurpose,'参考素材用途',200);
+    if(raw.maskSupported!==undefined){if(typeof raw.maskSupported!=='boolean')throw new Error('蒙版能力须明确为布尔值');model.maskSupported=raw.maskSupported;}
     if(raw.request!==undefined){
       if(!isObject(raw.request)||String(raw.request.method||'POST').toUpperCase()!=='POST')throw new Error('生成接口仅允许POST');
       if(raw.request.headers!==undefined)throw new Error('请求模板不能自行配置鉴权请求头');
