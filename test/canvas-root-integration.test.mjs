@@ -29,6 +29,7 @@ async function fixture(t){
  const bind=await api('/bind',{sessionId:session.id,cwd:temp});assert.equal(bind.response.status,200);
  return{temp,web,tools,ctx,api,projectId:bind.body.value.projectId,context:{sessionId:session.id,projectId:bind.body.value.projectId}};
 }
+async function nextHttpInternalFlush(f,panel,{cursor=0,revision=panel.revision,snapshot=panel.snapshot,documentRef=panel.documentRef}={}){const first=(await f.api('/events?'+new URLSearchParams({...panel,cursor:String(cursor)}))).body.value,read=first.events.find(e=>e.type==='command').command;assert.equal(read.action,'snapshot');assert.equal(read.expectedRevision,undefined);await f.api('/reply',{...panel,requestId:read.requestId,ok:true,value:{revision,snapshot,documentRef}});const next=(await f.api('/events?'+new URLSearchParams({...panel,cursor:String(first.cursor)}))).body.value,save=next.events.find(e=>e.type==='command').command;assert.equal(save.action,'flush_save');assert.equal(save.expectedRevision,revision);return next;}
 test('native prefix matcher serves canvas/settings HTML and their actual static children; auth and content-type fences apply',async t=>{
  const f=await fixture(t);
  for(const entry of ['/ui/','/model-settings/']){
@@ -106,11 +107,11 @@ test('project-first native tools refuse an implicit target and support list/crea
 test('switching projects verifies actual flush, persists real document metadata and cannot leak old RPC or lease',async t=>{
  const f=await fixture(t),a=f.projectId,created=await f.api('/projects',{title:'目标 B',cwd:f.temp}),b=created.body.value.projectId;
  assert.equal((await f.api('/projects/open',{sessionId:'session-a',projectId:a})).response.status,200);
- const panel={...f.context,panelId:'switch_panel_old',revision:2,snapshot:{nodes:[{id:'A-only'}],edges:[]},documentRef:'project:actual-A'};assert.equal((await f.api('/panel',panel)).response.status,200);
- const switching=f.api('/projects/open',{sessionId:'session-a',projectId:b}),event=await f.api('/events?'+new URLSearchParams({...f.context,panelId:panel.panelId,cursor:'0'})),command=event.body.value.events.find(e=>e.type==='command').command;assert.equal(command.action,'flush_save');
+ const panel={...f.context,panelId:'switch_panel_old',revision:0,snapshot:{nodes:[{id:'A-only'}],edges:[]},documentRef:'project:actual-A'};assert.equal((await f.api('/panel',panel)).response.status,200);
+ const switching=f.api('/projects/open',{sessionId:'session-a',projectId:b}),event=await nextHttpInternalFlush(f,panel,{revision:7,snapshot:{projectId:'actual-A',nodes:[{id:'A-only',hasMedia:true}],edges:[]}}),command=event.events.find(e=>e.type==='command').command;assert.equal(command.action,'flush_save');
  const during=await f.api('/command',{...f.context,requestId:'forbidden-during-switch',action:'undo'});assert.equal(during.response.status,409);assert.match(during.body.error,/项目正在保存|已关闭/);
  const bytes=Buffer.from('actual legacy graph'),file=path.join(f.temp,'aiyou-enhancer/canvas/projects',a,'MediaCache/project management/actual-A/payload.json');await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,bytes);
- const value={revision:3,snapshot:{projectId:'actual-A',nodes:[{id:'A-only'}],edges:[]},documentRef:'project:actual-A',saveReceipt:{projectId:a,documentRef:'project:actual-A',path:file,sha256:sha(bytes),bytes:bytes.length,patchSha256:null}};
+ const value={revision:8,snapshot:{projectId:'actual-A',nodes:[{id:'A-only'}],edges:[]},documentRef:'project:actual-A',saveReceipt:{projectId:a,documentRef:'project:actual-A',path:file,sha256:sha(bytes),bytes:bytes.length,patchSha256:null}};
  assert.equal((await f.api('/reply',{...panel,requestId:command.requestId,ok:true,value})).response.status,200);
  const actual=await switching;assert.equal(actual.response.status,200,JSON.stringify(actual.body));assert.equal(actual.body.value.projectId,b);
  assert.match((await f.api('/panel',panel)).body.error,/面板已关闭/);
@@ -135,7 +136,7 @@ test('two native session panels share one writer and stale renderer RPC cannot w
  assert.equal((await f.api('/panel',{...a,revision:1,documentRef:'project:shared-http',snapshot:{projectId:'shared-http',nodes:[{id:'shared-node',x:40,y:60,textPreview:'同步文本'}],connections:[]}})).response.status,200);
  const mirrored=(await f.api('/collaboration?'+new URLSearchParams(b))).body.value;assert.equal(mirrored.snapshot.nodes[0].id,'shared-node');assert.equal(mirrored.revision,1);
  const file=path.join(f.temp,'aiyou-enhancer/canvas/projects',projectId,'MediaCache/project management/shared-http/payload.json'),bytes=Buffer.from('canonical saved shared graph');await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,bytes);
- const taking=f.api('/take-control',b),events=(await f.api('/events?'+new URLSearchParams({...a,cursor:'0'}))).body.value,command=events.events.find(e=>e.command).command;
+ const taking=f.api('/take-control',b),events=await nextHttpInternalFlush(f,{...a,revision:1,snapshot:{projectId:'shared-http',nodes:[{id:'shared-node',x:40,y:60,textPreview:'同步文本'}],connections:[]},documentRef:'project:shared-http'}),command=events.events.find(e=>e.command).command;
  await f.api('/reply',{...a,requestId:command.requestId,ok:true,value:{revision:2,snapshot:{projectId:'shared-http',nodes:[{id:'shared-node',x:40,y:60,textPreview:'同步文本'}],connections:[]},documentRef:'project:shared-http',saveReceipt:{projectId,documentRef:'project:shared-http',path:file,sha256:sha(bytes),bytes:bytes.length,patchSha256:null}}});
  const taken=await taking;assert.equal(taken.response.status,200,JSON.stringify(taken.body));b.writerToken=taken.body.value.writerToken;assert.equal(taken.body.value.baseRevision,2);
  const late=await f.api('/rpc',{...a,command:'write_text_file_atomic',args:{path:file,body:'forbidden old renderer overwrite'}});assert.equal(late.response.status,409);assert.match(late.body.error,/协同查看|编辑权/);assert.equal(await fs.readFile(file,'utf8'),'canonical saved shared graph');
