@@ -1,3 +1,4 @@
+import './theme-adapter.js';
 import {bootstrap,rpc,identity,route,emit,disposeShim,uploadBrowserFile} from './host-shim.js';
 const documentRefOf=id=>id?(String(id).startsWith('project:')?String(id):'project:'+id):null;
 const wait=ms=>new Promise(r=>setTimeout(r,ms));let disposed=false,cursor=0,lastHeartbeat=0,readyResolve,readyReject;const receipts=new Map();
@@ -94,6 +95,7 @@ window.__DSH_CANVAS_SAVE_ASSET_LIBRARY__=async(items,resolveOriginal)=>{
  window.__DSH_CANVAS_OPEN_ASSET_LIBRARY__({focusAssetId:saved[0]});
  return{assetIds:saved,focusAssetId:saved[0]};
 };
+window.__DSH_CANVAS_OPEN_THEME_SETTINGS__=()=>{if(disposed)return;parent.postMessage({type:'dsh-canvas-open-theme-settings',projectId:identity.projectId,sessionId:identity.sessionId,panelId:identity.panelId},location.origin);};
 window.__DSH_CANVAS_OPEN_PROJECTS__=()=>parent.postMessage({type:'dsh-canvas-show-projects',projectId:identity.projectId,sessionId:identity.sessionId},location.origin);
 window.__DSH_CANVAS_OPEN_CHARACTERS__=async()=>{try{const {openCharacterLibrary}=await import('./local/character-library.js');await openCharacterLibrary({rpc,fileUrl:window.__TAURI_INTERNALS__.convertFileSrc,identity});}catch(error){const p=document.createElement('p');p.setAttribute('role','alert');p.textContent='角色库载入失败：'+error.message;document.body.append(p);}};
 window.__DSH_CANVAS__={ready,snapshot,execute,flushSave,production,dispose,identity};

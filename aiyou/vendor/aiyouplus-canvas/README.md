@@ -26,6 +26,14 @@
 
 DSH 的图片、视频、音频使用原 File drop 创建节点；UTF-8 `.txt`、`.md`、`.markdown` 使用原 executor 创建 text-node，并在 settings 中持久化文字和 canonical `_assetId`，随后走同一原项目保存回执与引用保护。文本限 4 MiB；其他文档格式在入图前明确拒绝并提示转换。原“参考素材库”在节点内部用于已有历史或节点绑定，不是独立文件库，保留其引用选择语义；旧库拖拽协议仅保留兼容读取，不再有旧面板发起入口。
 
+## 宿主主题与画布外观
+
+三个入口在原 renderer 前加载独立 `theme-adapter.js/css`。宿主递归同步到同源 owned 文档的 `data-aiyou-harness-theme`、`data-aiyou-harness-mode` 与语义 CSS 变量是外观权威；system 模式同样读取宿主实际明暗和颜色。adapter 只监听自己 HTML 属性/主题 stylesheet，不读取父窗口业务状态，不写项目、素材或模型设置；同一主题 ID 下修改配置也即时生效。
+
+原 GOi 与 Oy 通过精确内存 hook 订阅只读外观状态，继续使用原明暗组件分支；节点、菜单、时间线、3D 参数栏、角色库、文件弹窗和全部 22 个创作工具的 UI 表面统一映射。`--dsh-canvas-bg/node/panel/toolbar/text/muted/border/accent/grid/edge` 来自宿主白名单配置；背景图片使用宿主构造的受控同源 URL 和独立伪层 alpha；`.app-canvas-viewport` 及其余背景祖先保持透明，由真正 `[data-canvas-bg]` 独立绘制底色。范围滑杆与复选框的原生强调色跟随宿主 accent。SVG 网格继续使用原平移/缩放并支持 dots/lines/none。没有对整画布、媒体、作品 canvas、SVG 绘图或 WebGL 使用全局 opacity/filter；平铺作品的 backgroundImage、黑白抠图 backdrop、用户文字自定义背景和图案实际输出颜色保留。
+
+原底部背景与明暗按钮分别标记“画布外观设置”“主题设置”，统一发送 `{type:'dsh-canvas-open-theme-settings',projectId,sessionId,panelId}` 到同源 parent；宿主严格核对来源/身份后打开 DSH 主题设置的画布区域。它们不再修改无效的 PLUS 局部外观偏好，也不再打开旧背景弹层。
+
 ## 宿主依赖
 
 `aiyou/lib/canvas/runtime-host.mjs` 导出 `createCanvasBackend({rootDir, assets, models, emit, mediaTools, host})`。
@@ -61,6 +69,8 @@ pagehide/unmount 调用 POST `/close`（keepalive JSON）释放面板 lease。�
 - `node aiyou/vendor/aiyouplus-canvas/test/verify-more-tools.mjs`：22 项包含三类本地节点创建、两类图片默认槽连接、受限命名布局/非法操作门禁以及七项菜单、时间线真实导入/裁剪/排序/6 秒音视频导出、3D角色机位与真实取景，以及全局视角/预览实际媒体操作。native 项目管理与角色库宿主流由父工程专项验证。
 
 - `node aiyou/vendor/aiyouplus-canvas/test/verify-library-entry.mjs`：15 项真实原 renderer 入口、旧库禁挂载、canonical 保存/真实 Blob 入库去重、缩略图拒绝、UTF-8 txt/md 原图保存及引用保护、格式/大小门禁、真实 DSH 时间线视频/音频选择（含旧 opaque alias）、严格消息来源/nonce 与取消。使用实际 DSH Gateway、实际项目保存文件和现有素材库前端；素材索引 HTTP 为隔离夹具，官方 native 父子窗口及正式来源由宿主另行验收。证据在任务输出目录 `画布素材库替换/原画布入口验证/最终交付验收/`。
+
+- `node aiyou/vendor/aiyouplus-canvas/test/verify-theme.mjs`：44 项真实原 renderer 主题专项，覆盖全背景祖先透明、实际滑杆/复选框强调色、三组明暗/自定义颜色、同 ID 更新、独立背景 alpha、原件与作品像素保护、时间线完整工作区、角色与文件弹窗、22 工作区、真实 3D 取景、原外观入口导航，以及当前宿主编译器的 pink-candy/mecha-control。禁止外部网络和模型请求，记录关键源文件起止 SHA。父层跨窗口/嵌套 iframe/system 生命周期由宿主独立验收。证据在 `DSH全插件主题适配/画布适配/`。
 
 ## 未移植及未声称通过
 

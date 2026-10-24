@@ -103072,8 +103072,8 @@ function gla(e) {
 }
 
 function Oy() {
-  const e = u9();
-  return g.useMemo(() => gla(e), [e]);
+  const e = u9(),dshTheme=DSHUseTheme();
+  return g.useMemo(() => {const original=gla(e);return {...original,isDark:dshTheme.mode==="dark",vars:{...original.vars,"--studio-content-scheme":dshTheme.mode}};}, [e,dshTheme]);
 }
 
 const BTe = 22,
@@ -353442,7 +353442,7 @@ function kst(e, t, n, r, a, i, o, s, l, d, u, h, p, m) {
   if (w) {
     r.setAttribute("width", `${b}`), r.setAttribute("height", `${b}`);
     const C = b / 2;
-    r.setAttribute("patternTransform", `translate(-${C},-${C})`), u.screenSpacing = b;
+    r.setAttribute("patternTransform", `translate(-${C},-${C})`), r.querySelector("[data-dsh-grid-lines]")?.setAttribute("d",`M${b} 0 H0 V${b}`), u.screenSpacing = b;
   }
   if (w || h) {
     const C = p != null && p > 0 ? p : e.clientWidth || 0,
@@ -353569,12 +353569,7 @@ const U5i = ({
           patternUnits: "userSpaceOnUse",
           width: "20",
           height: "20",
-          children: c.jsx("circle", {
-            ref: h,
-            cx: "0.5",
-            cy: "0.5",
-            r: "0.5"
-          })
+          children: [c.jsx("circle", {ref:h,cx:"0.5",cy:"0.5",r:"0.5"}),c.jsx("path",{"data-dsh-grid-lines":"true",d:"M20 0 H0 V20"})]
         })
       }), c.jsx("g", {
         ref: l,
@@ -358093,21 +358088,14 @@ const jMe = "flex items-center justify-center w-4 h-4 shrink-0 p-0 m-0 leading-n
             strokeWidth: 1.75,
             className: "block shrink-0"
           })
-        }), c.jsx(aWe, {
-          isDark: e,
-          theme: t,
-          canvasBackgroundColor: l,
-          canvasBackgroundDefaultHex: d,
-          onCanvasBackgroundColorChange: u,
-          placement: "above",
-          dataTip: nx("画布背景色（圆点网格不变，仅底层颜色；按当前明暗主题分别记忆）")
-        }), c.jsx("button", {
+        }), c.jsx("button", {type:"button",className:k,"data-tip":x("画布外观设置"),"aria-label":x("画布外观设置"),onClick:S=>{S.preventDefault();S.stopPropagation();window.__DSH_CANVAS_OPEN_THEME_SETTINGS__?.();},children:c.jsx("span",{"aria-hidden":true,style:{display:"block",width:12,height:12,border:"1px solid currentColor",borderRadius:"50%",backgroundColor:"var(--dsh-canvas-bg,transparent)"}})}), c.jsx("button", {
           type: "button",
           onClick: S => {
-            S.preventDefault(), S.stopPropagation(), s();
+            S.preventDefault(), S.stopPropagation(), window.__DSH_CANVAS_OPEN_THEME_SETTINGS__?.();
           },
           className: k,
-          "data-tip": x("切换明暗主题"),
+          "data-tip": x("主题设置"),
+          "aria-label": x("主题设置"),
           children: t === "dark" ? c.jsx(AD, {
             size: 16,
             strokeWidth: 1.75,
@@ -380258,13 +380246,14 @@ function bji(e) {
 }
 
 function vji(e) {
+  const theme=window.__DSH_THEME_ADAPTER__.snapshot();
   return {
-    showGrid: e.showCanvasGrid,
+    showGrid: theme.gridStyle!=="none",
     isDark: e.isDark,
     zoom: e.view.zoom,
     viewX: e.view.x,
     viewY: e.view.y,
-    gridSpacing: e.effectiveCanvasGridSpacing,
+    gridSpacing: theme.gridSize,
     gridDotSize: e.effectiveCanvasGridDotSize
   };
 }
@@ -380321,7 +380310,7 @@ function Aji(e) {
     selectedConnectionId: e.selectedConnectionId,
     connectionLineStrokeWidth: e.connectionLineStrokeWidth,
     connectionLineOpacityPercent: e.connectionLineOpacityPercent,
-    connectionLineColor: e.connectionLineColor,
+    connectionLineColor: window.__DSH_THEME_ADAPTER__.snapshot().edge,
     connectionHitWidth: e.connectionHitWidth,
     collectionEndpoints: e.mergedConnectionEndpoints,
     intraGroupConnectionIds: e.intraGroupConnectionIds,
@@ -380753,6 +380742,7 @@ function qji({
       ...e.progress
     }), c.jsxs("div", {
       className: c6i(e),
+      "data-dsh-canvas-root":"true",
       style: {
         backgroundColor: e.isDark ? e.canvasBgColorDark : e.canvasBgColorLight
       },
@@ -388334,7 +388324,9 @@ function $Oi() {
   });
 }
 
+function DSHUseTheme(){const adapter=window.__DSH_THEME_ADAPTER__;return g.useSyncExternalStore(adapter.subscribe,adapter.snapshot,adapter.snapshot);}
 function GOi() {
+  const dshTheme=DSHUseTheme();
   const e = scr();
   g.useEffect(() => {
     if (typeof window > "u") return;
@@ -388348,7 +388340,7 @@ function GOi() {
   }, []);
   const [t, n] = fC(Zi.THEME, "dark"),
     r = MS(u9().mode),
-    a = (r == null ? void 0 : r.tone) ?? t,
+    a = dshTheme?.mode ?? (r == null ? void 0 : r.tone) ?? t,
     i = g.useCallback(Xa => {
       const ao = typeof Xa == "function" ? Xa(a) : Xa;
       r && yQ(ao), n(ao);

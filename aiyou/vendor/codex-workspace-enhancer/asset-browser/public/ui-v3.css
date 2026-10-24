@@ -2,16 +2,16 @@
   color-scheme: light;
   --asset-columns: 4;
   --thumb-size: 141px;
-  --bg: #f4f5f7;
-  --panel: rgba(255, 255, 255, 0.9);
-  --card: #ffffff;
-  --ink: #17191d;
-  --muted: #737983;
-  --soft: #e9ebef;
-  --line: rgba(22, 27, 36, 0.1);
-  --accent: #315efb;
-  --accent-soft: #eaf0ff;
-  --danger: #dc3b43;
+  --bg: var(--dsw-alias-bg-base, #f4f5f7);
+  --panel: var(--dsw-alias-bg-layer-1, rgba(255, 255, 255, 0.9));
+  --card: var(--dsw-alias-bg-layer-1, #ffffff);
+  --ink: var(--dsw-alias-label-primary, #17191d);
+  --muted: var(--dsw-alias-label-secondary, #737983);
+  --soft: var(--dsw-alias-bg-layer-2, #e9ebef);
+  --line: var(--dsw-alias-border-l2, rgba(22, 27, 36, 0.1));
+  --accent: var(--dsw-alias-brand-primary, #315efb);
+  --accent-soft: var(--dsw-alias-interactive-bg-hover-accent, #eaf0ff);
+  --danger: var(--dsw-alias-state-error-primary, #dc3b43);
   --shadow: 0 16px 44px rgba(31, 40, 55, 0.08);
   font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
 }
@@ -469,3 +469,33 @@ body[data-asset-picker="canvas"] .aiyou-module-loading { padding: 16px 12px; gap
 .canvas-picker-banner p { margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
 .canvas-picker-select { display: block; width: calc(100% - 12px); margin: 6px; min-height: 34px; flex: none; border: 1px solid var(--accent); border-radius: 6px; background: var(--accent); color: white; cursor: pointer; font-size: 12px; }
 body[data-asset-picker="canvas"] .canvas-picker-focused { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Owned library surfaces inherit the host palette. Media pixels/cinema backdrops
+   retain their own contrast; dialogs, metadata and controls use semantic roles. */
+:root { --asset-surface:var(--dsw-alias-bg-layer-1,var(--card)); --asset-soft:var(--dsw-alias-bg-layer-2,var(--soft)); --asset-label:var(--dsw-alias-label-primary,var(--ink)); --asset-muted:var(--dsw-alias-label-secondary,var(--muted)); --asset-on-accent:var(--dsw-alias-label-primary-inverted,#fff); --asset-success:var(--dsw-alias-state-success-primary,#36815a); --asset-warning:var(--dsw-alias-state-warn-label,#946300); }
+:root :is(.library-sidebar,.smart-group-tabs,.kind-tabs,.media-frame,.character-editor>img,.character-strip-item img) { background:var(--asset-soft); }
+:root :is(.icon-button,.project-item.active,.project-item:hover,.secondary-button,.search-box,.sort-control,.column-control,.asset-menu>div,.smart-group-tabs button.active,.kind-tabs button.active,.category-chips button,.removable-tag,dialog.modal,.modal-actions,.character-strip-item,.check-chip span) { background:var(--asset-surface);color:var(--asset-label);border-color:var(--line); }
+:root :is(.sidebar-section-heading,.project-copy small,.project-chevron,.eyebrow,.folder-row,.smart-group-tabs button,.kind-tabs button,.category-chips button,.asset-format,.asset-meta,.classification-line,.classification-line span:first-child,.asset-menu summary,.card-hint,.field-hint,.modal label,.modal legend,.save-state,.prompt-section h4,.character-fields label,.removable-tag span,.view-switch button) { color:var(--asset-muted); }
+:root :is(.asset-menu button:hover,.folder-row:hover,.category-chips button:hover,.asset-tag,.prompt-references li,.check-chip span,.text-card-preview,.text-viewer-preview,.text-viewer-editor,.modal input,.modal textarea,.modal select,.character-fields input,.character-fields select) { background:var(--asset-soft);color:var(--asset-label);border-color:var(--line); }
+:root :is(.asset-tag.muted,.classification-callout span,.prompt-references li) { color:var(--asset-muted); }
+:root :is(.asset-tag.automatic,.prompt-meta span,.classification-callout,.character-badge,.check-chip input:checked+span) { background:var(--accent-soft);color:var(--accent);border-color:color-mix(in srgb,var(--accent) 25%,var(--line)); }
+:root .media-prompt-panel { background:var(--asset-surface);color:var(--asset-label); }
+:root .prompt-content { color:var(--asset-label); }
+:root :is(.privacy-note,.local-rule-note,.scan-state) { background:color-mix(in srgb,var(--asset-success) 10%,var(--asset-surface));color:var(--asset-success);border-color:var(--line); }
+:root .privacy-note span { color:var(--asset-success); }
+:root :is(.primary-button,.project-item.active .project-avatar,.canvas-picker-select,.inline-add button,.audio-play) { background:var(--accent);color:var(--asset-on-accent);border-color:var(--accent); }
+:root .danger-button { color:var(--asset-on-accent); }
+:root .asset-menu button.danger { color:var(--danger); }
+:root .danger-callout { background:color-mix(in srgb,var(--danger) 10%,var(--asset-surface));border-color:color-mix(in srgb,var(--danger) 25%,var(--line)); }
+:root .danger-callout span { color:var(--asset-muted); }
+:root .review-actions button { background:color-mix(in srgb,var(--asset-warning) 10%,var(--asset-surface));color:var(--asset-warning);border-color:color-mix(in srgb,var(--asset-warning) 25%,var(--line)); }
+:root .audio-visual { background:linear-gradient(135deg,var(--accent-soft),var(--asset-soft)); }
+:root .waveform i { background:var(--asset-muted); }
+:root .playing .waveform i { background:var(--accent); }
+:root .audio-visual .duration-label { color:var(--asset-muted); }
+:root .character-modal .modal-actions { background:var(--asset-surface); }
+:root body[data-library-view="thumbnail"] :is(.image-card .asset-menu summary,.character-badge,.character-variant) { background:var(--asset-surface);color:var(--asset-muted);border-color:var(--line); }
+:root body[data-library-view="thumbnail"] .image-card .media-frame { background:var(--asset-soft); }
+:root .view-switch button[aria-pressed="true"] { background:var(--asset-surface);color:var(--asset-label); }
+:root .toast { background:var(--asset-surface);color:var(--asset-label); }
+:root .toast.error { background:var(--asset-surface);color:var(--danger);border-color:var(--danger); }

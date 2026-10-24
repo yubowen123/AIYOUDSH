@@ -39,24 +39,51 @@ window.__ModuleLoader__.load({
     // Configuration contract mirrors configuration.mjs; covered by parity tests.
     const ALPHA_KEYS=['overall','chrome','sidebar','chat','panel','card','message','composer','composer-area','control','menu','text','border','shadow','decoration','image'];
     const COLOR_KEYS=['primary','secondary','link','success','danger','warning','inverse','bg','surface','elevated','border','userBg','accent'];
+    const CANVAS_COLOR_KEYS=['bg','node','panel','text','muted','border','accent','grid','edge'];
+    const CANVAS_OPACITY_KEYS=['bg','node','panel','toolbar'];
+    const SYSTEM_PLUGIN_THEME={id:'system',label:'系统默认',mode:'light',primitives:{bg:'#ffffff',surface:'#f5f6f7',elevated:'#ffffff',text:'#17212b',muted:'#52606d',border:'#d6d9df',accent:'#b05d00',running:'#176aba',complete:'#23804a',error:'#b43232','user-bg':'#eff3f8'},semantic:{bg:'bg',surface:'surface',elevated:'elevated',text:'text',muted:'muted',border:'border',brand:'accent',accent:'accent',running:'running',complete:'complete',error:'error','user-bg':'user-bg'},controls:{},background:null};
     const own=(value,key)=>Object.prototype.hasOwnProperty.call(value,key);
     const object=value=>value&&typeof value==='object'&&!Array.isArray(value);
+    function colorValue(value){return typeof value==='string'&&/^#[0-9a-f]{6}$/iu.test(value);}
+    function defaultCanvasConfiguration(colors,theme={}){
+     return {followTheme:true,colors:{bg:colors.bg,node:colors.elevated,panel:colors.surface,text:colors.primary,muted:colors.secondary,border:colors.border,accent:colors.accent,grid:colors.border,edge:colors.accent},opacity:{bg:1,node:1,panel:1,toolbar:1},background:{mode:theme.background?'theme':'solid',opacity:0.15,fit:'cover',x:50,y:50,grid:'dots',gridSize:24,gridOpacity:0.22}};
+    }
+    function normalizeCanvasConfiguration(value,colors,theme={}){
+     if(!object(value))throw new Error('canvas 须为对象');
+     for(const key of Object.keys(value))if(!['followTheme','colors','opacity','background'].includes(key))throw new Error('未知画布配置项：'+key);
+     const output=defaultCanvasConfiguration(colors,theme);
+     if(own(value,'followTheme')){if(typeof value.followTheme!=='boolean')throw new Error('canvas.followTheme 必须为布尔值');output.followTheme=value.followTheme;}
+     for(const [group,keys] of [['colors',CANVAS_COLOR_KEYS],['opacity',CANVAS_OPACITY_KEYS],['background',['mode','opacity','fit','x','y','grid','gridSize','gridOpacity']]]){
+      if(!own(value,group))continue;if(!object(value[group]))throw new Error('canvas.'+group+' 须为对象');
+      for(const [key,entry]of Object.entries(value[group])){
+       if(!keys.includes(key))throw new Error('未知画布配置项：'+group+'.'+key);
+       if(group==='colors'){if(!colorValue(entry))throw new Error('画布颜色须为六位 HEX');}
+       else if(key==='mode'){if(!['theme','solid','transparent'].includes(entry))throw new Error('画布背景模式无效');}
+       else if(key==='fit'){if(!['cover','contain'].includes(entry))throw new Error('画布背景显示方式无效');}
+       else if(key==='grid'){if(!['dots','lines','none'].includes(entry))throw new Error('画布网格类型无效');}
+       else if(key==='gridSize'){if(!Number.isInteger(entry)||entry<8||entry>80)throw new Error('画布网格间距须为8至80');}
+       else {const max=['x','y'].includes(key)?100:1;if(!Number.isFinite(entry)||entry<0||entry>max)throw new Error('canvas.'+group+'.'+key+' 超出范围');}
+       output[group][key]=entry;
+      }
+     }
+     if(output.followTheme)output.colors=defaultCanvasConfiguration(colors,theme).colors;
+     return output;
+    }
     function defaultConfiguration(theme){
      const c=role=>theme.primitives?.[theme.semantic?.[role]];
-     return {motion:Boolean(theme.background?.animated),alpha:Object.fromEntries(ALPHA_KEYS.map(key=>[key,Number.isFinite(theme.controls?.alpha?.[key])?theme.controls.alpha[key]:key==='chat'||key==='composer-area'?0:1])),
-     colors:{primary:c('text'),secondary:c('muted'),link:c('running'),success:c('complete'),danger:c('error'),warning:c('accent'),inverse:c('elevated'),...theme.controls?.colors,bg:c('bg'),surface:c('surface'),elevated:c('elevated'),border:c('border'),userBg:c('user-bg'),accent:c('brand')||c('accent')},
-     background:{type:theme.background?.animated?'video':'image',fit:theme.background?.fit||'cover',x:theme.background?.x??75,y:theme.background?.y??50,opacity:theme.background?.opacity??0.46}};
+     const colors={primary:c('text'),secondary:c('muted'),link:c('running'),success:c('complete'),danger:c('error'),warning:c('accent'),inverse:c('elevated'),...theme.controls?.colors,bg:c('bg'),surface:c('surface'),elevated:c('elevated'),border:c('border'),userBg:c('user-bg'),accent:c('brand')||c('accent')};
+     return {motion:Boolean(theme.background?.animated),alpha:Object.fromEntries(ALPHA_KEYS.map(key=>[key,Number.isFinite(theme.controls?.alpha?.[key])?theme.controls.alpha[key]:key==='chat'||key==='composer-area'?0:1])),colors,background:{type:theme.background?.animated?'video':'image',fit:theme.background?.fit||'cover',x:theme.background?.x??75,y:theme.background?.y??50,opacity:theme.background?.opacity??0.46},canvas:defaultCanvasConfiguration(colors,theme)};
     }
     function normalizeConfiguration(value,theme){
      if(!object(value))throw new Error('主题配置须为对象');
-     for(const key of Object.keys(value))if(!['motion','alpha','colors','background'].includes(key))throw new Error('未知主题配置项：'+key);
+     for(const key of Object.keys(value))if(!['motion','alpha','colors','background','canvas'].includes(key))throw new Error('未知主题配置项：'+key);
      const output=defaultConfiguration(theme);
      if(own(value,'motion')){if(typeof value.motion!=='boolean')throw new Error('motion 必须为布尔值');output.motion=value.motion;}
      for(const [group,keys] of [['alpha',ALPHA_KEYS],['colors',COLOR_KEYS],['background',['type','fit','x','y','opacity']]]){
       if(!own(value,group))continue;if(!object(value[group]))throw new Error(group+' 须为对象');
       for(const [key,entry]of Object.entries(value[group])){
        if(!keys.includes(key))throw new Error('未知配置项：'+group+'.'+key);
-       if(group==='colors'){if(!/^#[0-9a-f]{6}$/iu.test(entry))throw new Error('颜色须为六位 HEX');}
+       if(group==='colors'){if(!colorValue(entry))throw new Error('颜色须为六位 HEX');}
        else if(key==='type'){if(!['image','video'].includes(entry))throw new Error('背景模式无效');}
        else if(key==='fit'){if(!['cover','contain'].includes(entry))throw new Error('背景显示方式无效');}
        else {const max=['x','y'].includes(key)?100:1;if(!Number.isFinite(entry)||entry<0||entry>max)throw new Error(group+'.'+key+' 超出范围');}
@@ -64,7 +91,12 @@ window.__ModuleLoader__.load({
       }
      }
      if(!theme.background?.animated)output.background.type='image';
+     output.canvas=normalizeCanvasConfiguration(own(value,'canvas')?value.canvas:{},output.colors,theme);
      return output;
+    }
+    function normalizeSystemConfiguration(value={}){
+     if(!object(value)||Object.keys(value).some(key=>key!=='canvas'))throw new Error('系统默认仅支持画布配置');
+     return {canvas:normalizeConfiguration(value,SYSTEM_PLUGIN_THEME).canvas};
     }
     function configureTheme(theme,value){
      const configuration=normalizeConfiguration(value||{},theme),primitives={...theme.primitives},semantic={...theme.semantic};
@@ -370,6 +402,29 @@ window.__ModuleLoader__.load({
      * Geometry belongs to the host: no reading width, scroll container, docking,
      * titlebar clearance, editor padding, or navigation-card geometry is replaced.
      */
+    function buildCanvasVariables(theme,palette=buildTokens(theme).palette){
+      const configuration=theme.configuration||normalizeConfiguration({},theme);
+      const c=configuration.canvas,base=defaultCanvasConfiguration({bg:palette.bg,elevated:palette.elevated,surface:palette.surface,primary:palette.text,secondary:palette.muted,border:palette.border,accent:palette.accent},theme);
+      const colors=c.followTheme?base.colors:c.colors,bg=c.background;
+      const image=bg.mode==='theme'&&theme.background&&/^[a-z][a-z0-9-]{1,60}$/u.test(theme.id)?'url("'+API+'/media?id='+encodeURIComponent(theme.id)+'")':'none';
+      return {'--dsh-canvas-bg':bg.mode==='transparent'?'transparent':alpha(colors.bg,c.opacity.bg),'--dsh-canvas-node':alpha(colors.node,c.opacity.node),'--dsh-canvas-panel':alpha(colors.panel,c.opacity.panel),'--dsh-canvas-toolbar':alpha(colors.panel,c.opacity.toolbar),'--dsh-canvas-text':colors.text,'--dsh-canvas-muted':colors.muted,'--dsh-canvas-border':colors.border,'--dsh-canvas-accent':colors.accent,'--dsh-canvas-grid':alpha(colors.grid,bg.gridOpacity),'--dsh-canvas-edge':colors.edge,'--dsh-canvas-image':image,'--dsh-canvas-image-opacity':bg.opacity,'--dsh-canvas-image-fit':bg.fit,'--dsh-canvas-image-position':bg.x+'% '+bg.y+'%','--dsh-canvas-grid-style':bg.grid,'--dsh-canvas-grid-size':bg.gridSize+'px'};
+    }
+
+    function resolveSystemTheme(page,configuration={}){
+      const host=page.querySelector?.('._6Qf49G_frame')||page.documentElement;
+      const style=page.defaultView?.getComputedStyle?.(host);
+      const nativeDark=host.closest?.('[data-ds-dark-theme]')||page.documentElement.getAttribute('data-ds-dark-theme')!==null;
+      const scheme=style?.colorScheme||'',dark=nativeDark||scheme==='dark'||(scheme!=='light'&&page.defaultView?.matchMedia?.('(prefers-color-scheme: dark)').matches);
+      const colors=dark?{bg:'#11151a',surface:'#1a2028',elevated:'#232c37',text:'#edf0f4',muted:'#b4bdca',border:'#465465',accent:'#edaa55',running:'#8ccaff',complete:'#8fd6a3',error:'#ff8b8b','user-bg':'#26364b'}:{...SYSTEM_PLUGIN_THEME.primitives};
+      const roles={bg:'--dsw-alias-bg-base',surface:'--dsw-alias-bg-layer-1',elevated:'--dsw-alias-bg-layer-2',text:'--dsw-alias-label-primary',muted:'--dsw-alias-label-secondary',border:'--dsw-alias-border-l2',accent:'--dsw-alias-brand-primary',running:'--dsw-alias-state-progress-primary',complete:'--dsw-alias-state-success-primary',error:'--dsw-alias-state-error-primary','user-bg':'--dsw-alias-bg-layer-2'};
+      for(const [role,key]of Object.entries(roles)){
+        const raw=style?.getPropertyValue(key)?.trim(),rgb=parse(raw);
+        if(rgb&&[rgb.r,rgb.g,rgb.b,rgb.a].every(Number.isFinite)){const backdrop=['bg','surface'].includes(role)?colors.bg:role==='elevated'?colors.surface:colors.bg;colors[role]=rgb.a<1?mix(backdrop,toHex(rgb),Math.max(0,rgb.a)):toHex(rgb);}
+      }
+      const base={...SYSTEM_PLUGIN_THEME,mode:dark?'dark':'light',primitives:colors};
+      return configureTheme(base,{canvas:configuration.canvas||{}});
+    }
+
     function buildThemeSurfaceCss(theme, palette = buildTokens(theme).palette) {
       if (!/^[a-z][a-z0-9-]{1,60}$/u.test(theme?.id || '')) throw new Error('主题标识无效');
       const scope = `html[${THEME_ATTRIBUTE}="${theme.id}"]`;
@@ -383,6 +438,7 @@ window.__ModuleLoader__.load({
       const questionWarning = theme.controls?.colors?.warning || palette.warn;
       const questionWarningFill = mix(elevated, questionWarning, 0.12);
       const vars = {
+        ...buildCanvasVariables(theme,palette),
         '--aiyou-harness-bg': bg,
         '--aiyou-harness-chat-fill': fill(bg, 'chat', 0),
         '--aiyou-harness-sidebar-fill': fill(surface, 'sidebar', 0.8),
@@ -429,7 +485,7 @@ window.__ModuleLoader__.load({
       const imageAlpha = bounded(background?.opacity,opacity('image',0.46),1);
       const imagePosition = `${bounded(background?.x,75,100)}% ${bounded(background?.y,50,100)}%`;
       const art = media ? `linear-gradient(${alpha(bg,1-imageAlpha)},${alpha(bg,1-imageAlpha)}),url("${API}/media?id=${encodeURIComponent(theme.id)}")` : `linear-gradient(145deg,${alpha(accent,dark ? 0.065 : 0.04)},transparent 52%)`;
-      return `${scope}{color-scheme:${dark ? 'dark' : 'light'};${Object.entries(vars).map(([key,value]) => `${key}:${value};`).join('')}}
+      return `${scope}{color-scheme:${dark ? 'dark' : 'light'};accent-color:${accent};${Object.entries(vars).map(([key,value]) => `${key}:${value};`).join('')}}
 ${scope} body{background:var(--aiyou-harness-bg);color:var(--dsw-alias-label-primary)}
 ${scope} body{${Object.entries(syntax).map(([key,value]) => `--shiki-token-${key}:${value};`).join('')}--shiki-token-string-expression:${syntax.string};}
 ${scope} ._6Qf49G_frame{isolation:isolate;background-color:var(--aiyou-harness-bg);background-image:${art};background-size:${background?.fit === 'contain' ? 'contain' : 'cover'};background-position:${imagePosition};background-repeat:no-repeat}
@@ -496,15 +552,18 @@ ${scope} .aiyou-shortcut-label{color:var(--dsw-alias-label-primary)}
     function buildEmbeddedThemeCss(theme) {
       const { tokens, palette: p } = buildTokens(theme);
       const scope = `html[${THEME_ATTRIBUTE}="${theme.id}"]`;
+      const opacity=role=>Math.max(0,Math.min(1,Number.isFinite(theme.controls?.alpha?.[role])?theme.controls.alpha[role]:1));
+      const fill=(color,role)=>alpha(color,opacity(role)*opacity('overall'));
       const vars = {
+        ...buildCanvasVariables(theme,p),
         ...Object.fromEntries(Object.entries(tokens).map(([key,value]) => [key,value.light])),
-        '--bg': p.bg, '--header-bg': p.surface, '--sidebar-bg': p.surface,
-        '--surface': p.elevated, '--surface-raised': p.elevated, '--surface-muted': p.surface,
+        '--bg': fill(p.bg,'panel'), '--header-bg': fill(p.surface,'chrome'), '--sidebar-bg': fill(p.surface,'sidebar'),
+        '--surface': fill(p.elevated,'control'), '--surface-raised': fill(p.elevated,'card'), '--surface-muted': fill(p.surface,'panel'),
         '--surface-hover': mix(p.surface,p.text,p.dark ? 0.1 : 0.04), '--surface-active': mix(p.surface,p.accent,0.12),
-        '--column-header': p.surface, '--panel': p.elevated, '--card': p.elevated,
-        '--ink': p.text, '--muted': p.muted, '--soft': p.surface, '--line': p.border,
+        '--column-header': fill(p.surface,'panel'), '--panel': fill(p.elevated,'menu'), '--card': fill(p.elevated,'card'),
+        '--ink': tokens['--dsw-alias-label-primary'].light, '--muted': tokens['--dsw-alias-label-secondary'].light, '--soft': p.surface, '--line': alpha(p.border,opacity('border')),
         '--text-primary': p.text, '--text-secondary': p.muted, '--text-tertiary': p.muted, '--text-quaternary': p.muted,
-        '--border': p.border, '--border-strong': mix(p.border,p.text,0.15),
+        '--border': alpha(p.border,opacity('border')), '--border-strong': mix(p.border,p.text,0.15),
         '--accent': tokens['--dsw-alias-brand-primary'].light, '--accent-hover': p.accent, '--accent-soft': alpha(p.accent,0.12),
         '--danger': tokens['--dsw-alias-state-error-primary'].light, '--danger-soft': alpha(p.error,0.12),
         '--warning': tokens['--dsw-alias-state-warn-primary'].light, '--success': tokens['--dsw-alias-state-success-primary'].light,
@@ -515,7 +574,7 @@ ${scope} .aiyou-shortcut-label{color:var(--dsw-alias-label-primary)}
         '--card-shadow': `0 3px 10px ${alpha(p.text,p.dark ? 0.2 : 0.06)}`,
         '--dialog-shadow': `0 12px 32px ${alpha(p.text,p.dark ? 0.3 : 0.14)}`,
       };
-      return `${scope}{color-scheme:${p.dark ? 'dark' : 'light'};${Object.entries(vars).map(([key,value]) => `${key}:${value};`).join('')}}
+      return `${scope}{color-scheme:${p.dark ? 'dark' : 'light'}!important;accent-color:${p.accent};${Object.entries(vars).map(([key,value]) => `${key}:${value};`).join('')}}
 ${scope} body{background:var(--bg);color:var(--ink)}
 ${scope} .empty-state{background:var(--panel);color:var(--ink);border-color:var(--line)}
 ${scope} .empty-icon{background:var(--surface-muted);color:var(--accent);box-shadow:var(--card-shadow)}
@@ -531,79 +590,101 @@ ${scope} :is([role="dialog"],[role="menu"],.asset-toolbar){background:var(--pane
 `;
     }
 
-    /** Only the two packaged same-origin iframe routes receive presentation CSS.
-     * No messages, clicks, storage changes or child application actions are sent.
-     */
+    /** Presentation is scoped to packaged same-origin plugin documents, recursively. */
     function createEmbeddedThemeSync(page) {
-      const frames = new Map();
-      let selection = null;
-      let css = '';
-      let observer = null;
-      const allowed = (value) => {
-        try {
-          const base = new URL(page.baseURI);
-          const url = new URL(value,base);
-          return url.protocol === base.protocol && url.host === base.host && /^\/aiyoucodex-dsh\/(?:asset-console|taskboard)\/ui\//u.test(url.pathname);
-        } catch { return false; }
-      };
-      function releaseDocument(entry) {
-        entry.style?.remove();entry.style = null;
-        if (entry.doc?.documentElement.getAttribute(THEME_ATTRIBUTE) === entry.id) {
-          if (entry.previous === null) entry.doc.documentElement.removeAttribute(THEME_ATTRIBUTE);
-          else entry.doc.documentElement.setAttribute(THEME_ATTRIBUTE,entry.previous);
-        }
-        entry.doc = null;
+      const frames=new Map(),documents=new Map(),hostVariables=new Map();
+      let selection=null,css='',resolved=null,reconciling=false,media=null;
+      const MODE_ATTRIBUTE='data-aiyou-harness-mode';
+      function allowed(value,baseURI=page.baseURI){
+        try{const base=new URL(page.baseURI),url=new URL(value,baseURI);return url.protocol===base.protocol&&url.host===base.host&&/^\/aiyoucodex-dsh\/(?:(?:asset-console|taskboard)\/ui\/|canvas\/(?:ui|model-settings)\/)/u.test(url.pathname);}
+        catch{return false;}
       }
-      function paint(frame, entry, force = false) {
-        if (!selection) return;
-        let doc;
-        try { doc = frame.contentDocument; } catch { return; }
-        if (!doc?.head || !allowed(doc.URL || doc.baseURI)) { releaseDocument(entry);return; }
-        if (entry.doc !== doc) {
-          releaseDocument(entry);entry.doc = doc;
-          entry.previous = doc.documentElement.getAttribute(THEME_ATTRIBUTE);
-          entry.style = doc.createElement('style');
-          entry.style.dataset.plugin = OVERRIDE_SOURCE;
-          entry.style.dataset.pluginCss = `${STYLE_TAG_ID}/embedded`;
-          doc.head.appendChild(entry.style);force = true;
-        }
-        if (force || entry.id !== selection.id) {
-          entry.style.textContent = css;entry.id = selection.id;
-          doc.documentElement.setAttribute(THEME_ATTRIBUTE,selection.id);
+      function restoreHost(){
+        const style=page.documentElement.style;if(!style){hostVariables.clear();return;}
+        for(const [key,entry]of hostVariables)if(style.getPropertyValue(key)===entry.owned){if(entry.previous)style.setProperty(key,entry.previous,entry.priority);else style.removeProperty(key);}
+        hostVariables.clear();
+      }
+      function paintHost(){
+        if(selection?.id!==SYSTEM_THEME_ID){restoreHost();return;}
+        const style=page.documentElement.style;if(!style)return;
+        for(const [key,value]of Object.entries(buildCanvasVariables(resolved))){
+          const next=String(value);let entry=hostVariables.get(key);
+          if(!entry){entry={previous:style.getPropertyValue(key),priority:style.getPropertyPriority(key),owned:next};hostVariables.set(key,entry);}
+          entry.owned=next;if(style.getPropertyValue(key)!==next)style.setProperty(key,next);
         }
       }
-      function reconcile(force = false) {
-        const present = new Set([...page.querySelectorAll('iframe')].filter(frame => allowed(frame.getAttribute('src'))));
-        for (const [frame,entry] of frames) if (!present.has(frame)) {
-          frame.removeEventListener('load',entry.load);releaseDocument(entry);frames.delete(frame);
+      function releaseDocument(entry){
+        entry.style?.remove();entry.style=null;
+        if(entry.doc?.documentElement.getAttribute(THEME_ATTRIBUTE)===entry.id){if(entry.previous===null)entry.doc.documentElement.removeAttribute(THEME_ATTRIBUTE);else entry.doc.documentElement.setAttribute(THEME_ATTRIBUTE,entry.previous);}
+        if(entry.doc?.documentElement.getAttribute(MODE_ATTRIBUTE)===entry.mode){if(entry.previousMode===null)entry.doc.documentElement.removeAttribute(MODE_ATTRIBUTE);else entry.doc.documentElement.setAttribute(MODE_ATTRIBUTE,entry.previousMode);}
+        entry.doc=null;
+      }
+      function paint(frame,entry){
+        let doc;try{doc=frame.contentDocument;}catch{return null;}
+        if(!doc?.head||!allowed(doc.URL||doc.baseURI)){releaseDocument(entry);return null;}
+        if(entry.doc!==doc){
+          releaseDocument(entry);entry.doc=doc;entry.previous=doc.documentElement.getAttribute(THEME_ATTRIBUTE);entry.previousMode=doc.documentElement.getAttribute(MODE_ATTRIBUTE);
+          entry.style=doc.createElement('style');entry.style.dataset.plugin=OVERRIDE_SOURCE;entry.style.dataset.pluginCss=STYLE_TAG_ID+'/embedded';doc.head.appendChild(entry.style);
         }
-        for (const frame of present) {
-          let entry = frames.get(frame);
-          if (!entry) {
-            entry = { doc: null, style: null, previous: null, id: null, load: null };
-            entry.load = () => paint(frame,entry,true);frames.set(frame,entry);
-            frame.addEventListener('load',entry.load);
+        if(entry.style.isConnected===false||('parentNode' in entry.style&&entry.style.parentNode!==doc.head))doc.head.appendChild(entry.style);
+        if(entry.style.textContent!==css)entry.style.textContent=css;
+        entry.id=selection.id;entry.mode=resolved.mode;
+        if(doc.documentElement.getAttribute(THEME_ATTRIBUTE)!==entry.id)doc.documentElement.setAttribute(THEME_ATTRIBUTE,entry.id);
+        if(doc.documentElement.getAttribute(MODE_ATTRIBUTE)!==entry.mode)doc.documentElement.setAttribute(MODE_ATTRIBUTE,entry.mode);
+        return doc;
+      }
+      function refresh(){
+        if(!selection)return;
+        resolved=selection.id===SYSTEM_THEME_ID?resolveSystemTheme(page,selection.detail?.configuration||{}):selection.detail;
+        css=buildEmbeddedThemeCss(resolved);paintHost();
+      }
+      function observe(doc){
+        if(documents.has(doc))return;
+        const Observer=doc.defaultView?.MutationObserver;
+        if(!Observer){documents.set(doc,null);return;}
+        const observer=new Observer(records=>{
+          if(!selection||reconciling)return;
+          if(selection.id===SYSTEM_THEME_ID&&doc===page){
+            const host=page.querySelector?.('._6Qf49G_frame')||page.documentElement;
+            const relevant=!records||records.some(record=>record.type!=='attributes'||record.target===page.documentElement||record.target?.contains?.(host));
+            if(relevant)refresh();
           }
-          paint(frame,entry,force);
-        }
+          reconcile();
+        });
+        observer.observe(doc.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:doc===page?['src','srcdoc','data-ds-dark-theme','data-theme','data-color-scheme','class','style']:['src','srcdoc']});documents.set(doc,observer);
       }
-      function clear() {
-        observer?.disconnect();observer = null;
-        for (const [frame,entry] of frames) { frame.removeEventListener('load',entry.load);releaseDocument(entry); }
-        frames.clear();selection = null;css = '';
+      function reconcile(){
+        if(!selection||reconciling)return;reconciling=true;
+        const present=new Set(),visited=new Set();
+        try{
+          const visit=doc=>{
+            if(visited.has(doc))return;visited.add(doc);observe(doc);
+            for(const frame of doc.querySelectorAll('iframe')){
+              if(frame.getAttribute('srcdoc')!==null||!allowed(frame.getAttribute('src'),doc.baseURI))continue;
+              present.add(frame);let entry=frames.get(frame);
+              if(!entry){entry={doc:null,style:null,previous:null,previousMode:null,id:null,mode:null,load:()=>{refresh();reconcile();}};frames.set(frame,entry);frame.addEventListener('load',entry.load);}
+              const child=paint(frame,entry);if(child)visit(child);
+            }
+          };
+          visit(page);
+          for(const [frame,entry]of frames)if(!present.has(frame)){frame.removeEventListener('load',entry.load);releaseDocument(entry);frames.delete(frame);}
+          for(const [doc,observer]of documents)if(!visited.has(doc)){observer?.disconnect();documents.delete(doc);}
+        }finally{reconciling=false;}
       }
+      function clear(){
+        for(const observer of documents.values())observer?.disconnect();documents.clear();
+        for(const [frame,entry]of frames){frame.removeEventListener('load',entry.load);releaseDocument(entry);}
+        frames.clear();restoreHost();media?.removeEventListener?.('change',changed);media=null;selection=null;css='';resolved=null;
+      }
+      function changed(){refresh();reconcile();}
       return {
-        set(value) {
-          if (value.id === SYSTEM_THEME_ID) { clear();return; }
-          selection = value;css = buildEmbeddedThemeCss(value.detail);
-          const Observer = page.defaultView?.MutationObserver;
-          if (!observer && Observer) {
-            observer = new Observer(() => reconcile());
-            observer.observe(page.documentElement,{ childList: true, subtree: true, attributes: true, attributeFilter: ['src'] });
-          }
-          reconcile(true);
+        set(value){
+          selection=value;
+          if(value.id!==SYSTEM_THEME_ID&&!value.detail)throw Error('插件主题数据缺失');
+          if(!media&&page.defaultView?.matchMedia){media=page.defaultView.matchMedia('(prefers-color-scheme: dark)');media.addEventListener?.('change',changed);}
+          refresh();reconcile();
         },
-        dispose: clear,
+        dispose:clear,
       };
     }
 
@@ -651,11 +732,11 @@ ${scope} :is([role="dialog"],[role="menu"],.asset-toolbar){background:var(--pane
       let style = null;
       let activeId = null;
       let owner = null;
-      let saved = null;
+      let saved = null,hostRevision=-1;
       let disposed = false;
       let revision = 0;
       const root = page.documentElement;
-      const previousAttribute = root.getAttribute(THEME_ATTRIBUTE);
+      const previousAttribute = root.getAttribute(THEME_ATTRIBUTE),previousMode=root.getAttribute('data-aiyou-harness-mode');
       const embedded = createEmbeddedThemeSync(page);
       const motion = createMotionBackground(page);
       function clear() {
@@ -666,13 +747,14 @@ ${scope} :is([role="dialog"],[role="menu"],.asset-toolbar){background:var(--pane
           if (previousAttribute === null) root.removeAttribute(THEME_ATTRIBUTE);
           else root.setAttribute(THEME_ATTRIBUTE, previousAttribute);
         }
+        if(activeId!==null){if(previousMode===null)root.removeAttribute('data-aiyou-harness-mode');else root.setAttribute('data-aiyou-harness-mode',previousMode);}
         activeId = null;
         embedded.dispose();
         motion.dispose();
       }
       function render(selection, nextOwner) {
         if (disposed) return false;
-        if (selection.id === SYSTEM_THEME_ID) clear();
+        if (selection.id === SYSTEM_THEME_ID) {clear();embedded.set(selection);}
         else {
           if (!selection.detail || selection.detail.id !== selection.id) throw new Error('主题数据缺失或不匹配');
           const built = buildTokens(selection.detail);
@@ -687,7 +769,7 @@ ${scope} :is([role="dialog"],[role="menu"],.asset-toolbar){background:var(--pane
             page.head.appendChild(style);
           }
           style.textContent = css;
-          root.setAttribute(THEME_ATTRIBUTE, selection.id);
+          root.setAttribute(THEME_ATTRIBUTE, selection.id);root.setAttribute('data-aiyou-harness-mode',selection.detail.mode);
           activeId = selection.id;
           embedded.set(selection);
           motion.set(selection.detail);
@@ -699,9 +781,12 @@ ${scope} :is([role="dialog"],[role="menu"],.asset-toolbar){background:var(--pane
       return {
         get revision() { return revision; },
         get saved() { return saved; },
-        commit(selection) { if (render(selection, null)) saved = selection; },
+        get hostRevision() { return hostRevision; },
+        get hasPreview() { return owner!==null; },
+        systemTheme(configuration={}) { return resolveSystemTheme(page,configuration); },
+        commit(selection) { if(Number.isSafeInteger(selection.hostRevision)&&selection.hostRevision<hostRevision)return false;if(render(selection,null)){saved=selection;if(Number.isSafeInteger(selection.hostRevision))hostRevision=selection.hostRevision;return true;}return false; },
         preview(selection, key) { render(selection, key); },
-        recordSaved(selection) { if(!disposed)saved=selection; },
+        recordSaved(selection) { if(!disposed&&(!Number.isSafeInteger(selection.hostRevision)||selection.hostRevision>=hostRevision)){saved=selection;if(Number.isSafeInteger(selection.hostRevision))hostRevision=selection.hostRevision;} },
         cancel(key) { if (owner === key) render(saved ?? { id: SYSTEM_THEME_ID, detail: null }, null); },
         dispose() { if (disposed) return;disposed = true;clear();owner = null;saved = null; },
       };
@@ -710,52 +795,80 @@ ${scope} :is([role="dialog"],[role="menu"],.asset-toolbar){background:var(--pane
     /** Previews are local. Explicit saves use a host revision and per-theme settings. */
     function createThemeSession(controller, request = fetch) {
       const owner = {};
-      let state=null,draft=null,sequence=0,closed=false,saving=false;
+      let state=null,draft=null,sequence=0,closed=false,saving=false,closedRevision=null;
       const details=new Map(),drafts=new Map();
       async function read(url,options){const response=await request(url,options);const value=await response.json();if(!response.ok)throw new Error(value?.error||`HTTP ${response.status}`);return value;}
-      const prepared=(id,detail)=>({id,detail:id===SYSTEM_THEME_ID?null:configureTheme(detail.base||detail,detail.configuration||{} )});
-      const comparable=selection=>JSON.stringify([selection?.id,selection?.detail?.configuration||null]);
+      const prepared=(id,detail,system=state?.systemConfiguration||{},hostRevision=state?.revision)=>({id,hostRevision,detail:id===SYSTEM_THEME_ID?controller.systemTheme(system):configureTheme(detail.base||detail,detail.configuration||{})});
+      const comparable=selection=>JSON.stringify([selection?.id,selection?.id===SYSTEM_THEME_ID?selection.detail?.configuration?.canvas||null:selection?.detail?.configuration||null]);
       const snapshot=()=>state&&({...state,savedId:controller.saved?.id??state.active,draftId:draft?.id??state.active,previewDetail:draft?.detail??null,dirty:comparable(draft)!==comparable(controller.saved)});
+      const presentDraft=()=>{if(controller.saved&&comparable(draft)===comparable(controller.saved)){draft=controller.saved;controller.commit(draft);}else controller.preview(draft,owner);};
       return {
+        snapshot,
         async load(){const ticket=++sequence,value=await read(API,{cache:'no-store'});if(closed||ticket!==sequence)return null;state=value;draft=prepared(value.active,value.detail);details.clear();drafts.clear();details.set(draft.id,draft.detail);controller.commit(draft);return snapshot();},
         async preview(id){
           const ticket=++sequence;
           if(draft)drafts.set(draft.id,draft);
           const detail=id===SYSTEM_THEME_ID?null:details.has(id)?details.get(id):await read(`${API}/detail?id=${encodeURIComponent(id)}`,{cache:'no-store'});
           if(closed||ticket!==sequence)return null;
-          details.set(id,detail);draft=drafts.get(id)||prepared(id,detail);controller.preview(draft,owner);return snapshot();
+          details.set(id,detail);draft=drafts.get(id)||prepared(id,detail);presentDraft();return snapshot();
         },
         edit(patch){
           if(closed||!draft?.detail)return snapshot();sequence+=1;
           const previous=draft.detail.configuration,base=draft.detail.base;
-          const options={...previous,...patch,alpha:{...previous.alpha,...patch.alpha},colors:{...previous.colors,...patch.colors},background:{...previous.background,...patch.background}};
-          draft={id:draft.id,detail:configureTheme(base,options)};drafts.set(draft.id,draft);controller.preview(draft,owner);return snapshot();
+          if(draft.id===SYSTEM_THEME_ID&&Object.keys(patch).some(key=>key!=='canvas'))throw Error('系统默认仅支持画布配置');
+          const options={...previous,...patch,alpha:{...previous.alpha,...patch.alpha},colors:{...previous.colors,...patch.colors},background:{...previous.background,...patch.background},canvas:{...previous.canvas,...patch.canvas,colors:{...previous.canvas.colors,...patch.canvas?.colors},opacity:{...previous.canvas.opacity,...patch.canvas?.opacity},background:{...previous.canvas.background,...patch.canvas?.background}}};
+          draft={id:draft.id,detail:configureTheme(base,options)};drafts.set(draft.id,draft);presentDraft();return snapshot();
         },
-        reset(){if(!draft?.detail)return snapshot();return this.edit(defaultConfiguration(draft.detail.base));},
+        reset(){if(!draft?.detail)return snapshot();const defaults=defaultConfiguration(draft.detail.base);return this.edit(draft.id===SYSTEM_THEME_ID?{canvas:defaults.canvas}:defaults);},
         cancel(){sequence+=1;controller.cancel(owner);draft=controller.saved;drafts.clear();return snapshot();},
         async save(){
           if(!draft||closed)return null;if(saving)throw new Error('配置正在保存');saving=true;
           const selection=draft,ticket=++sequence;
           try{
-            const value=await read(`${API}/select`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:selection.id,...(selection.detail?{options:selection.detail.configuration}:{}),...(state.revision!==undefined?{ifRevision:state.revision}:{})})});
-            const persisted=prepared(value.active,value.detail);
-            if(closed)return null;
-            state={...state,active:value.active,detail:value.detail,revision:value.revision};
+            const value=await read(`${API}/select`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:selection.id,...(selection.detail?{options:selection.id===SYSTEM_THEME_ID?{canvas:selection.detail.configuration.canvas}:selection.detail.configuration}:{}),...(state.revision!==undefined?{ifRevision:state.revision}:{})})});
+            const persisted=prepared(value.active,value.detail,value.systemConfiguration||state?.systemConfiguration||{},value.revision);
+            if(closed){controller.recordSaved(persisted);if(controller.revision===closedRevision)controller.commit(persisted);return null;}
+            state={...state,active:value.active,detail:value.detail,revision:value.revision,systemConfiguration:value.systemConfiguration||state?.systemConfiguration};
             if(ticket===sequence){draft=persisted;controller.commit(persisted);details.set(draft.id,draft.detail);drafts.delete(draft.id);}else controller.recordSaved(persisted);
             return snapshot();
           }finally{saving=false;}
         },
-        dispose(){closed=true;sequence+=1;controller.cancel(owner);},
+        dispose(){closed=true;sequence+=1;controller.cancel(owner);closedRevision=controller.revision;},
       };
     }
 
+    /** Saved selections propagate between host windows; previews stay local. */
+    function createThemeRemoteSync(controller,request=fetch,page=document){
+      let disposed=false,busy=false,lastRevision=-1,lastError='';
+      const abort=new AbortController();
+      const comparable=value=>JSON.stringify([value?.id,value?.id===SYSTEM_THEME_ID?value?.detail?.configuration?.canvas:value?.detail?.configuration]);
+      async function read(url){const response=await request(url,{cache:'no-store',signal:abort.signal}),value=await response.json();if(!response.ok)throw Error(value.error||'主题同步失败');return value;}
+      async function refresh(){
+        if(disposed||busy)return;busy=true;
+        try{
+          const status=await read(API+'/state');if(disposed||status.revision===lastRevision||status.revision<controller.hostRevision)return;
+          const value=await read(API);if(disposed||value.revision<controller.hostRevision)return;
+          const selection={id:value.active,detail:value.active===SYSTEM_THEME_ID?controller.systemTheme(value.systemConfiguration||{}):value.detail,hostRevision:value.revision};
+          const changed=comparable(selection)!==comparable(controller.saved),hadSaved=Boolean(controller.saved),preservePreview=controller.hasPreview;
+          if(changed&&!controller.hasPreview)controller.commit(selection);else controller.recordSaved(selection);
+          lastRevision=value.revision;lastError='';
+          if(changed&&hadSaved)page.defaultView?.dispatchEvent?.(new CustomEvent('dsh-theme-saved',{detail:{revision:value.revision,preservePreview}}));
+        }catch(error){if(!disposed&&error.name!=='AbortError'&&error.message!==lastError){lastError=error.message;console.warn('[AIYOU theme]',error.message);}}
+        finally{busy=false;}
+      }
+      const focus=()=>void refresh(),timer=setInterval(focus,1500);
+      page.defaultView?.addEventListener?.('focus',focus);page.addEventListener?.('visibilitychange',focus);const ready=refresh();
+      return {ready,refresh,dispose(){disposed=true;abort.abort();clearInterval(timer);page.defaultView?.removeEventListener?.('focus',focus);page.removeEventListener?.('visibilitychange',focus);}};
+    }
+
     // ---------- theme switcher panel ----------
-    function ThemePanel() {
+    function ThemePanel({section:requestedSection=''}={}) {
       const [state, setState] = React.useState(null);
       const [error, setError] = React.useState(null);
       const [busy, setBusy] = React.useState(false);
       const session = React.useRef(null);
       const mounted = React.useRef(false);
+      const canvasSettings=React.useRef(null);
       const perform = React.useCallback(async (action) => {
         setBusy(true);
         setError(null);
@@ -774,8 +887,13 @@ ${scope} :is([role="dialog"],[role="menu"],.asset-toolbar){background:var(--pane
         const current = createThemeSession(themeController);
         session.current = current;
         void perform(() => current.load());
-        return () => { mounted.current = false;current.dispose();if (session.current === current) session.current = null; };
+        const external=event=>{if(event.detail?.preservePreview)setError('主题已在其他窗口更新；取消预览可使用最新设置，保存前请先刷新。');else void perform(()=>current.load());};
+        window.addEventListener('dsh-theme-saved',external);
+        return () => { mounted.current = false;window.removeEventListener('dsh-theme-saved',external);current.dispose();if (session.current === current) session.current = null; };
       }, [perform]);
+      const showCanvas=()=>canvasSettings.current?.scrollIntoView?.({block:'start',behavior:'auto'});
+      React.useEffect(()=>{if(requestedSection==='canvas')showCanvas();},[requestedSection,Boolean(state?.previewDetail)]);
+      React.useEffect(()=>{window.addEventListener('dsh-theme-show-canvas-settings',showCanvas);return()=>window.removeEventListener('dsh-theme-show-canvas-settings',showCanvas);},[]);
       const load = () => session.current && perform(() => session.current.load());
       const preview = (id) => !busy && session.current && perform(() => session.current.preview(id));
       const save = () => session.current && perform(() => session.current.save());
@@ -808,10 +926,28 @@ ${scope} :is([role="dialog"],[role="menu"],.asset-toolbar){background:var(--pane
       const group={border:'1px solid var(--dsw-alias-border-l2)',borderRadius:'12px',padding:'10px 12px',minWidth:0};
       const alphaLabels={overall:'全部表面',chrome:'顶部栏',sidebar:'会话栏',chat:'聊天底层',panel:'右侧面板',card:'卡片',message:'收发气泡',composer:'输入框内部','composer-area':'输入框外层',control:'按钮控件',menu:'菜单',text:'文字',border:'边框',shadow:'阴影'};
       const colorLabels={primary:'主要文字',secondary:'辅助文字',link:'链接',success:'完成',danger:'错误',warning:'提醒',inverse:'反色文字',bg:'整体底色',surface:'表面底色',elevated:'卡片底色',border:'边框',userBg:'用户气泡',accent:'强调色'};
-      const slider=(label,value,change)=>h('label',{style:field},h('span',null,label),h('input',{type:'range',min:0,max:100,step:1,value,disabled:busy,'aria-label':label,onChange:event=>change(Number(event.target.value))}),h('output',{style:{fontVariantNumeric:'tabular-nums',textAlign:'right'}},`${Math.round(value)}%`));
-      const section=(title,children,open=true)=>h('details',{style:group,open},h('summary',{style:{fontWeight:600,cursor:'pointer',marginBottom:'8px'}},title),...children);
+      const slider=(label,value,change,disabled=false)=>h('label',{style:field},h('span',null,label),h('input',{type:'range',min:0,max:100,step:1,value,disabled:busy||disabled,'aria-label':label,onChange:event=>change(Number(event.target.value))}),h('output',{style:{fontVariantNumeric:'tabular-nums',textAlign:'right'}},`${Math.round(value)}%`));
+      const section=(title,children,open=true,props={})=>h('details',{style:group,open,...props},h('summary',{style:{fontWeight:600,cursor:'pointer',marginBottom:'8px'}},title),...children);
+      const canvas=configuration?.canvas;
+      const canvasColorLabels={bg:'画布背景',node:'画布节点',panel:'画布面板',text:'画布文字',muted:'画布辅助文字',border:'画布边框',accent:'画布强调',grid:'画布网格',edge:'画布连线'};
+      const canvasOpacityLabels={bg:'画布背景',node:'画布节点',panel:'画布面板',toolbar:'画布工具栏'};
+      const canvasUi=canvas?section('画布与自由工具',[
+        h('p',{style:{...S.meta,marginTop:0}},'统一画布、创作工具和相关弹层的界面外观；原图、视频、3D画面与导出结果的颜色保持不变。'),
+        h('label',{style:{...field,gridTemplateColumns:'1fr auto'}},'画布配色跟随主题',h('input',{type:'checkbox',checked:canvas.followTheme,disabled:busy,'aria-label':'画布配色跟随主题',onChange:event=>edit({canvas:{followTheme:event.target.checked}})})),
+        section('画布配色',Object.entries(canvasColorLabels).map(([key,label])=>h('label',{key,style:{...field,gridTemplateColumns:'minmax(0,1fr) 36px 88px'}},h('span',null,label),h('input',{type:'color',value:canvas.colors[key],disabled:busy||canvas.followTheme,'aria-label':label+'颜色',style:{width:32,height:26,border:0,padding:0,background:'transparent'},onChange:event=>edit({canvas:{colors:{[key]:event.target.value}}})}),h('input',{type:'text',key:canvas.colors[key],defaultValue:canvas.colors[key],disabled:busy||canvas.followTheme,'aria-label':label+' HEX',maxLength:7,spellCheck:false,style:{...S.btn,fontFamily:'monospace',width:88,boxSizing:'border-box'},onBlur:event=>{if(/^#[0-9a-f]{6}$/iu.test(event.target.value))edit({canvas:{colors:{[key]:event.target.value}}});else{event.target.value=canvas.colors[key];setError('颜色须为 #RRGGBB');}}}))),false),
+        ...Object.entries(canvasOpacityLabels).map(([key,label])=>h(React.Fragment,{key},slider(label+'透明度',100*(1-canvas.opacity[key]),value=>edit({canvas:{opacity:{[key]:1-value/100}}})))),
+        h('p',{style:S.meta},'透明度仅作用于底色，文字与素材不透明。0% 为实色，100% 为完全透明。'),
+        h('label',{style:{...field,gridTemplateColumns:'1fr 1.5fr'}},'画布背景模式',h('select',{value:canvas.background.mode,disabled:busy,'aria-label':'画布背景模式',style:S.btn,onChange:event=>edit({canvas:{background:{mode:event.target.value}}})},h('option',{value:'theme',disabled:!selected.background},'主题背景图'),h('option',{value:'solid'},'主题底色'),h('option',{value:'transparent'},'透明背景'))),
+        slider('画布背景图强度',canvas.background.opacity*100,value=>edit({canvas:{background:{opacity:value/100}}}),canvas.background.mode!=='theme'||!selected.background),
+        h('label',{style:{...field,gridTemplateColumns:'1fr 1.5fr'}},'画布背景显示方式',h('select',{value:canvas.background.fit,disabled:busy||canvas.background.mode!=='theme','aria-label':'画布背景显示方式',style:S.btn,onChange:event=>edit({canvas:{background:{fit:event.target.value}}})},h('option',{value:'cover'},'铺满'),h('option',{value:'contain'},'完整显示'))),
+        slider('画布背景水平位置',canvas.background.x,value=>edit({canvas:{background:{x:value}}}),canvas.background.mode!=='theme'),
+        slider('画布背景垂直位置',canvas.background.y,value=>edit({canvas:{background:{y:value}}}),canvas.background.mode!=='theme'),
+        h('label',{style:{...field,gridTemplateColumns:'1fr 1.5fr'}},'画布网格',h('select',{value:canvas.background.grid,disabled:busy,'aria-label':'画布网格',style:S.btn,onChange:event=>edit({canvas:{background:{grid:event.target.value}}})},h('option',{value:'dots'},'圆点'),h('option',{value:'lines'},'线格'),h('option',{value:'none'},'隐藏'))),
+        h('label',{style:field},h('span',null,'画布网格间距'),h('input',{type:'range',min:8,max:80,step:1,value:canvas.background.gridSize,disabled:busy||canvas.background.grid==='none','aria-label':'画布网格间距',onChange:event=>edit({canvas:{background:{gridSize:Number(event.target.value)}}})}),h('output',null,canvas.background.gridSize+'px')),
+        slider('画布网格强度',canvas.background.gridOpacity*100,value=>edit({canvas:{background:{gridOpacity:value/100}}}),canvas.background.grid==='none'),
+      ],true,{ref:canvasSettings,'data-dsh-canvas-theme-settings':true}):null;
       const configurationUi=configuration?[
-        section('背景与动态',[
+        state.draftId===SYSTEM_THEME_ID?null:section('背景与动态',[
           h('p',{style:{...S.meta,margin:'4px 0 10px'}},selected.background?.animated?'原机甲 H.264 视频循环，真实视频画面；当前不随发送、运行或完成状态切换。':'本主题使用静态背景。未提供视频素材时不会把平移图片当作视频。'),
           h('label',{style:{...field,gridTemplateColumns:'1fr auto'}},'播放动态背景',h('input',{type:'checkbox',checked:configuration.motion,disabled:busy||!selected.background?.animated,'aria-label':'播放动态背景',onChange:event=>edit({motion:event.target.checked})})),
           h('label',{style:{...field,gridTemplateColumns:'1fr 1.5fr'}},'背景模式',h('select',{value:configuration.background.type,disabled:busy,'aria-label':'背景模式',style:S.btn,onChange:event=>edit({background:{type:event.target.value}})},h('option',{value:'image'},'静态图片'),selected.background?.animated?h('option',{value:'video'},'原主题视频循环'):null)),
@@ -821,11 +957,12 @@ ${scope} :is([role="dialog"],[role="menu"],.asset-toolbar){background:var(--pane
           slider('背景垂直位置',configuration.background.y,value=>edit({background:{y:value}})),
           h('p',{style:{...S.meta,marginBottom:0}},'减少动态效果、窗口隐藏或播放失败时自动回退静态图。背景静音，不拦截聊天操作。'),
         ]),
-        section('分层透明度',[
+        state.draftId===SYSTEM_THEME_ID?null:section('分层透明度',[
           h('p',{style:{...S.meta,marginTop:0}},'0% 为实色，100% 为完全透明；输入框内部与外层单独控制。'),
           ...Object.entries(alphaLabels).map(([key,label])=>h(React.Fragment,{key},slider(`${label}透明度`,100*(1-configuration.alpha[key]),value=>edit({alpha:{[key]:1-value/100}})))),
         ]),
-        section('配色',Object.entries(colorLabels).map(([key,label])=>h('label',{key,style:{...field,gridTemplateColumns:'1fr 36px 88px'}},h('span',null,label),h('input',{type:'color',value:configuration.colors[key],disabled:busy,'aria-label':`${label}颜色`,style:{width:'32px',height:'26px',border:0,padding:0,background:'transparent'},onChange:event=>edit({colors:{[key]:event.target.value}})}),h('input',{type:'text',key:configuration.colors[key],defaultValue:configuration.colors[key],disabled:busy,'aria-label':`${label} HEX`,maxLength:7,spellCheck:false,style:{...S.btn,fontFamily:'monospace',width:'88px',boxSizing:'border-box'},onBlur:event=>{if(/^#[0-9a-f]{6}$/iu.test(event.target.value))edit({colors:{[key]:event.target.value}});else{event.target.value=configuration.colors[key];setError('颜色须为 #RRGGBB');}}}))),false),
+        state.draftId===SYSTEM_THEME_ID?null:section('配色',Object.entries(colorLabels).map(([key,label])=>h('label',{key,style:{...field,gridTemplateColumns:'1fr 36px 88px'}},h('span',null,label),h('input',{type:'color',value:configuration.colors[key],disabled:busy,'aria-label':`${label}颜色`,style:{width:'32px',height:'26px',border:0,padding:0,background:'transparent'},onChange:event=>edit({colors:{[key]:event.target.value}})}),h('input',{type:'text',key:configuration.colors[key],defaultValue:configuration.colors[key],disabled:busy,'aria-label':`${label} HEX`,maxLength:7,spellCheck:false,style:{...S.btn,fontFamily:'monospace',width:'88px',boxSizing:'border-box'},onBlur:event=>{if(/^#[0-9a-f]{6}$/iu.test(event.target.value))edit({colors:{[key]:event.target.value}});else{event.target.value=configuration.colors[key];setError('颜色须为 #RRGGBB');}}}))),false),
+        canvasUi,
         h('p',{style:S.meta},'自定义颜色与透明度会改变实际对比度，请结合背景检查文字可读性。配置保存在当前主题名下，切换主题不会覆盖其他主题的设置。'),
         h('button',{type:'button',style:S.btn,disabled:busy,onClick:reset},'恢复本主题默认设置'),
       ]:[];
@@ -878,24 +1015,21 @@ ${scope} :is([role="dialog"],[role="menu"],.asset-toolbar){background:var(--pane
       );
     }
 
+    function ThemeTab({useTabInfo}){const {tab}=useTabInfo();return h(ThemePanel,{section:tab.navigation.params?.section||''});}
     let themeController = null;
     return {
-      inject: ['slots','sidebarRightTabs','theme'],
+      inject: ['slots','sidebarRightTabs','theme','sidebarRight','layout'],
       apply(ctx) {
         ctx.effect(() => {
           const controller = createThemeController(ctx);
           themeController = controller;
-          let disposed=false;
-          const initialRevision = controller.revision;
-          fetch(API,{cache:'no-store'}).then(async response => {
-            const value=await response.json();
-            if(!response.ok) throw new Error(value.error || '主题读取失败');
-            if(!disposed && controller.revision === initialRevision) controller.commit({ id: value.active, detail: value.detail });
-          }).catch(error => console.error('[AIYOU theme]',error));
-          return () => {disposed=true;controller.dispose();if(themeController===controller)themeController=null;};
+          controller.commit({id:SYSTEM_THEME_ID,detail:controller.systemTheme()});
+          const remote=createThemeRemoteSync(controller);
+          return () => {remote.dispose();controller.dispose();if(themeController===controller)themeController=null;};
         }, 'theme:selection');
+        ctx.effect(()=>{const open=event=>{if(event.detail?.section!=='canvas')return;ctx.layout.selectPanel(null);ctx.sidebarRight.openTab(KIND,{revealIfOpened:true,params:{section:'canvas'}});ctx.layout.openRightbar(true,false);window.dispatchEvent(new CustomEvent('dsh-theme-show-canvas-settings'));};window.addEventListener('dsh-open-theme-settings',open);return()=>window.removeEventListener('dsh-open-theme-settings',open);},'theme:canvas-settings');
         ctx.effect(() => ctx.sidebarRightTabs.register({id:TYPE_ID,kind:KIND,title:()=> '主题配置',guide:[{id:'open',order:80,title:()=> '主题配置',description:()=> '配置配色、透明度、背景与动态，或恢复系统默认外观'}]}), 'theme:type');
-        ctx.effect(() => ctx.slots.inject('sidebar.right.pane.tab',()=>ctx.slots.register({name:'sidebar.right.pane.tab',key:TYPE_ID},ThemePanel)), 'theme:panel');
+        ctx.effect(() => ctx.slots.inject('sidebar.right.pane.tab',()=>ctx.slots.register({name:'sidebar.right.pane.tab',key:TYPE_ID},ThemeTab)), 'theme:panel');
       }
     };
   },

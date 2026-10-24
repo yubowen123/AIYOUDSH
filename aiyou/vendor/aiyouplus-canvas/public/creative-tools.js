@@ -1,3 +1,4 @@
+import './theme-adapter.js';
 import {bootstrap,rpc,fileUrl,identity,uploadBrowserFile,disposeShim} from './host-shim.js';
 let disposed=false;
 async function sendMedia(value){const entries=Array.isArray(value)?value:[value],ids=[];for(const item of entries){const url=typeof item==='string'?item:item.originalUrl||item.url||item.content;if(!url)throw Error('工具结果没有可用原件');const response=await fetch(url);if(!response.ok)throw Error('读取工具原件失败');const blob=await response.blob(),uploaded=await uploadBrowserFile(new File([blob],item.fileName||item.name||('工具结果-'+crypto.randomUUID()+'.'+(blob.type==='image/svg+xml'?'svg':blob.type.startsWith('video/')?'mp4':'png')),{type:blob.type}));try{const [asset]=await rpc('aiyouplus_local_import',{inputPaths:[uploaded.path]});ids.push(asset.id);}finally{await rpc('canvas_upload_cancel',{uploadId:uploaded.uploadId});}}if(!ids.length)throw Error('没有可发送的工具结果');return rpc('canvas_tool_send',{assets:ids});}

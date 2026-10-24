@@ -118,7 +118,7 @@ window.__ModuleLoader__.load({
           h('button', { type: 'button', style: S.btn, onClick: () => void load() }, '刷新'),
         ),
         h('div', { style: S.body },
-          error ? h('div', { style: { ...S.meta, color: 'var(--dsw-state-error-primary, #d33)' } }, error) : null,
+          error ? h('div', { style: { ...S.meta, color: 'var(--dsw-alias-state-error-primary, #d33)' } }, error) : null,
 
           // ---- DSH-native signal, labelled as such ----
           h('div', { style: { ...S.card, ...(pressure?.band === 'red' ? bandStyle('red') : pressure?.band === 'yellow' ? bandStyle('yellow') : {}) } },

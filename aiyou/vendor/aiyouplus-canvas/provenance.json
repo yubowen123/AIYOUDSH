@@ -1968,24 +1968,30 @@
       "Original magnifier and material entry invoke one DSH library bridge; central toggle and persisted panel mounting cannot reopen old pose/material libraries",
       "Original save-to-library callbacks resolve a canonical original first, otherwise upload the actual original Blob and ingest through the DSH gateway; thumbnail-only inputs fail",
       "Timeline picker embeds the existing DSH asset-console with video/audio filtering and source/origin/request validation; authorized legacy aliases resolve to canonical originals",
-      "UTF-8 txt/md/markdown originals up to 4 MiB create actual text nodes with canonical reference IDs and real project-save receipts; other document formats fail before import"
+      "UTF-8 txt/md/markdown originals up to 4 MiB create actual text nodes with canonical reference IDs and real project-save receipts; other document formats fail before import",
+      "Same-origin host theme attributes and semantic variables drive a lifecycle-owned presentation adapter in all three public entries; same-ID stylesheet updates refresh the renderer",
+      "Exact read-only GOi and Oy hooks reuse recovered light/dark branches without writing graph content or local appearance preferences",
+      "Canvas background alpha and controlled theme image use a separate backdrop pseudo-layer; original SVG grid pan/zoom supports dots/lines/none and original connection canvas receives the configured edge color",
+      "The original bottom background/theme buttons navigate to DSH theme settings with source-bound project/session/panel identity instead of ineffective local appearance settings",
+      "All 22 workspaces, node/menu surfaces and retained dialogs use host presentation colors; original pattern/tiling/cutout artwork, canonical media and 3D capture pixels remain unchanged",
+      "The original app-canvas-viewport wrapper stays transparent along with every canvas background ancestor; native range and checkbox accents follow the host theme without affecting media opacity"
     ],
     "files": [
       {
         "path": "README.md",
-        "sha256": "05d4e73d473fdb95706bd0e2124477ec1a2377e7b41ebc9a04a6537fa525ac9f"
+        "sha256": "76c66e5c593da8f63a19df18a29a97667c066b70276e35e3952f0208a3831c1d"
       },
       {
         "path": "scripts/build.mjs",
-        "sha256": "6611f0f53dceb76e35cb885585df18707606c9c20185eb99fd3efc8734a97483"
+        "sha256": "f6f0c01a5864bb3a815c2fd587aa115ea5d4124ef84c6caa0b5dc6d1407bdcd8"
       },
       {
         "path": "public/index.html",
-        "sha256": "63651e005496cd80a534f4e60650219e26f521c2270eb50fc74771e7f6f32c39"
+        "sha256": "d084d7b840800351c1da04d04ba5d03970ded416a2c916058c2af469f4f57b88"
       },
       {
         "path": "public/embedded.js",
-        "sha256": "c4af28f1881afe2916c7e58a748961520f479e4ee6748ac3f9387b5a0f89b808"
+        "sha256": "2bc5e6a02a6d5bfe16b084d856eae015a63365af4806fab47124d9a2dc196ec4"
       },
       {
         "path": "public/embedded.css",
@@ -1997,11 +2003,11 @@
       },
       {
         "path": "public/tools.html",
-        "sha256": "a69428bc8c7966ecc3fdf8e29afc68784f2dc07473594ed0d2a7fa0c3df9922a"
+        "sha256": "272a1c07e44939a11dd6d5f875c0dce9141da0ab2f0fa32286527b60e5ca001d"
       },
       {
         "path": "public/tools.js",
-        "sha256": "92239cdc1a9bed7506b019cfe09b582a48f144e5acc0aab7742ee656b7e33fde"
+        "sha256": "2baf795fbfb827fdc3446ece415d60063348323c312f24770e78fe959fd0753e"
       },
       {
         "path": "public/tools.css",
@@ -2029,7 +2035,7 @@
       },
       {
         "path": "build.json",
-        "sha256": "c98fc9561d52454860b9c4352a39e5207b0d784d331e741337b718f0366122de"
+        "sha256": "f51205b1ce3e7a31a43cca17fb359f77d2b2b9a8ddc5016c7b98c31e9247383c"
       },
       {
         "path": "test/verify-submit-sync.mjs",
@@ -2037,11 +2043,11 @@
       },
       {
         "path": "public/creative-tools.html",
-        "sha256": "e2f3ddc48ed99e122011adb0f57536e075d8adc85d055d3129600a60b3cbc913"
+        "sha256": "6e74ae93db7da93d3d7f2b704a6da047bf9dcf6dd00cc4b8de80635af863237b"
       },
       {
         "path": "public/creative-tools.js",
-        "sha256": "d29fe535467e7571866d5466d15a7cdef748c70bc45b7aeebc346701d678f67a"
+        "sha256": "9d0b90eddbb6c16c8b8e01f7fc968e3033d25a2337a8bdc2c387c194d3d48265"
       },
       {
         "path": "public/creative-tools.css",
@@ -2070,12 +2076,24 @@
       {
         "path": "test/verify-library-entry.mjs",
         "sha256": "6e877daf2ba3f6fe0b1ce9d2494e5ccd0f11027b18577b539048c75b6aa673d4"
+      },
+      {
+        "path": "public/theme-adapter.js",
+        "sha256": "f18250d9666ef50ebaee1e7ffef427f88a913672c0debf8f99e821f72268f072"
+      },
+      {
+        "path": "public/theme-adapter.css",
+        "sha256": "018f7f1e90c5c4d5a69d755fb11885d7b1975b79607a1dc3b0c421cb8ee2177e"
+      },
+      {
+        "path": "test/verify-theme.mjs",
+        "sha256": "43f7b0914167a5d7fc6ba24b1694b796f9bd96c3213e5f500fc4e54b2973b85c"
       }
     ],
     "hostIntegrationFiles": [
       {
         "path": "aiyou/modules/canvas/client.js",
-        "sha256": "47cabdf8d2d6cdfef2b2196429f6afd9fc8e40c2e8f0315f6041677a08eb83bc"
+        "sha256": "7ca20ac7e627ad579da0bf72c6d551e48f8b9ac454f972c5a82798addb50ea8b"
       },
       {
         "path": "aiyou/modules/canvas/index.js",
@@ -2088,6 +2106,30 @@
       {
         "path": "aiyou/vendor/codex-workspace-enhancer/asset-browser/public/app.js",
         "sha256": "1d6f966e73f24166b66ca8ff065c418200442c695147067b4c3265abc07fe164"
+      },
+      {
+        "path": "aiyou/modules/theme/client.js",
+        "sha256": "93c6242a9fe1fec1aa7ba58b3b8dae476f0d2f204dd9e4d9620a5f8221e9cbfd"
+      },
+      {
+        "path": "aiyou/modules/theme/index.js",
+        "sha256": "00dbecbfbcf75d3673aa2b871ad7052a2811d5a95397c50153cf7a10ca51ca26"
+      },
+      {
+        "path": "aiyou/modules/theme/configuration.mjs",
+        "sha256": "850e2d1e2e30ff90db500178b352d2033132b726b4694a42b893a84bd890346d"
+      },
+      {
+        "path": "aiyou/modules/agent-workspace/client.js",
+        "sha256": "f7528e063dfc4996468e620efb9124a63ed84f056345194b2d2738da95ad779e"
+      },
+      {
+        "path": "aiyou/vendor/canvas-model-settings/index.html",
+        "sha256": "ccd0a284b5555b8dc73edb769992f9cf26c4ccaa7710c86f4d8924646e07a93e"
+      },
+      {
+        "path": "aiyou/vendor/codex-workspace-enhancer/asset-browser/public/ui-v3.css",
+        "sha256": "5a65ec8c707edd62ca84395ab96b6ec78910edfa241fde7bda41ae26ab6a1906"
       }
     ]
   }
