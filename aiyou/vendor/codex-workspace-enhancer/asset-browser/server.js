@@ -21,6 +21,7 @@ import { createAssetScanCoordinator } from "./asset-scan-coordinator.js";
 import { filterLibraryResult } from "./asset-library-filter.js";
 import { AssetLibraryPager } from "./asset-library-pagination.js";
 import { AssetLibrarySearch } from './asset-library-search.js';
+import { resolveLibraryFolder, validateLinkedLibraryFolder, listLibraryFolderTree, filterLibraryFolderAssets } from './library-folders.js';
 import { normalizeCharacterMetadata, deriveCharacterRelations } from "./character-associations.js";
 import { PersistentAssetIndex, sameAssetIndexFolders } from "./persistent-asset-index.js";
 import { savePlainTextAsset, textContentRevision, textEditPolicy } from "./text-asset-safety.js";
@@ -83,6 +84,7 @@ const librarySearch = new AssetLibrarySearch({ search: async request => {
 } });
 const reconciledProjectContexts = new Map();
 const assetCalibrationWarnings = new Map();
+const assetScanWarnings = new Map();
 const assetServiceEpoch = randomUUID();
 const defaultAssetTaxonomy = {
   text: ["提示词", "Skills", "剧本", "文档"],
@@ -755,11 +757,11 @@ async function renameProjectDirectoryLegacy({ projectId, path: folderPath, name 
 
 async function addProject({ name, path: projectPath, scanRoots, folders }) {
   const requestedFolders = Array.isArray(folders) && folders.length
-    ? folders.map((folder) => path.resolve(String(folder || ""))).filter(Boolean)
+    ? folders
     : projectPath
       ? normalizeScanRoots(scanRoots).map((root) => path.resolve(projectPath, root))
       : [];
-  const absoluteFolders = [...new Set(requestedFolders)];
+  const absoluteFolders = [...new Set(await Promise.all(requestedFolders.map(folder => validateLinkedLibraryFolder(folder))))];
   if (!absoluteFolders.length) throw new Error("至少需要关联一个文件夹");
   for (const folder of absoluteFolders) {
     const stats = await fs.stat(folder).catch(() => null);
@@ -784,6 +786,47 @@ async function addProject({ name, path: projectPath, scanRoots, folders }) {
   await ensureWatchers();
   notifyClients("project-change");
   return project;
+}
+
+async function linkLibraryFolder({ projectId, path: folderPath } = {}) {
+  // Validate before writing anything. Re-read the latest config inside the
+  // existing atomic queue; simultaneous additions can never replace a root.
+  const absolute = await validateLinkedLibraryFolder(folderPath);
+  const { result } = await updateConfig(async config => {
+    const project = config.projects.find(item => item.id === projectId);
+    if (!project) throw Object.assign(new Error('素材库项目不存在，请重新选择'), { statusCode: 404 });
+    const existing = await Promise.all(project.folders.map(folder => fs.realpath(folder).catch(() => path.resolve(folder))));
+    const added = !existing.includes(absolute);
+    if (added) {
+      // A directory may have disappeared while waiting for another config save.
+      await validateLinkedLibraryFolder(absolute);
+      project.folders.push(absolute);
+      const codexSync = normalizeCodexSyncMetadata(project.codexSync);
+      if (codexSync) { codexSync.userCustomizedFolders = true; project.codexSync = codexSync; }
+    }
+    return { project, added };
+  });
+  await ensureWatchers();
+  notifyClients('project-change');
+  let view;
+  try { view = await libraryScanCoordinator.queue(projectId, () => loadLibraryIndexView(projectId, { force: true })); }
+  catch (error) { throw Object.assign(new Error(`文件夹已关联，但扫描尚未完成：${error.message}。可点击“重新扫描”继续，不需要重复关联。`), { statusCode: error.statusCode || 503 }); }
+  const library = listLibraryAssets(view);
+  notifyClients('asset-change');
+  return { ...result, scan: { mode: view.mode, counts: library.counts, index: library.index } };
+}
+
+async function libraryFolderListing(projectId) {
+  const view = await libraryScanCoordinator.run(projectId, () => loadLibraryIndexView(projectId));
+  if (!view.project) throw Object.assign(new Error('素材库项目不存在，请重新选择'), { statusCode: 404 });
+  const tree = await listLibraryFolderTree(view.project, view.entry?.assets || []);
+  return { project: { id: view.project.id, name: view.project.name, folders: view.project.folders }, ...tree, index: { revision: libraryRevision(view.project, view.entry, view.settings), updatedAt: view.entry?.updatedAt || '' } };
+}
+
+async function folderScopedLibraryView(view, folderId) {
+  if (!folderId) return view;
+  const folder = await resolveLibraryFolder(view.project, folderId);
+  return { ...view, entry: { ...view.entry, assets: filterLibraryFolderAssets(view.entry?.assets || [], folder) }, folder };
 }
 
 async function updateProject(projectId, body = {}) {
@@ -1404,23 +1447,8 @@ async function resolveManagedAsset(config,assetRef){
 
 async function walkLibrary(directory, files, limit = 30000) {
   if (files.length >= limit) return;
-  let entries = [];
-  try {
-    entries = await fs.readdir(directory, { withFileTypes: true });
-  } catch {
-    return;
-  }
-  for (const entry of entries) {
-    if (files.length >= limit) return;
-    if (entry.name.startsWith(".")) continue;
-    const filePath = path.join(directory, entry.name);
-    if (isIgnoredAssetPath(filePath, directory)) continue;
-    if (entry.isDirectory() && !entry.isSymbolicLink()) {
-      await walkLibrary(filePath, files, limit);
-    } else if (entry.isFile() && supportedAssetExts.has(path.extname(entry.name).toLowerCase())) {
-      files.push(filePath);
-    }
-  }
+  const collected = await collectAssetDirectory(directory, supportedAssetExts, { limit: limit - files.length });
+  files.push(...collected.files);
 }
 
 function libraryAssetKind(filePath) {
@@ -1617,6 +1645,7 @@ function projectContainsAsset(project, filePath, config) {
 
 async function buildLibraryAssets(project, config, candidates, contextPaths = candidates, { failedPaths = [], missingPaths = [] } = {}) {
   const unique = [...new Set(candidates.map((item) => path.resolve(item)))];
+  const managedRoots = await Promise.all(allManagedFolders(config).map(async root => ({ root, real: await fs.realpath(root).catch(() => '') })));
   const classificationContext = {
     profiles: buildImageSequenceProfiles(
       [...new Set(contextPaths.map((item) => path.resolve(item)))]
@@ -1632,6 +1661,11 @@ async function buildLibraryAssets(project, config, candidates, contextPaths = ca
     try {
       const stats = await fs.lstat(filePath);
       if (!stats.isFile() || stats.isSymbolicLink()) { missingPaths.push(filePath); continue; }
+      const actual = await fs.realpath(filePath);
+      const canonicalRoot = managedRoots.some(({ root, real }) => real && isPathInside(root, filePath) && actual === path.resolve(real, path.relative(root, filePath)));
+      if (!canonicalRoot && !(actual === filePath && (canvasAssetStore.isOwnedPath(filePath) || Object.hasOwn(config.assetAssignments || {}, filePath)))) {
+        failedPaths.push(filePath); continue;
+      }
       const assignment = config.assetAssignments?.[filePath] || "";
       assets.push(await buildLibraryAsset(filePath, project, config, assignment, classificationContext));
     } catch (error) {
@@ -1642,6 +1676,8 @@ async function buildLibraryAssets(project, config, candidates, contextPaths = ca
 }
 
 function calibrationHealth(project) {
+  const failed = project ? assetScanWarnings.get(project.id) || [] : [];
+  if (failed.length) return { state: 'degraded', code: 'directory_unavailable', folders: failed.length, message: '部分关联目录无法读取；已保留这些目录的旧素材，请检查权限或挂载状态后重新扫描。' };
   const warnings = project ? [...assetCalibrationWarnings].filter(([root]) => project.folders.some((folder) => isPathInside(folder, root) || isPathInside(root, folder))) : [];
   return warnings.length ? { state: "degraded", code: "scan_budget_exceeded", roots: warnings.length, limit: warnings[0][1], message: "关联目录超过本轮 100000 项元数据预算；已保留旧条目，下一轮定时校准继续检查。建议拆分关联目录。" } : { state: "ready" };
 }
@@ -1708,6 +1744,7 @@ async function rebuildLibraryIndex(project, config, mode = "initial-scan") {
     if (matchesFailure(indexedAssetPath(asset)) && !present.has(asset.id)) assets.push(asset);
   }
   const entry = await assetLibraryIndex.replaceProject(project, assets);
+  assetScanWarnings.set(project.id, [...new Set(failedPaths.filter(filePath => !deferredRoots.has(filePath)))]);
   failedPaths.filter((filePath) => !deferredRoots.has(filePath)).forEach(scheduleAssetIndexUpdate);
   invalidateLibraryResponseCache(project.id);
   return { project, entry, settings: config.assetManager, mode };
@@ -2447,6 +2484,13 @@ async function syncAssetIndexPaths(changedPaths = []) {
     if (!entry) continue;
     const existingPaths = entry.assets.map(indexedAssetPath).filter(Boolean);
     const relevantChanges = expanded.filter((change) => changeAffectsProject(project, change, config.assetAssignments)||canvasAssetStore.pathsForProject(project.id).some(file=>file===change.changedPath||isPathInside(change.changedPath,file)));
+    const refreshScanWarnings = extraFailures => {
+      const retained = (assetScanWarnings.get(project.id) || []).filter(failed =>
+        project.folders.some(root => isPathInside(root, failed)) && !relevantChanges.some(change => isPathInside(change.changedPath, failed)));
+      const failures = [...retryPaths, ...extraFailures].filter(failed => project.folders.some(root => isPathInside(root, failed)));
+      assetScanWarnings.set(project.id, [...new Set([...retained, ...failures])]);
+    };
+    refreshScanWarnings(relevantChanges.flatMap(change => change.failedPaths || []));
     if (!relevantChanges.length) continue;
 
     const allCandidates = [...new Set(relevantChanges.flatMap((change) => change.candidates))]
@@ -2469,6 +2513,7 @@ async function syncAssetIndexPaths(changedPaths = []) {
     const retainedContext = existingPaths.filter((filePath) =>
       candidateDirectories.has(path.dirname(filePath)) && !matchesDeleted(filePath));
     const upserts = await buildLibraryAssets(project, config, candidates, [...retainedContext, ...allCandidates], { failedPaths, missingPaths });
+    refreshScanWarnings([...relevantChanges.flatMap(change => change.failedPaths || []), ...failedPaths]);
     retryPaths.push(...failedPaths);
     removeIds.push(...missingPaths.map(encodeAssetRef));
     if (upserts.length || removeIds.length || !sameAssetIndexFolders(entry.folders, project.folders)) {
@@ -2783,6 +2828,16 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    if (url.pathname === '/api/library/folders' && req.method === 'GET') {
+      sendJson(res, await libraryFolderListing(url.searchParams.get('project') || ''));
+      return;
+    }
+
+    if (url.pathname === '/api/library/folders' && req.method === 'POST') {
+      sendJson(res, { ok: true, ...await linkLibraryFolder(await readRequestBody(req)) });
+      return;
+    }
+
     if (url.pathname === "/api/library/revision" && req.method === "GET") {
       const config = await loadConfig();
       const projectId = url.searchParams.get("project") || "";
@@ -2796,8 +2851,11 @@ const server = createServer(async (req, res) => {
     if (url.pathname === "/api/library" && req.method === "GET") {
       const projectId = url.searchParams.get("project") || "";
       const force = url.searchParams.get("rescan") === "1";
-      const view = await libraryScanCoordinator.run(projectId, () => loadLibraryIndexView(projectId, { force }));
+      const rawView = await libraryScanCoordinator[force ? 'queue' : 'run'](projectId, () => loadLibraryIndexView(projectId, { force }));
+      const folderId = url.searchParams.get('folderId') || '';
+      const view = await folderScopedLibraryView(rawView, folderId);
       const filters = {
+        folderId,
         related: url.searchParams.get("related") || "1",
         characterId: url.searchParams.get("characterId") || "",
         kind: url.searchParams.get("kind") || "",

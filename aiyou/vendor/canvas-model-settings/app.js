@@ -6,10 +6,33 @@ async function invoke(command,args={}){
  const response=await fetch('/aiyoucodex-dsh/canvas/rpc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({command,args,...context})});
  const result=await response.json();if(!response.ok||!result.ok)throw new Error(result.error?.message||result.error||'请求未完成');return result.value;
 }
-async function run(action){if(busy)return;busy=true;for(const b of document.querySelectorAll('#settings button,#new,#refresh'))b.disabled=true;try{await action();}catch(e){status(e.message,true);}finally{busy=false;for(const b of document.querySelectorAll('#settings button,#new,#refresh'))b.disabled=false;}}
-function models(catalog){$('models').replaceChildren();for(const row of catalog||[]){const div=document.createElement('div');div.className='model';const kind={image:'图片',video:'视频',audio:'配音',music:'音乐'}[row.kind]||row.kind;div.textContent=kind+' · '+(row.name||row.id)+' ('+row.id+')';$('models').append(div);}if(!catalog?.length)$('models').textContent='尚未配置媒体模型，可从文档识别或手动填写。';}
+async function run(action){if(busy)return;busy=true;for(const b of document.querySelectorAll('#settings button,#settings input,#settings select,#settings textarea,#services button,#new,#refresh'))b.disabled=true;try{await action();}catch(e){status(e.message,true);}finally{busy=false;for(const b of document.querySelectorAll('#settings button,#settings input,#settings select,#settings textarea,#services button,#new,#refresh'))b.disabled=false;}}
+function models(catalog){
+ $('models').replaceChildren();
+ for(const kind of ['image','video','audio','music']){
+  const rows=(catalog||[]).filter(row=>row.kind===kind);if(!rows.length)continue;
+  const group=document.createElement('details');group.open=rows.length<10;
+  const title=document.createElement('summary');title.textContent=({image:'图片',video:'视频',audio:'配音',music:'音乐'})[kind]+' · '+rows.length+' 个模型';group.append(title);
+  for(const row of rows){const div=document.createElement('div');div.className='model';div.textContent=(row.name||row.id)+' · '+row.id;group.append(div);}
+  $('models').append(group);
+ }
+ if(!catalog?.length)$('models').textContent='尚未配置媒体模型，可从文档自动配置或手动填写。';
+}
+function discoveryReport(d){
+ const counts={};for(const row of d.modelCatalog||[])counts[row.kind]=(counts[row.kind]||0)+1;
+ const lines=Object.entries(counts).map(([k,n])=>({image:'图片',video:'视频',audio:'配音',music:'音乐'}[k]||k)+' '+n+' 个');
+ $('discovery-summary').textContent=lines.length?'已配置映射：'+lines.join('、'):'尚未识别完整的媒体接口。';
+ const gaps=[...(d.pendingModels||[]).map(row=>`${row.name||row.id||row.kind||'模型'}：${row.reason||row.message||'接口资料不完整'}`),...(d.issues||[]).map(row=>row.message||row.code)];
+ $('discovery-gaps').textContent=gaps.length?gaps.join('\n'):'未发现配置合同缺项；账户权限与实际生成效果仍需使用时验证。';
+ const list=$('discovery-sources');list.replaceChildren();
+ for(const evidence of (d.evidence||[]).filter(row=>row.type==='public-document')){
+  const item=document.createElement('li'),link=document.createElement('a');link.textContent=evidence.url;link.href=evidence.url;link.target='_blank';link.rel='noreferrer noopener';item.append(link);list.append(item);
+ }
+ $('discovery-result').hidden=false;
+}
+
 function fill(profile={}){
- selected=profile.provider||null;$('name').value=profile.name||'';$('base-url').value=profile.baseUrl||'';$('protocol').value=profile.protocol||'openai-compatible';$('auth-type').value=profile.authType||'bearer';$('auth-header').value=profile.authHeader||'Authorization';$('docs-url').value=profile.docsUrl||'';
+ $('discovery-result').hidden=true;selected=profile.provider||null;$('name').value=profile.name||'';$('base-url').value=profile.baseUrl||'';$('protocol').value=profile.protocol||'openai-compatible';$('auth-type').value=profile.authType||'bearer';$('auth-header').value=profile.authHeader||'Authorization';$('docs-url').value=profile.docsUrl||'';
  $('api-key').value='';$('clear-key').checked=false;$('test-only').checked=profile.scope==='test';$('session-only').checked=profile.scope==='test'||profile.storage==='session';$('key-status').textContent=profile.hasKey?'凭证已配置，原值不回显。':'尚未配置凭证。';$('catalog').value=JSON.stringify(profile.modelCatalog||[],null,2);$('defaults').value=JSON.stringify(profile.models||{},null,2);models(profile.modelCatalog);status(selected?'已加载服务。':'请填写服务资料。');
 }
 function render(){
@@ -21,16 +44,31 @@ $('new').addEventListener('click',()=>fill());$('refresh').addEventListener('cli
 $('auth-type').addEventListener('change',()=>{$('auth-header').value=$('auth-type').value==='api-key'?'X-API-Key':$('auth-type').value==='none'?'':'Authorization';});
 $('test-only').addEventListener('change',()=>{if($('test-only').checked)$('session-only').checked=true;});
 $('catalog').addEventListener('input',()=>{try{models(JSON.parse($('catalog').value));}catch{}});
-$('settings').addEventListener('submit',event=>{event.preventDefault();void run(async()=>{
+function formProfile(){
  const profile={provider:selected||'new',create:!selected,name:$('name').value,baseUrl:$('base-url').value,protocol:$('protocol').value,authType:$('auth-type').value,authHeader:$('auth-header').value,docsUrl:$('docs-url').value,scope:$('test-only').checked?'test':'production',sessionOnly:$('session-only').checked,clearKey:$('clear-key').checked,modelCatalog:JSON.parse($('catalog').value),models:JSON.parse($('defaults').value)};
- const key=$('api-key').value;if(key)profile.apiKey=key;
- try{config=await invoke('aiyouplus_model_configure',profile);}finally{$('api-key').value='';}
- selected=config.provider;render();if(config.profiles?.[selected])fill(config.profiles[selected]);status('服务已保存。尚未提交生成请求。');
-});});
+ if($('api-key').value)profile.apiKey=$('api-key').value;return profile;
+}
+async function saveProfile(profile){
+ config=await invoke('aiyouplus_model_configure',profile);$('api-key').value='';
+ selected=config.provider;render();if(config.profiles?.[selected])fill(config.profiles[selected]);
+}
+$('settings').addEventListener('submit',event=>{event.preventDefault();void run(async()=>{await saveProfile(formProfile());status('服务已保存。尚未提交生成请求。');});});
 $('discover').addEventListener('click',()=>run(async()=>{
- const result=await invoke('aiyouplus_model_discover',{url:$('docs-url').value}),d=result.discovery;
- const keep=selected;fill({...d,provider:keep});selected=keep;
- status((d.readyToConfigure?'已从文档识别接口，请检查后保存。':'接口资料仍需核对：')+'\n'+(d.issues||[]).map(i=>i.message||i.code).join('\n'));
+ const before={provider:selected,baseUrl:$('base-url').value,key:$('api-key').value,clearKey:$('clear-key').checked,scope:$('test-only').checked?'test':'production',sessionOnly:$('session-only').checked,hasKey:config?.profiles?.[selected]?.hasKey};
+ status('正在读取公开文档、匹配媒体模型与接口…');
+ const {discovery:d}=await invoke('aiyouplus_model_discover',{url:$('docs-url').value});
+ const sameOrigin=(()=>{try{return new URL(before.baseUrl).origin===new URL(d.baseUrl).origin;}catch{return !before.baseUrl;}})();
+ const custom=before.provider?.startsWith('service-')&&sameOrigin;
+ fill({...d,provider:custom?before.provider:null,hasKey:custom&&before.hasKey});
+ // Never inherit a stored credential after switching API origin. A newly typed
+ // credential stays in memory only when bound to the same API or a blank draft.
+ if(sameOrigin)$('api-key').value=before.key;
+ $('clear-key').checked=custom&&before.clearKey;
+ if(d.scope!=='test'){$('test-only').checked=before.scope==='test';$('session-only').checked=before.sessionOnly||before.scope==='test';}
+ discoveryReport(d);
+ if(!d.readyToConfigure){status('已保留识别结果，接口合同尚不完整，未保存通道。请查看待补内容。',true);return;}
+ await saveProfile(formProfile());discoveryReport(d);
+ status('已自动保存媒体通道，共 '+(d.modelCatalog?.length||0)+' 个模型。'+(config.profiles?.[selected]?.hasKey?'':' 尚未配置 Key，可在上方填写后保存。')+' 未提交生成请求。');
 }));
 $('catalog-refresh').addEventListener('click',()=>run(async()=>{if(!selected)throw new Error('请先保存服务。');const result=await invoke('aiyouplus_model_catalog',{provider:selected});models(result.modelCatalog||config.profiles[selected]?.modelCatalog);status(result.liveDiscovery?'模型目录已核对；实际生成权限仍需逐项验证。':'已读取配置目录；'+(result.requiresKey?'需要配置凭证。':'尚未验证当前账户生成权限。'));}));
 $('delete').addEventListener('click',()=>run(async()=>{if(!selected)throw new Error('请先选择服务。');config=await invoke('aiyouplus_model_delete',{provider:selected});selected=null;render();fill();status('服务配置已删除。');}));

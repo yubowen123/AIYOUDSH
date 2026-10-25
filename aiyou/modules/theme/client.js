@@ -186,16 +186,132 @@ window.__ModuleLoader__.load({
     // is readable, with a black/white fallback when hue-preserving correction
     // runs out of steps. Hover has its own fill and therefore its own label.
     function controlLabel(preferred, background) {
-      const luminance = (value) => {
-        const c = parse(value);
-        const channels = [c.r, c.g, c.b].map(v => v / 255).map(v => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
-        return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
-      };
-      const contrast = (a, b) => (Math.max(luminance(a), luminance(b)) + 0.05) / (Math.min(luminance(a), luminance(b)) + 0.05);
-      if (contrast(preferred, background) >= 4.5) return preferred;
-      const corrected = ensureContrast(preferred, background);
-      if (contrast(corrected, background) >= 4.5) return corrected;
-      return contrast('#000000', background) >= contrast('#ffffff', background) ? '#000000' : '#ffffff';
+      return readableUiInk(preferred, background);
+    }
+
+    // A readable UI pair is derived presentation state. Never rewrite the
+    // user's configured color/alpha or apply these rules to media pixels.
+    function uiColor(value) {
+      const text=String(value??'').trim();
+      if(/^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/iu.test(text)){const parsed=parse(text);return {r:parsed.r,g:parsed.g,b:parsed.b,a:parsed.a};}
+      const short=/^#([0-9a-f]{4})$/iu.exec(text);
+      if(short){const parts=short[1].split('').map(x=>Number.parseInt(x+x,16));return {r:parts[0],g:parts[1],b:parts[2],a:parts[3]/255};}
+      const match=/^rgba?\(([^)]+)\)$/iu.exec(text),srgb=/^color\(srgb\s+([^)]+)\)$/iu.exec(text);
+      if(!match&&!srgb)return null;
+      const parts=(match||srgb)[1].trim().replace(/,/gu,' ').replace(/\//gu,' / ').split(/\s+/u),slash=parts.indexOf('/');
+      const channels=slash>=0?parts.slice(0,slash):parts.slice(0,3),alphaPart=slash>=0?parts[slash+1]:parts[3];
+      if(channels.length!==3||parts.length>(slash>=0?5:4)||(srgb&&slash<0&&parts.length!==3)||parts.some(part=>part!=='/'&&!/^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[-+]?\d+)?%?$/iu.test(part)))return null;
+      const channel=v=>v.endsWith('%')?255*Number.parseFloat(v)/100:Number(v)*(srgb?255:1);
+      const rgb=channels.map(channel),opacity=alphaPart===undefined?1:alphaPart.endsWith('%')?Number.parseFloat(alphaPart)/100:Number(alphaPart);
+      return [...rgb,opacity].every(Number.isFinite)?{r:clamp(rgb[0]),g:clamp(rgb[1]),b:clamp(rgb[2]),a:Math.max(0,Math.min(1,opacity))}:null;
+    }
+    function compositeUiColor(value, backdrop='#ffffff') {
+      const back=uiColor(backdrop)||{r:255,g:255,b:255,a:1},front=uiColor(value)||back;
+      return toHex({r:front.r*front.a+back.r*(1-front.a),g:front.g*front.a+back.g*(1-front.a),b:front.b*front.a+back.b*(1-front.a)});
+    }
+    function uiContrast(foreground, background) {
+      const bg=uiColor(compositeUiColor(background)),fg=uiColor(compositeUiColor(foreground,toHex(bg)));
+      const luminance=c=>[c.r,c.g,c.b].map(v=>v/255).map(v=>v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4).reduce((sum,v,i)=>sum+v*[0.2126,0.7152,0.0722][i],0);
+      const a=luminance(fg),b=luminance(bg);return (Math.max(a,b)+0.05)/(Math.min(a,b)+0.05);
+    }
+    function readableUiInk(preferred, background, target=4.5) {
+      const bg=compositeUiColor(background),original=compositeUiColor(preferred,bg);
+      if(uiContrast(original,bg)>=target)return original;
+      const candidates=[];
+      for(const destination of ['#000000','#ffffff']){
+        if(uiContrast(destination,bg)<target)continue;
+        let low=0,high=1;
+        for(let i=0;i<14;i++){const middle=(low+high)/2;if(uiContrast(mix(original,destination,middle),bg)>=target)high=middle;else low=middle;}
+        candidates.push({weight:high,color:mix(original,destination,high)});
+      }
+      candidates.sort((a,b)=>a.weight-b.weight);
+      return candidates[0]?.color||(uiContrast('#000000',bg)>=uiContrast('#ffffff',bg)?'#000000':'#ffffff');
+    }
+    function readableUiBoundary(preferred, backgrounds, target=3.2) {
+      const colors=[...new Set(backgrounds.map(value=>compositeUiColor(value)))],original=compositeUiColor(preferred,colors[0]),minimum=color=>Math.min(...colors.map(bg=>uiContrast(color,bg)));
+      // Reserve a small margin for legacy translucent adjacent surfaces.
+      if(minimum(original)>=target)return original;
+      const candidates=[];
+      for(const destination of ['#000000','#ffffff']){
+        if(minimum(destination)<target)continue;
+        let low=0,high=1;for(let i=0;i<14;i++){const middle=(low+high)/2;if(minimum(mix(original,destination,middle))>=target)high=middle;else low=middle;}
+        candidates.push({weight:high,color:mix(original,destination,high)});
+      }
+      candidates.sort((a,b)=>a.weight-b.weight);
+      // Contradictory user surfaces cannot share one universal outline. Each
+      // safe component still owns a readable fill/ink pair and modal fallback.
+      return candidates[0]?.color||readableUiInk(preferred,colors.at(-1),target);
+    }
+    function buildReadableUiVariables(theme,palette=buildTokens(theme).palette) {
+      const p=palette,opacity=key=>Math.max(0,Math.min(1,Number.isFinite(theme.controls?.alpha?.[key])?theme.controls.alpha[key]:1));
+      const base=compositeUiColor(p.bg,p.dark?'#11151a':'#ffffff'),surface=compositeUiColor(alpha(p.elevated,opacity('card')*opacity('overall')),base),modal=compositeUiColor(alpha(p.elevated,opacity('menu')*opacity('overall')),base);
+      const ink=alpha(p.text,opacity('text')),muted=alpha(p.muted,opacity('text')),inverse=theme.controls?.colors?.inverse||base,boundary=readableUiBoundary(p.border,[base,compositeUiColor(p.surface,base),compositeUiColor(p.elevated,base),surface,modal]);
+      const values={'bg':base,'ink':readableUiInk(ink,base),'muted':readableUiInk(muted,base),'border':boundary,'surface-bg':surface,'surface-ink':readableUiInk(ink,surface),'surface-muted':readableUiInk(muted,surface),'surface-border':boundary,'modal-bg':modal,'modal-ink':readableUiInk(ink,modal),'modal-muted':readableUiInk(muted,modal),'modal-border':boundary,'accent-text':readableUiInk(p.accent,base),'focus':readableUiInk(p.accent,modal,3)};
+      const pair=(name,bg,foreground,outer=modal)=>{const fill=compositeUiColor(bg,surface);values[name+'-bg']=fill;values[name+'-ink']=readableUiInk(foreground,fill);values[name+'-border']=boundary;};
+      pair('accent',p.accent,inverse);pair('badge',p.accent,inverse);pair('selected',alpha(p.accent,0.16),ink);pair('status',alpha(p.complete,0.12),p.complete);pair('error',alpha(p.error,0.12),p.error);pair('warning',alpha(p.warn,0.12),p.warn);pair('danger',p.error,inverse);
+      return Object.fromEntries(Object.entries(values).map(([key,value])=>['--dsh-readable-'+key,value]));
+    }
+    // The asset library is an owned document, not a new global theme. Its
+    // dense counters and full-width actions use restrained surfaces; mecha's
+    // amber remains available elsewhere as a small decorative/status accent.
+    function buildAssetLibraryVariables(theme,palette=buildTokens(theme).palette) {
+      const p=palette,readable=buildReadableUiVariables(theme,p),get=key=>readable['--dsh-readable-'+key];
+      const defaults=theme.defaultConfiguration||defaultConfiguration(theme.base||theme),configured=theme.configuration?.colors?.accent;
+      const defaultAccent=!configured||configured.toLowerCase()===String(defaults.colors.accent).toLowerCase();
+      const coldMecha=theme.id==='mecha-control'&&defaultAccent;
+      const interaction=coldMecha?compositeUiColor(theme.controls?.colors?.link||p.running,get('bg')):compositeUiColor(p.accent,get('bg'));
+      const surface=get('surface-bg'),modal=get('modal-bg'),ink=get('surface-ink');
+      const actionBg=coldMecha?mix(surface,interaction,0.16):get('accent-bg'),actionHover=mix(actionBg,interaction,coldMecha?0.09:0.05);
+      const identityBg=mix(surface,interaction,coldMecha?0.055:0.12),selectedBg=mix(surface,interaction,coldMecha?0.12:0.16);
+      const boundary=readableUiBoundary(p.border,[get('bg'),surface,modal,identityBg,selectedBg]);
+      const actionBorder=coldMecha?readableUiBoundary(interaction,[get('bg'),surface,modal,actionBg,actionHover]):get('accent-border');
+      const values={interaction,link:readableUiBoundary(interaction,[get('bg'),compositeUiColor(p.surface,get('bg')),compositeUiColor(p.elevated,get('bg')),surface,modal],4.5),focus:readableUiInk(interaction,modal,3.2),
+        'action-bg':actionBg,'action-ink':coldMecha?readableUiInk(p.text,actionBg):get('accent-ink'),'action-border':actionBorder,
+        'action-hover-bg':actionHover,'action-hover-ink':readableUiInk(coldMecha?p.text:get('accent-ink'),actionHover),'action-hover-border':actionBorder,
+        'identity-bg':identityBg,'identity-ink':readableUiInk(ink,identityBg),'identity-border':mix(identityBg,interaction,0.22),
+        'avatar-bg':identityBg,'avatar-ink':readableUiInk(interaction,identityBg),'avatar-border':mix(identityBg,interaction,0.22),
+        'selected-bg':selectedBg,'selected-ink':readableUiInk(ink,selectedBg),'selected-border':boundary};
+      return Object.fromEntries(Object.entries(values).map(([key,value])=>['--dsh-asset-'+key,value]));
+    }
+    function buildAssetLibraryThemeCss(theme,palette,scope,assetScope=scope+' body:has(> .app-shell > .library-sidebar)') {
+      const vars=buildAssetLibraryVariables(theme,palette);
+      const aliases={'accent-bg':'action-bg','accent-ink':'action-ink','accent-border':'action-border','badge-bg':'identity-bg','badge-ink':'identity-ink','badge-border':'identity-border','selected-bg':'selected-bg','selected-ink':'selected-ink','selected-border':'selected-border','accent-text':'link','focus':'focus'};
+      return `${assetScope}{${Object.entries(vars).map(([key,value])=>key+':'+value+';').join('')}${Object.entries(aliases).map(([key,value])=>'--dsh-readable-'+key+':var(--dsh-asset-'+value+');').join('')}accent-color:var(--dsh-asset-interaction)}
+${assetScope} :is(input[type=radio],input[type=checkbox]){accent-color:var(--dsh-asset-interaction)!important}
+${assetScope} :is(button,input,textarea,select):focus-visible{outline:2px solid var(--dsh-asset-focus)!important;outline-offset:2px}`;
+    }
+    function buildReadableUiCss(scope) {
+      return `
+/* Paired readable controls only: no global button, SVG, opacity or media rewrite. */
+${scope} :is(.primary-button,.secondary-button,.icon-button,.danger-button,.button,.canvas-picker-select,.asset-quick-insert,.folder-row,.folder-expand,.header-project-switcher):focus-visible{outline:2px solid var(--dsh-readable-focus)!important;outline-offset:2px}
+${scope} body:has(> #settings) :is(input,textarea,select,button):focus-visible{outline:2px solid var(--dsh-readable-focus)!important;outline-offset:2px}
+${scope} :is(.primary-button,.button.primary,.project-profile-modal-actions button.primary){background:var(--dsh-readable-accent-bg)!important;color:var(--dsh-readable-accent-ink)!important;border-color:var(--dsh-readable-accent-border)!important;outline:1px solid var(--dsh-readable-accent-border);outline-offset:-1px}
+${scope} :is(.danger-button,.button.danger){background:var(--dsh-readable-danger-bg)!important;color:var(--dsh-readable-danger-ink)!important;border-color:var(--dsh-readable-danger-border)!important;outline:1px solid var(--dsh-readable-danger-border);outline-offset:-1px}
+${scope} :is(.secondary-button,.button.secondary,.header-project-switcher,.icon-button){background:var(--dsh-readable-surface-bg)!important;color:var(--dsh-readable-surface-ink)!important;border-color:var(--dsh-readable-surface-border)!important}
+${scope} :is(.smart-group-tabs button.active,.kind-tabs button.active,.project-item.active,.nav-item.active,.project-nav-item.active,.view-tab.active){background:var(--dsh-readable-selected-bg)!important;color:var(--dsh-readable-selected-ink)!important;border-color:var(--dsh-readable-selected-border)!important;outline:1px solid var(--dsh-readable-selected-border);outline-offset:-1px}
+${scope} :is(.smart-group-tabs button.active small,.kind-tabs button.active small,.project-sync-badge,.prompt-link-badge){background:var(--dsh-readable-badge-bg)!important;color:var(--dsh-readable-badge-ink)!important;border-color:var(--dsh-readable-badge-border)!important}
+${scope} :is(.privacy-note,.local-rule-note,.scan-state){background:var(--dsh-readable-status-bg)!important;color:var(--dsh-readable-status-ink)!important;border-color:var(--dsh-readable-status-border)!important}
+${scope} :is(.form-error:not(:empty),.project-automation-error,.board-setting-error,.error-banner,#status[data-error=true],#codex-error:not(:empty)){background:var(--dsh-readable-error-bg)!important;color:var(--dsh-readable-error-ink)!important;border-color:var(--dsh-readable-error-border)!important}
+${scope} .error-banner :is(strong,p){color:var(--dsh-readable-error-ink)!important}
+${scope} :is(dialog.modal,.task-dialog,.project-profile-modal){background:var(--dsh-readable-modal-bg)!important;color:var(--dsh-readable-modal-ink)!important;border-color:var(--dsh-readable-modal-border)!important}
+${scope} :is(.task-dialog,.project-profile-modal){--text-primary:var(--dsh-readable-modal-ink);--text-secondary:var(--dsh-readable-modal-muted);--text-tertiary:var(--dsh-readable-modal-muted);--text-quaternary:var(--dsh-readable-modal-muted);--surface:var(--dsh-readable-surface-bg);--surface-muted:var(--dsh-readable-modal-bg);--border:var(--dsh-readable-surface-border)}
+${scope} dialog.modal .modal-actions{background:var(--dsh-readable-modal-bg)!important;color:var(--dsh-readable-modal-ink)!important}
+${scope} dialog.modal :is(label,legend,.field-hint,.character-fields label){color:var(--dsh-readable-modal-muted)!important}
+${scope} body:has(> #settings){background:var(--dsh-readable-bg)!important;color:var(--dsh-readable-ink)!important;--model-text:var(--dsh-readable-ink);--model-muted:var(--dsh-readable-muted);--model-border:var(--dsh-readable-border)}
+${scope} body:has(> #settings) :is(section,#settings>section){background:var(--dsh-readable-modal-bg)!important;color:var(--dsh-readable-modal-ink)!important;--model-text:var(--dsh-readable-modal-ink);--model-muted:var(--dsh-readable-modal-muted)}
+${scope} body:has(> #settings) :is(input,textarea,select,button){background:var(--dsh-readable-surface-bg)!important;color:var(--dsh-readable-surface-ink)!important;border-color:var(--dsh-readable-surface-border)!important}
+${scope} body:has(> #settings) button.primary{background:var(--dsh-readable-accent-bg)!important;color:var(--dsh-readable-accent-ink)!important;border-color:var(--dsh-readable-accent-border)!important}
+${scope} body:has(> #settings) :is(#status[data-error=true],#codex-error:not(:empty)){background:var(--dsh-readable-error-bg)!important;color:var(--dsh-readable-error-ink)!important;border-color:var(--dsh-readable-error-border)!important}
+${scope}[data-dsh-theme-adapted] :is(.tb-home-head,.dsh-generic-tool){background:var(--dsh-readable-bg)!important;color:var(--dsh-readable-ink)!important}
+${scope}[data-dsh-theme-adapted] .tb-home-card{background:var(--dsh-readable-modal-bg)!important;color:var(--dsh-readable-modal-ink)!important;border-color:var(--dsh-readable-modal-border)!important}
+${scope}[data-dsh-theme-adapted] :is(.tb-home-copy small,.tb-home-head p,.dsh-generic-tool header p,.dsh-generic-tool aside>p){color:var(--dsh-readable-modal-muted)!important}
+${scope}[data-dsh-theme-adapted] :is(.tb-home-total,.tb-home-mark){background:var(--dsh-readable-badge-bg)!important;color:var(--dsh-readable-badge-ink)!important;border-color:var(--dsh-readable-badge-border)!important}
+${scope}[data-dsh-theme-adapted] :is(.tb-send,.sw-primary,.motion-submit,.st-actions .st-send,.sketch-toolbar .sketch-toolbar-plus-btn):not(:disabled){background:var(--dsh-readable-accent-bg)!important;color:var(--dsh-readable-accent-ink)!important;border-color:var(--dsh-readable-accent-border)!important;outline:1px solid var(--dsh-readable-accent-border);outline-offset:-1px}
+${scope}[data-dsh-theme-adapted] :is(.tb-tool.is-on,.tb-toolbar button.is-on,.sw-history-item.is-active,.sw-mode button[aria-pressed=true],.pt-segment button[aria-pressed=true]){background:var(--dsh-readable-selected-bg)!important;color:var(--dsh-readable-selected-ink)!important;border-color:var(--dsh-readable-selected-border)!important}
+${scope}[data-dsh-theme-adapted] :is(.dsh-characters,.dsh-gateway-picker,[data-dsh-save-dialog],.sw-send-dialog){background:var(--dsh-readable-modal-bg)!important;color:var(--dsh-readable-modal-ink)!important;border-color:var(--dsh-readable-modal-border)!important}
+${scope}[data-dsh-theme-adapted] .dsh-generic-tool :is(input:not([type=color]):not([type=range]):not([type=checkbox]),textarea,select,button){background:var(--dsh-readable-surface-bg)!important;color:var(--dsh-readable-surface-ink)!important;border-color:var(--dsh-readable-surface-border)!important}
+${scope}[data-dsh-theme-adapted] .dsh-generic-tool :is([data-status],[data-capability]){background:var(--dsh-readable-status-bg)!important;color:var(--dsh-readable-status-ink)!important;border-color:var(--dsh-readable-status-border)!important}
+`;
     }
 
     // ---------- palette → DSH token map ----------
@@ -439,6 +555,7 @@ window.__ModuleLoader__.load({
       const questionWarningFill = mix(elevated, questionWarning, 0.12);
       const vars = {
         ...buildCanvasVariables(theme,palette),
+        ...buildReadableUiVariables(theme,palette),
         '--aiyou-harness-bg': bg,
         '--aiyou-harness-chat-fill': fill(bg, 'chat', 0),
         '--aiyou-harness-sidebar-fill': fill(surface, 'sidebar', 0.8),
@@ -545,6 +662,7 @@ ${scope} :is(.yhfFVG_card,.ST7X_W_header,.irMxjq_tabBody,.y21zpG_card,.R7PCuq_ca
 ${scope} [data-aiyou-sidebar]{--aiyou-shortcut-fill:var(--aiyou-harness-card-fill);--aiyou-shortcut-border:var(--aiyou-harness-border);--aiyou-shortcut-ink:var(--dsw-alias-label-primary)}
 ${scope} .aiyou-shortcut-card{background:var(--aiyou-harness-card-fill);border-color:var(--aiyou-harness-border);color:var(--dsw-alias-label-primary)}
 ${scope} .aiyou-shortcut-label{color:var(--dsw-alias-label-primary)}
+${buildAssetLibraryThemeCss(theme,palette,scope,scope+' [data-dsh-asset-canvas-target]')}
 @media(prefers-reduced-motion:reduce){${scope} :is(.IzP3Va_bubble,.gKv1-q_body,.yhfFVG_card,.ST7X_W_header,[data-menu-material],.aiyou-shortcut-card){transition:none;animation:none}}
 `;
     }
@@ -556,6 +674,7 @@ ${scope} .aiyou-shortcut-label{color:var(--dsw-alias-label-primary)}
       const fill=(color,role)=>alpha(color,opacity(role)*opacity('overall'));
       const vars = {
         ...buildCanvasVariables(theme,p),
+        ...buildReadableUiVariables(theme,p),
         ...Object.fromEntries(Object.entries(tokens).map(([key,value]) => [key,value.light])),
         '--bg': fill(p.bg,'panel'), '--header-bg': fill(p.surface,'chrome'), '--sidebar-bg': fill(p.surface,'sidebar'),
         '--surface': fill(p.elevated,'control'), '--surface-raised': fill(p.elevated,'card'), '--surface-muted': fill(p.surface,'panel'),
@@ -586,6 +705,8 @@ ${scope} .danger-button{background:var(--danger);color:var(--dsw-alias-label-pri
 ${scope} :is(input,textarea,select){color:var(--ink);background-color:var(--surface)}
 ${scope} :is(.privacy-note,.local-rule-note,.scan-state){color:var(--success);background:var(--accent-soft);border-color:var(--line)}
 ${scope} :is([role="dialog"],[role="menu"],.asset-toolbar){background:var(--panel);color:var(--ink);border-color:var(--line)}
+${buildReadableUiCss(scope)}
+${buildAssetLibraryThemeCss(theme,p,scope)}
 @media(prefers-reduced-motion:reduce){${scope} :is(.asset-card,.scan-state.busy::before){transition:none;animation:none}}
 `;
     }

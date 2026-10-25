@@ -12,7 +12,16 @@ function select(value,selector) {
   for(const part of parseFieldPath(selector))values=values.flatMap(item=>part==='*'?(Array.isArray(item)?item:Object.values(item||{})):[item!=null&&Object.hasOwn(Object(item),part)?item[part]:undefined]);
   return values.length===1?values[0]:values;
 }
-function render(value,variables) {
+function render(value,variables,optionalFields=[]) {
+  if(optionalFields.length&&value&&typeof value==='object'&&!Array.isArray(value)){
+    value=Object.fromEntries(Object.entries(value).filter(([key,item])=>{
+      if(!optionalFields.includes(key))return true;
+      const exact=typeof item==='string'&&/^\{\{([^{}]+)\}\}$/.exec(item);
+      if(!exact)throw new Error('可选模板字段必须为完整变量');
+      const found=select(variables,exact[1]);
+      return found!==undefined&&found!==null&&!(Array.isArray(found)&&found.length===0);
+    }));
+  }
   if(Array.isArray(value))return value.map(item=>render(item,variables)).filter(item=>item!==undefined);
   if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value).map(([key,item])=>[key,render(item,variables)]).filter(([,item])=>item!==undefined));
   if(typeof value!=='string')return value;
@@ -80,6 +89,11 @@ function buildGenericRequest(cfg,args,refs={},ctx={}) {
   const supplied=normalizeModelCatalog([{id:args.model,kind:args.kind,parameters:args.parameters||{}}])[0].parameters;
   const parameters={...(model.parameters||{}),...supplied};
   for(const key of ['duration','resolution','aspectRatio','voiceId','speed','volume','pitch','lyrics','instrumental','count','seed','width','height',...CHAT_FIELDS])if(args[key]!==undefined)parameters[key]=args[key];
+  const aliases={aspectRatio:['aspect_ratio'],voiceId:['voice','voice_id'],count:['n'],instrumental:['make_instrumental'],negativePrompt:['negative_prompt']};
+  for(const [source,targets]of Object.entries(aliases)){
+    const value=args[source]??supplied[source];
+    if(value!==undefined)for(const target of targets)if(Object.hasOwn(model.request?.template||{},target))parameters[target]=value;
+  }
   const chat=args.kind==='chat'?buildChatPayload(cfg,args,args.prompt||'',{imageUrls:images},ctx):undefined;
   const nativeChat=chat&&(cfg.protocol==='anthropic-messages'?anthropicPayload(chat,parameters):{...chat,...parameters,...Object.fromEntries(Object.entries(chat).filter(([key])=>args[key]!==undefined)),model:args.model,messages:chat.messages,stream:false});
   const chatImages=chat?.messages.flatMap(m=>Array.isArray(m.content)?m.content:[]).filter(p=>p.type==='image_url').length||0;
@@ -94,7 +108,8 @@ function buildGenericRequest(cfg,args,refs={},ctx={}) {
     if(mask&&!/\{\{(?:mask|maskImage|maskImageUrl|maskBase64)(?:\}\}|\.)/.test(mapping))throw new Error('API请求模板尚未映射蒙版，未提交生成');
     for(const [key,value]of Object.entries({...supplied,...Object.fromEntries(['duration','resolution','aspectRatio','voiceId','speed','volume','pitch','lyrics','instrumental','count','seed','width','height',...CHAT_FIELDS].filter(k=>args[k]!==undefined).map(k=>[k,args[k]]))})){
       if(args.kind==='chat'&&['openai-compatible','anthropic-messages'].includes(cfg.protocol)&&CHAT_FIELDS.includes(key))continue;
-      const mapped=mapping.includes('{{parameters}}')||mapping.includes('{{parameters.'+key+'}}')||mapping.includes('{{parameters.'+key+'.')||mapping.includes('{{'+key+'}}');
+      const aliasMapped=(aliases[key]||[]).some(target=>mapping.includes('{{parameters.'+target+'}}'));
+      const mapped=aliasMapped||mapping.includes('{{parameters}}')||mapping.includes('{{parameters.'+key+'}}')||mapping.includes('{{parameters.'+key+'.')||mapping.includes('{{'+key+'}}');
       if(!mapped&&JSON.stringify(value)!==JSON.stringify(model.parameters?.[key]))throw new Error('API请求模板尚未映射参数：'+key+'；请补充映射，未提交生成');
     }
   }
@@ -112,7 +127,7 @@ function buildGenericRequest(cfg,args,refs={},ctx={}) {
   }
   // Only declared templates are expanded. User prompts/tool results in a
   // standard protocol payload must keep literal {{...}} text unchanged.
-  let body=model.request?render(request.template,variables):request.template;
+  let body=model.request?render(request.template,variables,request.optionalFields):request.template;
   if(model.request&&args.kind==='chat'&&['openai-compatible','anthropic-messages'].includes(cfg.protocol))body={...body,...nativeChat};
   for(const [key,schema]of Object.entries(model.parameterSchema||{})){
     if(!schema||typeof schema!=='object')continue;

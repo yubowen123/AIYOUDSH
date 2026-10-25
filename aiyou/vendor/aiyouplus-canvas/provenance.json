@@ -2105,11 +2105,11 @@
       },
       {
         "path": "aiyou/vendor/codex-workspace-enhancer/asset-browser/public/app.js",
-        "sha256": "1d6f966e73f24166b66ca8ff065c418200442c695147067b4c3265abc07fe164"
+        "sha256": "07adf454b8a3d9029909305308bce76ce0d0cf3ee7d3100a06201326e8593bf8"
       },
       {
         "path": "aiyou/modules/theme/client.js",
-        "sha256": "93c6242a9fe1fec1aa7ba58b3b8dae476f0d2f204dd9e4d9620a5f8221e9cbfd"
+        "sha256": "fa32c8313fa1cf734c2e8db66f473dd5961ccd173f1e820bc84290210574b7b2"
       },
       {
         "path": "aiyou/modules/theme/index.js",
@@ -2125,11 +2125,11 @@
       },
       {
         "path": "aiyou/vendor/canvas-model-settings/index.html",
-        "sha256": "ccd0a284b5555b8dc73edb769992f9cf26c4ccaa7710c86f4d8924646e07a93e"
+        "sha256": "780ea81f168ae2108264448ca266220ad9e39de2b55d1ad58526be9d6a01de17"
       },
       {
         "path": "aiyou/vendor/codex-workspace-enhancer/asset-browser/public/ui-v3.css",
-        "sha256": "5a65ec8c707edd62ca84395ab96b6ec78910edfa241fde7bda41ae26ab6a1906"
+        "sha256": "ddd838a42ddce4cfdd8db8a1ae365d12d1228f2c5222d27a687fdc44bb708111"
       }
     ]
   }

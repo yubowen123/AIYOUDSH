@@ -13,11 +13,23 @@ export async function collectAssetDirectory(directory, supportedExtensions, { io
   const pending = [root];
   const files = [];
   const failedPaths = [];
+  // Explicit roots can be aliases, but a nested directory must never redirect
+  // enumeration through a symlink that appeared after readdir().
+  let realRoot = root;
+  if (typeof io.realpath === 'function') {
+    try { realRoot = await io.realpath(root); }
+    catch { return { files, failedPaths: [root], truncated: false }; }
+  }
   let visited = 0;
   while (pending.length) {
     const current = pending.pop();
     let entries;
-    try { entries = await io.readdir(current, { withFileTypes: true }); }
+    try {
+      if (typeof io.realpath === 'function' && await io.realpath(current) !== path.resolve(realRoot, path.relative(root, current))) {
+        failedPaths.push(current); continue;
+      }
+      entries = await io.readdir(current, { withFileTypes: true });
+    }
     catch (error) {
       // A disappearing subfolder is a valid deletion; a missing configured root
       // could instead be an unmounted volume and must retain its cached assets.

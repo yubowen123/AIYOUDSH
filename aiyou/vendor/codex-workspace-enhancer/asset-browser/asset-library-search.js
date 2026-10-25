@@ -40,7 +40,7 @@ export class AssetLibrarySearch {
     this.revisions.set(projectId, revision);
     for (const [key, entry] of this.cache) if (entry.projectId === projectId && entry.revision !== revision) this.cache.delete(key);
     // Page size, offsets and display sorting do not trigger more inference.
-    const key = JSON.stringify([projectId, revision, options.query, options.kind, options.category, options.smartGroup, options.characterId]);
+    const key = JSON.stringify([projectId, revision, options.query, options.kind, options.category, options.smartGroup, options.characterId, options.folderId]);
     let entry = this.cache.get(key);
     // Keep a failed inference snapshot stable while paging it, but a new
     // first-page search can recover the local worker after a short cooldown.

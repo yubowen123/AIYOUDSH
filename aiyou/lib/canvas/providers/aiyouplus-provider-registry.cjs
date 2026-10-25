@@ -83,7 +83,7 @@ function selectors(input,keys) {
   return result;
 }
 function normalizeModelCatalog(catalog=[],options={}) {
-  if(!Array.isArray(catalog)||catalog.length>300)throw new Error('模型目录必须是最多300项的数组');
+  if(!Array.isArray(catalog)||catalog.length>512)throw new Error('模型目录必须是最多512项的数组');
   const seen=new Set();
   return catalog.map(raw=>{
     if(!isObject(raw))throw new Error('模型目录项无效');
@@ -103,6 +103,11 @@ function normalizeModelCatalog(catalog=[],options={}) {
       if(raw.request.headers!==undefined)throw new Error('请求模板不能自行配置鉴权请求头');
       if(!isObject(raw.request.template))throw new Error('请求模板必须为JSON对象');
       model.request={method:'POST',path:relativePath(raw.request.path),template:safeJson(raw.request.template,{template:true})};
+      if(raw.request.optionalFields!==undefined){
+        const list=raw.request.optionalFields;
+        if(!Array.isArray(list)||list.length>128||list.some(key=>typeof key!=='string'||!Object.hasOwn(model.request.template,key)||!/^\{\{[^{}]+\}\}$/.test(model.request.template[key])||raw.parameterSchema?.[key]?.required===true))throw new Error('可选字段须为模板中非必填的完整变量字段');
+        model.request.optionalFields=[...new Set(list)];
+      }
     }
     if(raw.response!==undefined){
       model.response=selectors(raw.response,['textPath','urlsPath','base64Path','taskIdPath','statusPath','errorPath','subtitlePath','subtitleUrlPath']);

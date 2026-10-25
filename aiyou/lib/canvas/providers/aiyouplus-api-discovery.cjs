@@ -5,7 +5,8 @@ const {createHash}=require('node:crypto');
 const {isIP}=require('node:net');
 const {assertNetworkAllowed,isLoopbackUrl}=require('./aiyouplus-runtime.cjs');
 const {validateServiceProfile}=require('./aiyouplus-provider-registry.cjs');
-const LIMITS=Object.freeze({documents:5,documentBytes:1024*1024,totalBytes:3*1024*1024,documentTimeoutMs:8000,totalTimeoutMs:30000,redirects:3});
+const {parseDocument,structuredLinks,mergeCatalogs}=require('./aiyouplus-discovery-documents.cjs');
+const LIMITS=Object.freeze({documents:5,manifestDocuments:8,documentBytes:1024*1024,totalBytes:8*1024*1024,documentTimeoutMs:8000,totalTimeoutMs:30000,redirects:3});
 const KINDS=['chat','image','video','audio','music'];
 const PROTOCOLS=['openai-compatible','http-json','anthropic-messages','minimax-native'];
 const FORBIDDEN=/qiniu|qnaigc|七牛/i;
@@ -49,7 +50,7 @@ function safeJson(value,depth=0){
   throw new Error('建议须为纯JSON');
 }
 function normalizeCatalog(input){
-  if(!Array.isArray(input)||input.length>128)throw new Error('模型目录须为最多128项的数组');
+  if(!Array.isArray(input)||input.length>512)throw new Error('模型目录须为最多512项的数组');
   return input.map(row=>{
     if(!row||typeof row.id!=='string'||!row.id.trim()||row.id.length>160||FORBIDDEN.test(row.id+' '+(row.name||''))||!KINDS.includes(row.kind))throw new Error('模型标识或能力无效/属于禁用供应商');
     if(row.request?.method!=='POST'||!safePath(row.request.path)||!row.request.template||typeof row.request.template!=='object'||Array.isArray(row.request.template))throw new Error('模型请求须为相对路径POST和JSON模板');
@@ -57,6 +58,10 @@ function normalizeCatalog(input){
     if(row.response?.binary!==undefined){if(typeof row.response.binary!=='boolean')throw new Error('binary须为布尔值');response.binary=row.response.binary;}
     if(row.response?.mimeType!==undefined){if(!/^(?:image|audio|video)\/[a-z0-9.+-]+$/i.test(row.response.mimeType))throw new Error('媒体MIME无效');response.mimeType=row.response.mimeType;}
     const out={id:row.id.trim(),name:String(row.name||row.id).slice(0,180),kind:row.kind,request:{method:'POST',path:row.request.path,template:safeJson(row.request.template)},response};
+    if(row.request.optionalFields!==undefined){
+      if(!Array.isArray(row.request.optionalFields)||row.request.optionalFields.some(key=>typeof key!=='string'||!own(out.request.template,key)||!/^\{\{[A-Za-z_$][\w$]*(?:\.[A-Za-z_$0-9][\w$]*)*\}\}$/.test(out.request.template[key])||row.parameterSchema?.[key]?.required))throw new Error('可选请求字段须为已声明的安全占位映射且不得省略必填字段');
+      out.request.optionalFields=[...new Set(row.request.optionalFields)];
+    }
     if(row.polling){const q=row.polling;if(q.method!=='GET'||!safePath(q.path)||!q.path.includes('{{taskId}}')||!selectorPath(q.statusPath)||!selectorPath(q.urlsPath)||![q.completedValues,q.failedValues].every(v=>Array.isArray(v)&&v.length&&v.length<=20&&v.every(x=>typeof x==='string'&&x.length<=80)))throw new Error('轮询须有明确GET路径、状态枚举和结果字段');out.polling={method:'GET',path:q.path,statusPath:q.statusPath,completedValues:[...q.completedValues],failedValues:[...q.failedValues],urlsPath:q.urlsPath};}
     if(row.parameters)out.parameters=safeJson(row.parameters);
     if(row.parameterSchema)out.parameterSchema=safeJson(row.parameterSchema);
@@ -83,6 +88,7 @@ function docLinks(text,url){
   const links=[];
   for(const m of text.matchAll(/(?:href|url)\s*[:=]\s*["']([^"']+)["']/gi))links.push(m[1]);
   for(const m of text.matchAll(/\]\(([^)\s]+)\)/g))links.push(m[1]);
+  for(const m of text.matchAll(/https?:\/\/[^\s<>"'`]+(?:llms(?:-full)?\.txt|openapi\.json|swagger\.json|models\.json)(?:[?#][^\s<>"'`]*)?/gi))links.push(m[0]);
   return [...new Set(links)].filter(s=>!s.startsWith('#')&&/(?:openapi|swagger|api-docs|llms\.txt|\.md(?:[?#]|$)|\.ya?ml(?:[?#]|$)|\.json(?:[?#]|$))/i.test(s)&&!/(?:node_modules|package(?:-lock)?\.json|manifest\.json|\.js(?:[?#]|$))/i.test(s)).slice(0,25).flatMap(s=>{try{return [new URL(s,url).href];}catch{return [];}});
 }
 function abortable(promise,signal){
@@ -137,7 +143,7 @@ function schemaResponse(root,operation){
   return {schema:resolveRef(root,media?.schema||response.schema||(example?sampleSchema(example):{})),binary:!media&&Boolean(binaryType)||response.schema?.type==='file',mimeType:binaryType};
 }
 function responsePaths(root,schema){
-  const list=fields(root,schema),paths=list.map(f=>f.path),result={};
+  const list=fields(root,schema).filter(field=>!/(?:^|\.)(?:media_retention|retention|request|input|reference|thumbnail|last_frame)(?:[._]|$)/i.test(field.path)),paths=list.map(f=>f.path),result={};
   const pick=re=>paths.find(p=>re.test(p));
   const text=paths.includes('choices.0.message.content')?'choices.0.message.content':pick(/^(?:text|output_text|data\.text|content\.0\.text)$/);
   if(text)result.textPath=text;
@@ -145,7 +151,8 @@ function responsePaths(root,schema){
   const url=urls?.path||pick(/(?:^|\.)(?:url|audioUrl|videoUrl|imageUrl|audio_url|video_url)$/);
   if(url)result.urlsPath=url;
   const b64=pick(/(?:^|\.)(?:b64_json|base64|audio_base64)$/);if(b64)result.base64Path=b64.replace(/\.0(?=\.)/g,'.*');
-  const task=pick(/(?:^|\.)(?:taskId|task_id|job_id)$/);if(task)result.taskIdPath=task;
+  const describedId=list.find(field=>/(?:^|\.)id$/.test(field.path)&&/\btask\s*(?:id|identifier)\b|任务\s*(?:ID|标识)/i.test(field.description||''));
+  const task=describedId?.path||pick(/(?:^|\.)(?:taskId|task_id|job_id)$/);if(task)result.taskIdPath=task;
   const status=pick(/(?:^|\.)(?:status|state)$/);if(status)result.statusPath=status;
   const error=pick(/(?:^|\.)(?:errorMessage|error_message|error\.message|error)$/);if(error)result.errorPath=error;
   return result;
@@ -155,6 +162,7 @@ function requestSchema(root,operation){
 }
 function kindOf(route,operation,response){
   const words=route+' '+(operation.operationId||'')+' '+(operation.summary||'')+' '+(operation.tags||[]).join(' ');
+  if(/transcriptions|transcribe|speech.to.text|\bSTT\b|embeddings|rerank|translations/i.test(words))return null;
   if(/music|歌曲|音乐/i.test(words))return 'music';
   if(/video|视频/i.test(words)||/video/i.test(response.urlsPath||''))return 'video';
   if(/image|图像|图片/i.test(words)||/image/i.test(response.urlsPath||''))return 'image';
@@ -171,8 +179,9 @@ function authFor(root,operation){
   }
   return null;
 }
-function templateFor(root,schema){
-  const s=resolveRef(root,schema),template={},parameters={},parameterSchema={},unfilled=[],unmapped=[];
+function templateFor(root,schema,{mapOptional=false}={}){
+  const s=resolveRef(root,schema),template={},parameters={},parameterSchema={},unfilled=[],unmapped=[],optionalFields=[];
+  const references={image_url:'firstFrame',image_urls:'referenceImageUrls',reference_image_urls:'referenceImageUrls',reference_images:'referenceImageUrls',video_url:'referenceVideoUrls.0',video_urls:'referenceVideoUrls',audio_url:'referenceAudioUrls.0',audio_urls:'referenceAudioUrls',start_image:'firstFrame',end_image:'lastFrame',mask_url:'maskImageUrl'};
   for(const [key,raw]of Object.entries(s.properties||{})){
     if(['__proto__','prototype','constructor'].includes(key))continue;const p=resolveRef(root,raw),required=(s.required||[]).includes(key);
     parameterSchema[key]={type:p.type||'unknown',required,...(p.enum?{enum:p.enum}:{}),...(p.default!==undefined?{default:p.default}:{}),...(p.minimum!==undefined?{minimum:p.minimum}:{}),...(p.maximum!==undefined?{maximum:p.maximum}:{})};
@@ -184,61 +193,140 @@ function templateFor(root,schema){
       // buildGenericRequest overlays the user's values before rendering.
       template[key]='{{parameters.'+key+'}}';if(required&&!own(parameters,key))unfilled.push(key);
     }
+    else if(mapOptional&&(['string','number','integer','boolean','array','object'].includes(p.type)||p.oneOf||p.anyOf)){template[key]='{{'+(references[key]||'parameters.'+key)+'}}';optionalFields.push(key);}
     parameterSchema[key].mapped=own(template,key);
     if(!required&&!parameterSchema[key].mapped)unmapped.push(key);
   }
-  return {template,parameters,parameterSchema,unfilled,unmapped};
+  return {template,parameters,parameterSchema,unfilled,unmapped,optionalFields};
 }
 function identifyProtocol(routes){
   if(routes.some(p=>/\/chat\/completions$/.test(p)))return 'openai-compatible';
   if(routes.some(p=>/\/messages$/.test(p)))return 'anthropic-messages';
   if(routes.some(p=>/^\/v2\/video_generation$/.test(p)))return 'minimax-native';return 'http-json';
 }
-function parseOpenApi(doc,root,allowLoopback){
-  const paths=root.paths||{},routes=Object.keys(paths),issues=[],evidence=[],catalog=[];
+function refinePublicModel(row,metadata,route,reasons){
+  if(!metadata)return row;
+  const meta=metadata.metadata||{},contract=meta.public_contract||meta.request_format_details||meta.public_contract_summary||meta.request_format_summary||{};
+  const primary={image:'text-to-image',video:'text-to-video',audio:'tts',music:'music',chat:'chat'}[row.kind];
+  const constraint=(contract.operation_constraints||[]).find(value=>value.operation===primary&&(!value.request_endpoint||value.request_endpoint===route));
+  const source=constraint||contract,supported=source.supported_parameters||contract.supported_parameters;
+  if(row.kind==='audio'&&(!Array.isArray(supported)||!supported.length))reasons.push(issue('AUDIO_MODEL_CONTRACT_REQUIRED','语音模型尚缺公开的模型级参数和音色合同，请补充该模型详情后配置'));
+  const operationEndpoints=contract.request_endpoint_by_operation||{},localOperations=(metadata.operations||[]).filter(operation=>!operationEndpoints[operation]||operationEndpoints[operation]===route);
+  const documented=source.documented_inputs;
+  const knownInputs=['text'];
+  for(const operation of localOperations){if(/^(?:image-to-|image-edit|start-end-to-video)/.test(operation))knownInputs.push('image');if(operation==='video-to-video')knownInputs.push('video');if(operation==='audio-to-video')knownInputs.push('audio');}
+  const inputModalities=[...new Set(Array.isArray(documented)&&documented.length?documented.filter(kind=>['text','image','video','audio'].includes(kind)):knownInputs)];
+  const mediaInputs=inputModalities.some(kind=>kind!=='text'),limits=Object.entries(source.input_limits||{}).filter(([key])=>/image|reference/i.test(key)).map(([,value])=>value?.maxItems).filter(value=>Number.isInteger(value)&&value>0&&value<=64);
+  row={...row,inputModalities,maxReferences:mediaInputs?(limits.length?Math.min(...limits):1):0,maskSupported:mediaInputs&&Array.isArray(supported)&&supported.some(key=>/^(?:mask|mask_url|mask_image)$/.test(key))};
+  if(!Array.isArray(supported)||!supported.length)return row;
+  const allowed=new Set(['model',...supported]),template=Object.fromEntries(Object.entries(row.request.template).filter(([key])=>allowed.has(key))),parameters=Object.fromEntries(Object.entries(row.parameters).filter(([key])=>allowed.has(key))),parameterSchema=Object.fromEntries(Object.entries(row.parameterSchema).filter(([key])=>allowed.has(key)).map(([key,value])=>[key,{...value}]));
+  let optionalFields=(row.request.optionalFields||[]).filter(key=>own(template,key));
+  for(const [key,values]of Object.entries(source.parameter_options||{}))if(parameterSchema[key]&&Array.isArray(values)&&values.length<=128){parameterSchema[key].enum=values;if(parameterSchema[key].type==='unknown'&&values.every(value=>typeof value==='string'))parameterSchema[key].type='string';}
+  for(const [key,range]of Object.entries(source.parameter_ranges||{}))if(parameterSchema[key]&&range&&typeof range==='object')for(const field of ['minimum','maximum'])if(typeof range[field]==='number')parameterSchema[key][field]=range[field];
+  for(const [key,value]of Object.entries(source.parameter_defaults||{}))if(parameterSchema[key])parameters[key]=value;
+  for(const [key,note]of Object.entries(source.parameter_notes||{}))if(parameterSchema[key]){
+    parameterSchema[key].description=String(note).slice(0,1000);
+    if(/(?:no uniform|not verified|no.*default.*guaranteed)/i.test(note)&&!/verified default/i.test(note)){
+      delete parameters[key];if(own(template,key)&&!parameterSchema[key].required&&!optionalFields.includes(key))optionalFields.push(key);
+    }
+  }
+  for(const key of source.required_selectors||contract.required_selectors||[])if(parameterSchema[key]){
+    parameterSchema[key].required=true;optionalFields=optionalFields.filter(value=>value!==key);
+    if(!own(parameters,key))reasons.push(issue('REQUIRED_PARAMETERS','该模型需要用户填写参数：'+key));
+  }
+  for(const [key,value]of Object.entries(parameters)){
+    const schema=parameterSchema[key];if(!schema)continue;
+    const invalid=schema.enum&&!schema.enum.some(allowed=>JSON.stringify(allowed)===JSON.stringify(value))||typeof value==='number'&&(value<(schema.minimum??-Infinity)||value>(schema.maximum??Infinity));
+    if(!invalid)continue;
+    if(schema.required)reasons.push(issue('MODEL_DEFAULT_CONFLICT','公开模型默认参数与该模型专属范围冲突：'+key));
+    else{delete parameters[key];if(own(template,key)&&!optionalFields.includes(key))optionalFields.push(key);}
+  }
+  // Never send one reference through multiple aliases.
+  for(const names of [['image_url','image_urls','reference_image_urls','reference_images'],['audio_url','audio_urls'],['video_url','video_urls']]){
+    const candidates=names.filter(key=>own(template,key));
+    if(candidates.length>1){const preferred=candidates.find(key=>key==='reference_images')||candidates.find(key=>key.endsWith('_urls'))||candidates[0];for(const key of candidates)if(key!==preferred){delete template[key];optionalFields=optionalFields.filter(value=>value!==key);if(parameterSchema[key])parameterSchema[key].mapped=false;}}
+  }
+  return {...row,request:{...row.request,template,optionalFields},parameters,parameterSchema,inputModalities};
+}
+function parseOpenApi(doc,root,allowLoopback,publicModels=[]){
+  const paths=root.paths||{},routes=Object.keys(paths),issues=[],evidence=[],catalog=[],pendingModels=[];
   const server=root.servers?.[0]?.url||(root.host?(root.schemes?.includes('https')?'https:':(root.schemes?.[0]||new URL(doc.url).protocol.slice(0,-1))+':')+'//'+root.host+(root.basePath||''):null);
   if(!server||server.includes('{'))return {issues:[issue('OPENAPI_SERVER_UNKNOWN','OpenAPI未提供可确定的API服务器，不能自动构造基础地址')]};
   let baseUrl;try{baseUrl=checkUrl(server,doc.url,allowLoopback).href.replace(/\/$/,'');}catch(error){return {issues:[issue('OPENAPI_SERVER_REJECTED',error.message)]};}
-  let auth,uncertain=false;
-  if(/"\$ref"\s*:\s*"(?!#\/)/.test(JSON.stringify(root))){issues.push(issue('EXTERNAL_REFERENCE','OpenAPI包含外部schema引用，当前不自动拼装外部定义'));uncertain=true;}
-  for(const route of routes){const item=resolveRef(root,paths[route]),operation=resolveRef(root,item.post);if(!item.post||!safePath(route))continue;
-    if(/\{[^{}]+\}/.test(route)){issues.push(issue('PATH_PARAMETERS_REQUIRED',route+'含未确认的路径变量，不能自动替换'));uncertain=true;continue;}
+  const publicAtOrigin=publicModels.filter(model=>{try{return new URL(model.baseUrl,model.url).origin===new URL(baseUrl).origin;}catch{return false;}});
+  const matchesEndpoint=(model,route)=>model.endpoints.some(endpoint=>{try{const u=new URL(endpoint,baseUrl);return u.origin===new URL(baseUrl).origin&&u.pathname===new URL(baseUrl+route).pathname;}catch{return false;}});
+  let auth;
+  for(const route of routes){
+    const item=resolveRef(root,paths[route]),operation=resolveRef(root,item.post);if(!item.post||!safePath(route))continue;
+    if(/\{[^{}]+\}/.test(route)){issues.push(issue('PATH_PARAMETERS_REQUIRED',route+'含未确认的路径变量，不能自动替换'));continue;}
+    const schema=requestSchema(root,operation),output=schemaResponse(root,operation),response=responsePaths(root,output.schema);
+    const explicitKinds=[...new Set(publicAtOrigin.filter(model=>matchesEndpoint(model,route)).map(model=>model.kind))];
+    const kind=explicitKinds.length===1?explicitKinds[0]:kindOf(route,operation,response);if(!kind)continue;
+    const operationIssues=[],problem=(code,message)=>{const row=issue(code,message);issues.push(row);operationIssues.push(row);};
     const override=operation.servers?.[0]?.url||item.servers?.[0]?.url;
-    if(override){let address;try{address=checkUrl(override,doc.url,allowLoopback).href.replace(/\/$/,'');}catch{}if(address!==baseUrl){issues.push(issue('OPERATION_SERVER_OVERRIDE',route+'使用不同服务器，须拆为独立配置'));uncertain=true;continue;}}
+    if(override){let address;try{address=checkUrl(override,doc.url,allowLoopback).href.replace(/\/$/,'');}catch{}if(address!==baseUrl){problem('OPERATION_SERVER_OVERRIDE',route+'使用不同服务器，须拆为独立配置');continue;}}
     if(FORBIDDEN.test([operation.summary,operation.description,operation['x-provider'],...(operation.tags||[])].join(' '))){issues.push(issue('FORBIDDEN_PROVIDER','文档明确标注禁用供应商的操作已排除'));continue;}
-    const schema=requestSchema(root,operation),output=schemaResponse(root,operation),response=responsePaths(root,output.schema),kind=kindOf(route,operation,response);if(!kind)continue;
+    if(/"\$ref"\s*:\s*"(?!#\/)/.test(JSON.stringify([schema,output.schema,operation]))){problem('EXTERNAL_REFERENCE',route+'包含外部schema引用，当前不自动拼装外部定义');}
     if(output.binary){response.binary=true;if(output.mimeType)response.mimeType=output.mimeType;}
-    const security=authFor(root,operation);if(!security){issues.push(issue('AUTH_UNSUPPORTED',route+'使用当前配置无法表达的鉴权'));uncertain=true;continue;}
-    if(auth&&JSON.stringify(auth)!==JSON.stringify(security)){issues.push(issue('MIXED_AUTH','文档的能力使用不同鉴权，需拆为独立服务配置'));uncertain=true;continue;}auth??=security;
+    const security=authFor(root,operation);if(!security){problem('AUTH_UNSUPPORTED',route+'使用当前配置无法表达的鉴权');continue;}
     const requiredTransport=[...(item.parameters||[]),...(operation.parameters||[])].map(p=>resolveRef(root,p)).filter(p=>p.required&&['query','path','header'].includes(p.in)&&!(p.in==='header'&&['content-type','accept',security.authHeader.toLowerCase()].includes(String(p.name).toLowerCase())));
-    if(requiredTransport.length){issues.push(issue('REQUIRED_TRANSPORT_PARAMETERS',route+'要求查询/路径/额外头参数：'+requiredTransport.map(p=>p.name).join(', ')+'；不能当作JSON正文参数自动填入'));uncertain=true;}
-    const built=templateFor(root,schema),modelSchema=resolveRef(root,schema.properties?.model||{});
+    if(requiredTransport.length)problem('REQUIRED_TRANSPORT_PARAMETERS',route+'要求查询/路径/额外头参数：'+requiredTransport.map(p=>p.name).join(', ')+'；不能当作JSON正文参数自动填入');
+    const documented=publicAtOrigin.filter(model=>model.kind===kind&&matchesEndpoint(model,route));
+    const active=documented.filter(model=>!model.blocked&&!/^(?:deprecated|retired|disabled|removed|sunset)$/i.test(model.lifecycle));
+    for(const model of documented.filter(model=>model.blocked))issues.push(issue('FORBIDDEN_PROVIDER',model.id+'的公开供应商元数据属于已禁用服务，已排除'));
+    const built=templateFor(root,schema,{mapOptional:documented.length>0}),modelSchema=resolveRef(root,schema.properties?.model||{});
     const ids=modelSchema.enum||[modelSchema.const||modelSchema.default||modelSchema.example].filter(x=>typeof x==='string');
-    const validIds=ids.filter(x=>typeof x==='string'&&x.trim()&&!FORBIDDEN.test(x)&&!/(?:your[_ -]?model|model[_ -]?id|example[_ -]?model|<|>)/i.test(x));
-    if(!validIds.length){issues.push(issue('MODEL_ID_REQUIRED',route+'没有可确认的模型ID；可在用户同意后独立鉴权读取模型目录'));uncertain=true;}
+    const validIds=(documented.length?active.map(model=>model.id):ids).filter(x=>typeof x==='string'&&x.trim()&&!FORBIDDEN.test(x)&&!/(?:your[_ -]?model|model[_ -]?id|example[_ -]?model|<|>)/i.test(x));
+    if(!validIds.length)problem('MODEL_ID_REQUIRED',route+'没有可确认的可用模型ID；可在用户同意后独立鉴权读取模型目录');
     let polling;
     if(response.taskIdPath){
-      const candidates=routes.filter(p=>p.startsWith(route.replace(/\/(?:generate|generations|create)$/,''))&&/\{(?:taskId|task_id|job_id|id)\}/.test(p)&&paths[p]?.get);
-      if(candidates.length===1){const q=candidates[0],op=resolveRef(root,paths[q].get),qSchema=schemaResponse(root,op).schema,qp=responsePaths(root,qSchema),status=fields(root,qSchema).find(f=>f.path===qp.statusPath),values=status?.enum||[],pollAuth=authFor(root,op);
+      const description=[operation.description,operation.summary,...fields(root,output.schema).map(field=>field.description)].join(' ');
+      const explicit=routes.filter(p=>paths[p]?.get&&/\{(?:taskId|task_id|job_id|id)\}/.test(p)&&description.includes(p));
+      const conventional=routes.filter(p=>p.startsWith(route.replace(/\/(?:generate|generations|create)$/,''))&&/\{(?:taskId|task_id|job_id|id)\}/.test(p)&&paths[p]?.get);
+      const shared=routes.filter(p=>{const d=paths[p]?.get?.description||'';return /canonical|fixed status/i.test(d)&&new RegExp('\\b'+kind+'\\b','i').test(d)&&/\{(?:taskId|task_id|job_id|id)\}/.test(p);});
+      const candidates=[...new Set(explicit.length?explicit:conventional.length?conventional:shared)];
+      if(candidates.length===1){const q=candidates[0],qItem=resolveRef(root,paths[q]),op=resolveRef(root,qItem.get),qSchema=schemaResponse(root,op).schema,qp=responsePaths(root,qSchema),status=fields(root,qSchema).find(f=>f.path===qp.statusPath),values=status?.enum||[],pollAuth=authFor(root,op);
+        const kindResult=fields(root,qSchema).find(field=>field.type==='string'&&(kind==='video'?/^(?:video\.url|video_url|data\.video_url)$/:kind==='music'||kind==='audio'?/^(?:audio_url|audio\.url|data\.audio_url)$/:/(?:image_url)$/).test(field.path));
+        if(kindResult)qp.urlsPath=kindResult.path;
         const completedValues=values.filter(v=>/^(?:completed|succeeded|success|done)$/i.test(v)),failedValues=values.filter(v=>/^(?:failed|error|cancelled|canceled|expired)$/i.test(v));
-        if(JSON.stringify(pollAuth)!==JSON.stringify(security)){issues.push(issue('POLL_AUTH_MISMATCH',q+'与生成接口使用不同鉴权，不能自动配置'));
-        }else if(op.servers||paths[q].servers){issues.push(issue('POLL_SERVER_OVERRIDE',q+'有独立服务器设置，需人工核对'));
-        }else if(qp.statusPath&&qp.urlsPath&&completedValues.length&&failedValues.length)polling={path:q.replace(/\{(?:taskId|task_id|job_id|id)\}/g,'{{taskId}}'),method:'GET',statusPath:qp.statusPath,completedValues,failedValues,urlsPath:qp.urlsPath};
+        if(JSON.stringify(pollAuth)!==JSON.stringify(security))problem('POLL_AUTH_MISMATCH',q+'与生成接口使用不同鉴权，不能自动配置');
+        else if(op.servers||qItem.servers)problem('POLL_SERVER_OVERRIDE',q+'有独立服务器设置，需人工核对');
+        else if(qp.statusPath&&qp.urlsPath&&completedValues.length&&failedValues.length)polling={path:q.replace(/\{(?:taskId|task_id|job_id|id)\}/g,'{{taskId}}'),method:'GET',statusPath:qp.statusPath,completedValues,failedValues,urlsPath:qp.urlsPath};
       }
-      if(!polling){issues.push(issue('POLLING_INCOMPLETE',route+'返回taskId，但没有唯一且字段完整的GET轮询合同'));uncertain=true;}
-    }else if(!response.textPath&&!response.urlsPath&&!response.base64Path&&!response.binary){issues.push(issue('RESPONSE_FIELDS_UNKNOWN',route+'没有可确定的文本或媒体结果字段'));uncertain=true;}
-    if(built.unfilled.length){issues.push(issue('REQUIRED_PARAMETERS',route+'需填写参数：'+built.unfilled.join(', ')));uncertain=true;}
+      const synchronousResult=response.textPath||response.urlsPath||response.base64Path||response.binary;
+      const taskField=fields(root,output.schema).find(field=>field.path===response.taskIdPath);
+      const syncRequired=(resolveRef(root,output.schema).required||[]).some(key=>[response.urlsPath,response.base64Path,response.textPath].some(p=>p&&(p===key||p.startsWith(key+'.'))));
+      if(!polling&&synchronousResult&&syncRequired){
+        delete response.taskIdPath;delete response.statusPath;
+        if(own(built.template,'async')){delete built.template.async;built.optionalFields=built.optionalFields.filter(key=>key!=='async');built.parameterSchema.async.mapped=false;built.unmapped.push('async');}
+      }else if(!polling)problem('POLLING_INCOMPLETE',route+'返回taskId，但没有唯一且字段完整的GET轮询合同');
+    }else if(!response.textPath&&!response.urlsPath&&!response.base64Path&&!response.binary)problem('RESPONSE_FIELDS_UNKNOWN',route+'没有可确定的文本或媒体结果字段');
+    if(kind==='music'&&schema.properties?.mv&&/required.*music|music.*required/i.test(schema.properties.mv.description||'')){built.parameterSchema.mv.required=true;built.optionalFields=built.optionalFields.filter(key=>key!=='mv');built.unfilled.push('mv');}
+    if(built.unfilled.length)problem('REQUIRED_PARAMETERS',route+'需填写参数：'+built.unfilled.join(', '));
     if(built.unmapped.length)issues.push(issue('OPTIONAL_PARAMETER_MAPPING_REQUIRED',route+'的可选字段尚未接入请求模板：'+built.unmapped.join(', ')+'；须补充高级映射后才能调整，不会自动发送'));
     const inputFields=fields(root,schema).map(f=>f.path),inputModalities=['text'];
     for(const [modality,re]of [['image',/image|firstFrame|lastFrame/i],['video',/video.*url|referenceVideo/i],['audio',/audio.*url|referenceAudio/i]])if(inputFields.some(p=>re.test(p)))inputModalities.push(modality);
     const imageLimit=fields(root,schema).find(f=>f.type==='array'&&/image|references/i.test(f.path)&&Number.isInteger(f.maxItems)&&f.maxItems<=64)?.maxItems;
     const maskSupported=inputFields.some(p=>/(?:^|\.)(?:mask|mask_image|maskImage|mask_url|maskUrl|mask_base64|maskBase64)$/.test(p));
-    for(const id of validIds)catalog.push({id,name:id,kind,request:{method:'POST',path:route,template:built.template},response,...(polling?{polling}:{}),parameters:built.parameters,parameterSchema:built.parameterSchema,inputModalities,...(maskSupported?{maskSupported:true}:{}),...(imageLimit===undefined?{}:{maxReferences:imageLimit})});
+    for(const id of [...new Set(validIds)]){
+      const metadata=active.find(model=>model.id===id),reasons=[...operationIssues];
+      const ops=metadata?.operations||[];
+      if(metadata&&kind==='image'&&ops.length&&!ops.includes('text-to-image'))reasons.push(issue('REFERENCE_CONTRACT_REQUIRED','该模型仅声明参考图/编辑操作，尚未确认必填参考输入合同'));
+      if(metadata&&kind==='video'&&ops.length&&!ops.includes('text-to-video'))reasons.push(issue('REFERENCE_CONTRACT_REQUIRED','该模型仅声明参考媒体操作，尚未确认必填参考输入合同'));
+      let row={id,name:metadata?.name||id,kind,request:{method:'POST',path:route,template:built.template,...(built.optionalFields.length?{optionalFields:built.optionalFields}:{})},response,...(polling?{polling}:{}),parameters:built.parameters,parameterSchema:built.parameterSchema,inputModalities,...(maskSupported?{maskSupported:true}:{}),...(imageLimit===undefined?{}:{maxReferences:imageLimit}),_auth:security,_complete:reasons.length===0};
+      row=refinePublicModel(row,metadata,route,reasons);row._complete=reasons.length===0;
+      if(reasons.length)pendingModels.push({id,name:row.name,kind,path:route,reason:reasons.map(r=>r.message).join('；'),reasons,evidence:[doc.url,...(metadata?[metadata.url]:[])]});
+      catalog.push(row);
+    }
     evidence.push({url:doc.url,type:'openapi-operation',path:route,kind,confidence:0.95,parameterSchema:built.parameterSchema,...(output.binary?{responseMediaType:output.mimeType||'audio/*'}:{})});
+  }
+  auth=catalog.find(row=>row._complete)?._auth||catalog[0]?._auth||{authType:'none',authHeader:''};
+  for(const row of catalog)if(JSON.stringify(row._auth)!==JSON.stringify(auth)){
+    row._complete=false;const message=row.request.path+'使用不同鉴权，须拆为独立服务配置';issues.push(issue('MIXED_AUTH',message));pendingModels.push({id:row.id,name:row.name,kind:row.kind,path:row.request.path,reason:message,reasons:[issue('MIXED_AUTH',message)],evidence:[doc.url]});
   }
   const catalogRoute=routes.find(p=>/\/models$/.test(p)&&paths[p]?.get);
   if(catalogRoute)evidence.push({url:doc.url,type:'authenticated-model-catalog',method:'GET',path:catalogRoute,confidence:1,queried:false});
-  return {profile:{name:root.info?.title,baseUrl,protocol:identifyProtocol(routes),...(auth||{authType:'none',authHeader:''}),modelCatalog:catalog},issues,evidence,uncertain};
+  return {profile:{name:root.info?.title,baseUrl,protocol:identifyProtocol(routes),...auth,modelCatalog:catalog},issues,evidence,pendingModels,uncertain:!catalog.some(row=>row._complete)};
 }
 function htmlSuggestion(doc,blockedModels){
   const text=clean(doc.text),catalog=[],evidence=[],urls=[...doc.text.matchAll(/https?:\/\/[^\s"'<>\\]+/g)].map(m=>m[0].replace(/[),;]+$/,''));
@@ -274,21 +362,44 @@ function groundedSuggestion(profile,documents){
 async function discoverApi({url,fetch:transport=global.fetch,analyze,signal}={}){
   const first=checkUrl(url,undefined,isLoopbackUrl(url)),allowLoopback=isLoopbackUrl(first.href),documents=[],issues=[],evidence=[],queue=[first.href],seen=new Set();
   const combined=signal?AbortSignal.any([signal,AbortSignal.timeout(LIMITS.totalTimeoutMs)]):AbortSignal.timeout(LIMITS.totalTimeoutMs),state={allowLoopback,signal:combined,bytes:0};
-  while(queue.length&&documents.length<LIMITS.documents&&seen.size<LIMITS.documents){combined.throwIfAborted();const address=queue.shift();if(seen.has(address))continue;seen.add(address);
-    try{const doc=await fetchDoc(address,{fetch:transport},state);documents.push(doc);evidence.push({url:doc.url,type:'public-document',contentType:doc.contentType,bytes:doc.bytes,sha256:doc.sha256,excerpt:redact(clean(doc.text)).replace(/\s+/g,' ').trim().slice(0,320),confidence:1});
-      for(const link of docLinks(doc.text,doc.url)){try{const target=checkUrl(link,doc.url,allowLoopback).href;if(!seen.has(target)&&!queue.includes(target))queue.push(target);}catch(error){issues.push(issue('LINK_REJECTED',error.message));}}
+  let documentCap=LIMITS.documents,detailTemplate,detailsQueued=false;
+  while(queue.length&&documents.length<documentCap&&seen.size<documentCap){combined.throwIfAborted();const address=queue.shift();if(seen.has(address))continue;seen.add(address);
+    try{const doc=await fetchDoc(address,{fetch:transport},state);
+      try{doc.parsed=parseDocument(doc.text);}catch(error){issues.push(issue('DOCUMENT_STRUCTURE_UNSUPPORTED',error.message));}
+      documents.push(doc);evidence.push({url:doc.url,type:'public-document',contentType:doc.contentType,bytes:doc.bytes,sha256:doc.sha256,excerpt:redact(clean(doc.text)).replace(/\s+/g,' ').trim().slice(0,320),confidence:1});
+      const structured=structuredLinks(doc.parsed,doc.url);
+      if(structured.manifest){documentCap=LIMITS.documents+LIMITS.manifestDocuments;evidence.push({url:doc.url,type:'structured-document-manifest',documentLimit:documentCap,confidence:1});}
+      const append=(links,priority)=>{for(const link of priority?[...links].reverse():links){try{const target=checkUrl(link,doc.url,allowLoopback).href;if(!seen.has(target)&&!queue.includes(target)){if(priority)queue.unshift(target);else queue.push(target);}}catch(error){issues.push(issue('LINK_REJECTED',error.message));}}};
+      append(docLinks(doc.text,doc.url).filter(link=>!structured.links.includes(link)),false);append(structured.links,true);
+      if(doc.parsed?.categories&&typeof doc.parsed?.endpoints?.detail==='string')detailTemplate={path:doc.parsed.endpoints.detail,url:doc.url};
+      if(!detailsQueued&&detailTemplate&&Array.isArray(doc.parsed?.data)){
+        const models=mergeCatalogs(documents).filter(model=>!model.blocked&&!/^(?:deprecated|retired|disabled|removed|sunset)$/i.test(model.lifecycle));
+        const selected=[...models.filter(model=>model.kind==='audio').slice(0,3),...['image','video'].flatMap(kind=>models.filter(model=>model.kind===kind&&model.operations.includes('text-to-'+kind)).slice(0,1))];
+        const links=selected.map(model=>new URL(detailTemplate.path.replace(/\{(?:model|id)\}/g,encodeURIComponent(model.id)),detailTemplate.url).href);
+        detailsQueued=true;append(links,true);evidence.push({url:detailTemplate.url,type:'explicit-public-model-details',models:selected.map(model=>model.id),confidence:1});
+      }
     }catch(error){if(signal?.aborted)throw signal.reason||error;issues.push(issue('DOCUMENT_UNAVAILABLE',redact(error.message)));}
   }
-  if(queue.length)issues.push(issue('DOCUMENT_LIMIT','达到最多5份关联文档的读取上限，未继续抓取'));
-  const blocked=blockedModelIds(documents),candidates=[];
-  for(const doc of documents){let parsed;try{parsed=JSON.parse(doc.text);}catch{}
-    let result;try{result=parsed&&(String(parsed.openapi||'').startsWith('3.')||parsed.swagger==='2.0')?parseOpenApi(doc,parsed,allowLoopback):htmlSuggestion(doc,blocked);}catch{issues.push(issue('DOCUMENT_STRUCTURE_UNSUPPORTED','公开文档结构不完整，无法确定性解析'));continue;}
+  if(queue.length)issues.push(issue('DOCUMENT_LIMIT','达到最多'+documentCap+'份关联公开文档的读取上限，未继续抓取'));
+  const blocked=blockedModelIds(documents),publicModels=mergeCatalogs(documents),candidates=[];
+  for(const model of publicModels)if(model.blocked)blocked.add(model.id);
+  if(publicModels.length)evidence.push({url:first.href,type:'typed-public-model-catalog',models:publicModels.length,sources:[...new Set(publicModels.map(model=>model.url))],confidence:1});
+  for(const doc of documents){const parsed=doc.parsed;
+    let result;try{result=parsed&&(String(parsed.openapi||'').startsWith('3.')||parsed.swagger==='2.0')?parseOpenApi(doc,parsed,allowLoopback,publicModels):htmlSuggestion(doc,blocked);}catch{issues.push(issue('DOCUMENT_STRUCTURE_UNSUPPORTED','公开文档结构不完整，无法确定性解析'));continue;}
     issues.push(...(result.issues||[]));evidence.push(...(result.evidence||[]));if(result.profile)candidates.push(result);
-    if(!parsed&&/^(?:openapi|swagger)\s*:/m.test(doc.text))issues.push(issue('YAML_REQUIRES_ANALYSIS','已读取YAML文档，当前确定性解析只处理JSON；须分析并审阅建议'));
   }
-  candidates.sort((a,b)=>Number(a.uncertain)-Number(b.uncertain)||(b.profile.modelCatalog.length-a.profile.modelCatalog.length));
-  let chosen=candidates[0],profile;
-  if(chosen)try{profile=publicProfile({...chosen.profile,modelCatalog:chosen.profile.modelCatalog.filter(m=>!blocked.has(m.id))},first.href,allowLoopback);}catch(error){issues.push(issue('PROFILE_REJECTED',error.message));}
+  candidates.sort((a,b)=>Number(a.uncertain)-Number(b.uncertain)||(b.profile.modelCatalog.filter(row=>row._complete!==false).length-a.profile.modelCatalog.filter(row=>row._complete!==false).length));
+  let chosen=candidates[0],profile,pendingModels=[];
+  if(chosen){
+    const compatible=candidates.filter(candidate=>candidate.profile.baseUrl===chosen.profile.baseUrl&&candidate.profile.authType===chosen.profile.authType&&candidate.profile.authHeader===chosen.profile.authHeader);
+    const models=new Map();
+    for(const candidate of compatible){pendingModels.push(...(candidate.pendingModels||[]));for(const row of candidate.profile.modelCatalog){const key=row.kind+'\0'+row.id,previous=models.get(key);if(!previous||row._complete&&!previous._complete)models.set(key,row);}}
+    let catalog=[...models.values()].filter(row=>!blocked.has(row.id));
+    const complete=catalog.filter(row=>row._complete===true||row._complete===undefined&&!chosen.uncertain);
+    if(complete.length){catalog=complete;chosen={...chosen,uncertain:false};}
+    if(catalog.length>512){issues.push(issue('MODEL_CATALOG_LIMIT','可配置模型超过512项，超出部分保留待处理'));for(const row of catalog.slice(512))pendingModels.push({id:row.id,name:row.name,kind:row.kind,reason:'超过单服务512项模型上限，请分批配置'});catalog=catalog.slice(0,512);}
+    try{profile=publicProfile({...chosen.profile,modelCatalog:catalog},first.href,allowLoopback);}catch(error){issues.push(issue('PROFILE_REJECTED',error.message));}
+  }
   if(analyze&&(!profile?.modelCatalog.length||chosen?.uncertain)){
     try{const raw=await abortable(analyze({url:first.href,documents:documents.map(d=>({url:d.url,contentType:d.contentType,text:redact(clean(d.text)).slice(0,100000)})),partial:profile||null,signal:combined}),combined);combined.throwIfAborted();
       const suggestion=publicProfile(typeof raw==='string'?JSON.parse(raw):raw?.profile||raw,first.href,allowLoopback);
@@ -301,6 +412,6 @@ async function discoverApi({url,fetch:transport=global.fetch,analyze,signal}={})
   const incomplete=profile.modelCatalog.some(m=>m.response.taskIdPath&&!m.polling||!m.response.textPath&&!m.response.urlsPath&&!m.response.base64Path&&!m.response.binary&&!m.polling);
   const readyToConfigure=Boolean(profile.baseUrl&&profile.modelCatalog.length&&!chosen?.uncertain&&!incomplete);
   if(!readyToConfigure&&!issues.length)issues.push(issue('CONTRACT_INCOMPLETE','尚未得到完整可配置合同，请补充接口文档或人工参数'));
-  return {...profile,readyToConfigure,evidence,issues};
+  return {...profile,readyToConfigure,pendingModels,evidence,issues};
 }
 module.exports={discoverApi,DISCOVERY_LIMITS:LIMITS};

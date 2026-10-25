@@ -1,0 +1,84 @@
+# 界面前景与背景配对规范
+
+本规范适用于 AIYOUDSH 拥有的原生控件和本机插件 UI。素材像素、视频、预览拼图、3D/WebGL 舞台、颜色样本及外站内容不由本规范统一着色。
+
+## 配对与门槛
+
+一个可读组件须同时声明其背景和前景，并以最终显示背景检验。主题 ID、十六进制颜色输入或令牌名字都不能代替实际对比度。
+
+| 对象 | 最低对比度 |
+| --- | --- |
+| 普通正文、标签、计数、按钮文字、必要提示与占位文字 | 4.5:1 |
+| 大字：至少 24 CSS px，或至少约 18.67 CSS px 且粗体 | 3:1 |
+| 识别关键控件、选中态与焦点所需的边界或视觉指示 | 相对相邻颜色 3:1 |
+
+按未四舍五入的数值判定，4.499 不算 4.5；边界可由填充、实际描边或焦点轮廓承担，阴影不能冒充清晰边界。禁用控件、纯装饰和媒体内容另行标注，不能拿它们代替正常可操作状态的验收。这些基准依据 [W3C 文字对比度说明](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html) 与 [非文字对比度说明](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html)。
+
+## 语义颜色对
+
+主题桥在授权页面输出 `--dsh-readable-*` 派生变量。它们与原始 DSW、`--bg/--ink` 和画布变量分开，不改变保存的颜色、透明度或主题偏好。
+
+| 用途 | 背景 | 前景 | 边界 |
+| --- | --- | --- | --- |
+| 基础内容 | `bg` | `ink` / `muted` | `border` |
+| 表面控件 | `surface-bg` | `surface-ink` / `surface-muted` | `surface-border` |
+| 强调按钮 | `accent-bg` | `accent-ink` | `accent-border` |
+| 计数与徽章 | `badge-bg` | `badge-ink` | `badge-border` |
+| 选中态 | `selected-bg` | `selected-ink` | `selected-border` |
+| 正常状态 | `status-bg` | `status-ink` | `status-border` |
+| 错误提示 | `error-bg` | `error-ink` | `error-border` |
+| 警告提示 | `warning-bg` | `warning-ink` | `warning-border` |
+| 危险操作按钮 | `danger-bg` | `danger-ink` | `danger-border` |
+| 弹窗 | `modal-bg` | `modal-ink` / `modal-muted` | `modal-border` |
+
+表中的后缀均须加 `--dsh-readable-` 前缀。焦点轮廓使用 `focus`。作为文字的强调色使用 `accent-text`，不能把填充色直接当成链接文字。链接可能跨基础、侧栏、控件与弹窗表面，须按实际使用的多个语义底色共同检查。`muted` 只表示层级较低，仍须满足普通文字门槛。
+
+派生过程先把 alpha 色与明确的语义底色合成，再选择前景。已可读的颜色保留；不足时向黑或白做最小必要调整。未知、无法解析或非法颜色使用可计算的安全回退，不能输出 NaN 或把任意 CSS 拼入样式。关键离散控件与弹窗使用合成后的不透明表面，因此其可读性不依赖背后的图片或透明叠层。原用户输入值仍保留，可继续编辑、取消与保存；装饰层和其他未使用安全配对的材质仍遵循用户原设置。
+
+当前消费范围为素材库计数、徽章、主/次按钮、选中筛选、状态与弹窗；看板的主/次按钮、选中导航、议题弹窗和错误；媒体模型表单、按钮与错误；画布工具栏和创作工具中明确列举的徽章、按钮、选中工具及表单状态。新增组件必须主动选用一整对，不能据此宣称任意第三方 DOM 或所有自定义画布文字已自动校正。
+
+## 禁止模式
+
+- 禁止 `background: currentColor; color: white` 之类自引用填充。`currentColor` 读取元素自身的最终 `color`，并不保留父元素的颜色；白字会同时得到白底。
+- 禁止固定白字配任意主题强调色。黄色或浅灰强调色同样需要单独计算 `on-accent`。
+- 禁止对含文字的完整容器降低 `opacity` 以制造透明背景。使用背景色 alpha，独立计算文字；底色透明度不能把计数和操作文字一起变淡。
+- 禁止全局 `color: inherit`、`button`、`svg`、`path`、`canvas`、图片或视频重色来掩盖个别错误。只修语义组件和明确的状态，保留图标自身有含义的颜色及媒体输出。
+- 禁止使用错误色或低饱和度作为唯一状态信息。保留错误文字、选中属性、图标或标签等其他提示。
+- 禁止为了通过截图把用户配置改回默认；安全显示值与保存值分别处理。
+
+## 新组件示例
+
+```css
+.asset-count {
+  background: var(--dsh-readable-badge-bg, #315efb);
+  color: var(--dsh-readable-badge-ink, #fff);
+  border: 1px solid var(--dsh-readable-badge-border, #2548c6);
+}
+```
+
+独立页面的 fallback 也须成对检查。选中/hover/focus 发生背景变化时，重新使用对应前景，不能只改背景；若子元素显式设色，它也必须属于这一对，而非依靠父容器颜色。
+
+## 素材库的密集信息与交互层级
+
+素材库是含大量重复计数、头像和全宽操作的密集界面，不能把全局装饰强调色扩展成每一个元素的实心底。素材库专属变量只在真实 owned 页面 `body:has(> .app-shell > .library-sidebar)` 和宿主中素材库专属的 `[data-dsh-asset-canvas-target]` 目标选择弹窗定义，不改变宿主、画布、看板或模型设置的全局调色板。后者的 radio 使用小面积 `interaction` 色，不能继承较暗的主操作表面。
+
+| 素材库角色 | `--dsh-asset-` 后缀 | 规则 |
+| --- | --- | --- |
+| 主操作 | `action-bg` / `action-ink` / `action-border` | 机甲默认使用低饱和蓝灰表面、冰白文字和冰蓝关键边界 |
+| 操作 hover | `action-hover-bg` / `action-hover-ink` / `action-hover-border` | 使用独立完整配对，不借警告色 |
+| 重复计数 | `identity-bg` / `identity-ink` / `identity-border` | 中性钢蓝底、浅字、轻装饰线；不是独立交互控件 |
+| 项目头像 | `avatar-bg` / `avatar-ink` / `avatar-border` | 中性面板配冰蓝字，不使用大块品牌填充 |
+| 选中项目/目录/筛选 | `selected-bg` / `selected-ink` / `selected-border` | 弱冷蓝填充；关键边界仍须清晰 |
+| 小面积交互 | `interaction` / `link` / `focus` | 分别用于勾选框、可读链接和焦点，不能统一铺成主按钮底 |
+
+默认机甲的 amber 用作原主题装饰与语义提示，素材库交互取该主题 `controls.colors.link` 或 running 冰蓝。仅当机甲配置的 accent 与该主题默认值一致时采用此局部默认；用户显式设置的不同 accent 与其他主题继续采用对应品牌色。用户保存值始终保留。真正的 warning/danger/status 继续使用语义配对，普通“手动分类”等操作不能套用绿色状态或橙色警告样式。
+
+asset body 同步把局部 readable 的 accent、badge、selected、accent-text、focus 对应到上述角色。已有 `--asset-*` 的页面别名须在 body 层重新绑定，不能只在 root 引用变量后期待继承值自动重新解析。计数和头像的装饰线无需强行达到关键控件边界门槛，其文字仍须达到 4.5:1；按钮、输入、选中态及焦点保持关键边界检查。
+
+## 验证要求
+
+以实际浏览器加载当前模块，读取 `getComputedStyle` 的文字色、背景、字体大小/粗细、实际边框/轮廓和祖先透明度。将透明背景逐层与真实相邻底色合成；在有媒体背景的关键控件上使用明确的安全表面。对最终颜色计算 WCAG 相对亮度，普通字与大字按各自门槛判断；截图用于检查裁切、层级和视觉异常，不能代替比值。
+
+每次涉及配色的修改至少覆盖：默认亮暗主题、系统实际亮暗、浅/深自定义强调色、半透明表面，以及徽章、按钮、选中态、错误和弹窗的代表实例。真实模块 UI 与纯令牌属性测试分开记录，不能把字符串匹配或 mock 令牌当作最终模块计算色。重开、键盘焦点与必要点击交互按改动范围验证；不触发模型生成来检验样式。
+
+本轮证据索引位于任务交付材料的 `素材库文件夹结构修复/反色规范验证报告/`，不包含账户、凭证或正式用户 profile。
