@@ -60,7 +60,7 @@ export function createModelService({stateDir,assets,llm,fetch:transport=globalTh
   const {store,all}=await profiles(context),publicProfiles={host:{...hostProfile}};
   const caps=await llm?.capabilities?.(context);
   publicProfiles.host={...hostProfile,capabilities:caps,modelCatalog:[{...hostProfile.modelCatalog[0],inputModalities:caps?.inputModalities||['text']}],available:caps?.available??Boolean(llm)};
-  for(const [id,p]of Object.entries(all))publicProfiles[id]={...p,...await credentialInfo(p,context)};
+  for(const [id,p]of Object.entries(all))publicProfiles[id]={...p,sessionOnly:temporary.has(scope(context,id)),...await credentialInfo(p,context)};
   const selected=sessionSelection.get(context.sessionId)||store.provider;
   const media=publicProfiles[selected]||{};
   return{...media,provider:selected||'host',profiles:publicProfiles,models:{...(media.models||{}),chat:'dsh-current'},chatProvider:'host',hostModel:caps,
@@ -75,15 +75,19 @@ export function createModelService({stateDir,assets,llm,fetch:transport=globalTh
   if(!['upsert','delete','enable','disable'].includes(action))throw fail('未知服务配置操作','INVALID_REQUEST');
   if(action==='delete'){
    if(!previous)throw fail('服务不存在','NOT_FOUND');
-   delete store.profiles[id];temporary.delete(scope(context,id));sessionKeys.delete(scope(context,id));
-   await credentials?.deleteRecord?.(recordKey(id));if(store.provider===id)store.provider=null;
+   const token=scope(context,id),sessionOverlay=temporary.has(token);
+   temporary.delete(token);sessionKeys.delete(token);
+   if(sessionSelection.get(context.sessionId)===id)sessionSelection.delete(context.sessionId);
+   // Removing an in-memory overlay reveals the persisted service unchanged.
+   if(sessionOverlay)return publicConfig(context);
+   delete store.profiles[id];await credentials?.deleteRecord?.(recordKey(id));if(store.provider===id)store.provider=null;
    await write(configFile,store);return publicConfig(context);
   }
   const defaults=BUILTIN_PROFILES[id]||{},candidate={...defaults,...previous,provider:id};
   for(const key of META)if(source[key]!==undefined)candidate[key]=source[key];
   if(action==='enable')candidate.enabled=true;if(action==='disable')candidate.enabled=false;
   if(previous&&candidate.baseUrl&&new URL(previous.baseUrl).origin!==new URL(candidate.baseUrl).origin&&source.modelCatalog===undefined){candidate.modelCatalog=[];candidate.models={};}
-  const sessionOnly=source.sessionOnly===true||candidate.scope==='test'&&temporary.has(scope(context,id));
+  const sessionOnly=source.sessionOnly===true||source.sessionOnly!==false&&temporary.has(scope(context,id));
   if(candidate.scope==='test'&&!sessionOnly)throw fail('测试服务只能用于当前会话','TEST_SESSION_REQUIRED');
   if(candidate.modelCatalog?.some(m=>m.kind==='chat')||candidate.models?.chat)throw fail('此配置仅支持图片、视频、配音和音乐；对话由DSH提供','HOST_MANAGED');
   if(candidate.protocol==='minimax-native'&&!candidate.modelCatalog?.length){
@@ -97,13 +101,18 @@ export function createModelService({stateDir,assets,llm,fetch:transport=globalTh
   const profile=validateServiceProfile(candidate,{sessionOnly});
   if(profile.protocol==='minimax-native'&&(profile.authType!=='bearer'||profile.authHeader!=='Authorization'||new URL(profile.baseUrl).origin!=='https://api.minimax.io'&&!isLoopbackUrl(profile.baseUrl)))throw fail('MiniMax原生接口须使用官方地址和Bearer认证；第三方请配置自定义接口','INVALID_REQUEST');
   if(source.apiKey!==undefined&&source.apiKey!==''&&(typeof source.apiKey!=='string'||source.apiKey.length>65536||/[\r\n\0]/.test(source.apiKey)))throw fail('凭证格式无效','INVALID_REQUEST');
-  if(previous&&!sameBinding(binding(previous),binding(profile))){await credentials?.deleteRecord?.(recordKey(id));sessionKeys.delete(scope(context,id));}
-  if(source.clearKey){await credentials?.deleteRecord?.(recordKey(id));sessionKeys.delete(scope(context,id));}
-  else if(source.apiKey!==undefined&&source.apiKey!==''){
-   if(typeof source.apiKey!=='string'||source.apiKey.length>65536||/[\r\n\0]/.test(source.apiKey))throw fail('凭证格式无效','INVALID_REQUEST');
-   const payload={...binding(profile),key:source.apiKey};
-   if(!sessionOnly&&credentials?.modifyRecord){await credentials.modifyRecord(recordKey(id),async()=>({kind:'grant',payload}));sessionKeys.delete(scope(context,id));}
-   else sessionKeys.set(scope(context,id),payload);
+  const token=scope(context,id),persisted=store.profiles[id];
+  if(previous&&!sameBinding(binding(previous),binding(profile)))sessionKeys.delete(token);
+  // A temporary overlay has no authority to erase the durable service it shadows.
+  if(!sessionOnly&&persisted&&!sameBinding(binding(persisted),binding(profile)))await credentials?.deleteRecord?.(recordKey(id));
+  if(source.clearKey){if(!sessionOnly)await credentials?.deleteRecord?.(recordKey(id));sessionKeys.delete(token);}
+  else{
+   const memory=sessionKeys.get(token),provided=typeof source.apiKey==='string'&&source.apiKey!=='';
+   const payload=provided?{...binding(profile),key:source.apiKey}:!sessionOnly&&memory&&sameBinding(memory,binding(profile))?memory:null;
+   if(payload){
+    if(!sessionOnly&&credentials?.modifyRecord){await credentials.modifyRecord(recordKey(id),async()=>({kind:'grant',payload}));sessionKeys.delete(token);}
+    else sessionKeys.set(token,payload);
+   }
   }
   const safe={...profile,userId:Number.isInteger(source.userId)?source.userId:previous?.userId??1,userName:typeof source.userName==='string'?source.userName.slice(0,120):previous?.userName||'AIYOUDSH Local'};
   if(sessionOnly){temporary.set(scope(context,id),safe);sessionSelection.set(context.sessionId,id);}
@@ -170,17 +179,42 @@ export function createModelService({stateDir,assets,llm,fetch:transport=globalTh
   await fs.mkdir(outputDir,{recursive:true,mode:0o700});const receipt=job.resultReceipt,paths=[],outputAssets=[];
   const mediaKind=job.kind==='music'?'audio':job.kind;
   const items=[...(receipt.urls||[]).map(url=>({url})),...(receipt.buffers||[])];
+  async function originalMatches(file,checkpoint,owned=false){
+   if(!path.isAbsolute(file||'')||!/^[a-f0-9]{64}$/.test(checkpoint.sha256||''))return false;
+   try{
+    const stat=await fs.lstat(file);if(!stat.isFile()||stat.size!==checkpoint.bytes||stat.size>512*1024*1024)return false;
+    if(owned){const root=await fs.realpath(outputDir),real=await fs.realpath(file);if(!real.startsWith(root+path.sep))return false;}
+    return digest(await fs.readFile(file))===checkpoint.sha256;
+   }catch{return false;}
+  }
   for(const [i,item]of items.entries()){
    signal.throwIfAborted();
-   const result=item.url?await fetchMedia(item.url,signal):{bytes:await fs.readFile(item.receiptPath),mime:item.mimeType};
-   const b=result.bytes,ext=mediaKind==='image'?(b[0]===255&&b[1]===216?'.jpg':b.subarray(8,12).toString()==='WEBP'?'.webp':'.png'):mediaKind==='audio'?'.mp3':'.mp4';
-   const file=path.join(outputDir,job.id+'-'+i+ext);await fs.writeFile(file,b,{mode:0o600});
-   const raw=await probe(file,context),p=raw?.value||raw;
-   if(mediaKind==='image'&&!(p.kind==='image'&&p.width>0&&p.height>0)||mediaKind==='audio'&&!(p.hasAudio&&p.duration>0)||mediaKind==='video'&&!(p.hasVideo&&p.width>0&&p.height>0&&p.duration>0))throw fail('生成原件无法解码为'+mediaKind,'INVALID_MEDIA');
-   if(!assets?.ingestFile)throw fail('DSH素材库尚未连接','ASSET_GATEWAY_UNAVAILABLE');
-   const asset=await assets.ingestFile(file,{projectId:context.projectId,requestId:job.id+':output:'+i,source:'model:'+job.provider,alias:'aiyouplus:'+job.id+':'+i});
-   if(!asset?.id||!asset.path)throw fail('素材库未确认原件入库','ASSET_GATEWAY_UNAVAILABLE');
-   paths.push(asset.path);outputAssets.push(asset);
+   const source=digest(JSON.stringify(item)),checkpoint=job.outputCheckpoints?.[i];let asset,file,b;
+   if(checkpoint?.source===source&&checkpoint.kind===mediaKind){
+    const original=await assets?.get?.(checkpoint.assetId);
+    if(original?.id===checkpoint.assetId&&original.path===checkpoint.assetPath&&await originalMatches(original.path,checkpoint))asset=original;
+    // A staged original is usable only with a durable, verified checkpoint.
+    // Uncheckpointed or changed files never stand in for a paid response.
+    const expected=path.join(outputDir,job.id+'-'+i+(checkpoint.extension||''));
+    if(!asset&&checkpoint.outputPath===expected&&['.png','.jpg','.webp','.mp3','.mp4'].includes(checkpoint.extension)&&await originalMatches(expected,checkpoint,true)){file=expected;b=await fs.readFile(file);}
+   }
+   let ext=checkpoint?.extension;
+   if(!asset){
+    if(!file){
+     const result=item.url?await fetchMedia(item.url,signal):{bytes:await fs.readFile(item.receiptPath),mime:item.mimeType};
+     b=result.bytes;ext=mediaKind==='image'?(b[0]===255&&b[1]===216?'.jpg':b.subarray(8,12).toString()==='WEBP'?'.webp':'.png'):mediaKind==='audio'?'.mp3':'.mp4';
+     file=path.join(outputDir,job.id+'-'+i+ext);await fs.writeFile(file,b,{mode:0o600});
+    }
+    const raw=await probe(file,context),p=raw?.value||raw;
+    if(mediaKind==='image'&&!(p.kind==='image'&&p.width>0&&p.height>0)||mediaKind==='audio'&&!(p.hasAudio&&p.duration>0)||mediaKind==='video'&&!(p.hasVideo&&p.width>0&&p.height>0&&p.duration>0))throw fail('生成原件无法解码为'+mediaKind,'INVALID_MEDIA');
+    if(!assets?.ingestFile)throw fail('DSH素材库尚未连接','ASSET_GATEWAY_UNAVAILABLE');
+    asset=await assets.ingestFile(file,{projectId:context.projectId,requestId:job.id+':output:'+i,source:'model:'+job.provider,alias:'aiyouplus:'+job.id+':'+i});
+    if(!asset?.id||!asset.path)throw fail('素材库未确认原件入库','ASSET_GATEWAY_UNAVAILABLE');
+    const saved=await fs.readFile(asset.path);if(digest(saved)!==digest(b))throw fail('素材库确认的原件与生成字节不一致','INVALID_MEDIA');
+    job.outputCheckpoints||=[];job.outputCheckpoints[i]={source,kind:mediaKind,outputPath:file,extension:ext,assetId:asset.id,assetPath:asset.path,sha256:digest(b),bytes:b.length};
+   }
+   paths.push(asset.path);outputAssets.push(asset);job.paths=[...paths];job.assets=[...outputAssets];
+   await write(jobFile(job.id),job);
   }
   if(!paths.length)throw fail('模型结果没有媒体原件','INVALID_MEDIA');
   job.paths=paths;job.assets=outputAssets;

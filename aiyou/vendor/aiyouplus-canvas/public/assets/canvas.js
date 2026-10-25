@@ -310554,6 +310554,7 @@ function Pui(e) {
         promptPreview: R,
         hasOutput: z || void 0,
         hasMedia: V || void 0,
+        mediaKind: ["image","video","audio"].includes(k.mediaType) ? k.mediaType : void 0,
         referenceAssetId: (F == null ? void 0 : F.assetId) || void 0,
         generationReferences: Array.isArray((Q = w.settings) == null ? void 0 : Q._agentReferenceBindings) ? w.settings._agentReferenceBindings : void 0,
         design: vze(k._agentDesign),

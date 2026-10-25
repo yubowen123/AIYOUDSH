@@ -1979,11 +1979,11 @@
     "files": [
       {
         "path": "README.md",
-        "sha256": "76c66e5c593da8f63a19df18a29a97667c066b70276e35e3952f0208a3831c1d"
+        "sha256": "9f52b01157d88f16af730d7a896b3c265611216a59311315610da1227f806dd0"
       },
       {
         "path": "scripts/build.mjs",
-        "sha256": "f6f0c01a5864bb3a815c2fd587aa115ea5d4124ef84c6caa0b5dc6d1407bdcd8"
+        "sha256": "79a49ac0139d0fd596c81788d0a3e3d5ffeeb2beb6c9fa292c9b86e37adc9829"
       },
       {
         "path": "public/index.html",
@@ -1991,7 +1991,7 @@
       },
       {
         "path": "public/embedded.js",
-        "sha256": "2bc5e6a02a6d5bfe16b084d856eae015a63365af4806fab47124d9a2dc196ec4"
+        "sha256": "e3fd96cd8d48d6c5c1ddef578cc0a088ae09dbcff82d8e8bf31689ae4ff770e1"
       },
       {
         "path": "public/embedded.css",
@@ -2035,7 +2035,7 @@
       },
       {
         "path": "build.json",
-        "sha256": "f51205b1ce3e7a31a43cca17fb359f77d2b2b9a8ddc5016c7b98c31e9247383c"
+        "sha256": "1586338a530f28edf59a86538f8973f21551935b2f642735234e7cacc1b6688f"
       },
       {
         "path": "test/verify-submit-sync.mjs",
@@ -2093,11 +2093,11 @@
     "hostIntegrationFiles": [
       {
         "path": "aiyou/modules/canvas/client.js",
-        "sha256": "7ca20ac7e627ad579da0bf72c6d551e48f8b9ac454f972c5a82798addb50ea8b"
+        "sha256": "fe23d9f8ad15d2a979f29bd686ca0ec26195a74060e58e0ac45a17046a7d9318"
       },
       {
         "path": "aiyou/modules/canvas/index.js",
-        "sha256": "847da74b6bb7d84a044bae72e27a67787bd7ed73a1c5199f8ff1602d6505e326"
+        "sha256": "d145ca58e5031ff0632151c26633761f0065d08d364268e314717d00bfb8b2d3"
       },
       {
         "path": "aiyou/vendor/codex-workspace-enhancer/asset-browser/public/canvas-asset-picker.js",
@@ -2125,11 +2125,79 @@
       },
       {
         "path": "aiyou/vendor/canvas-model-settings/index.html",
-        "sha256": "780ea81f168ae2108264448ca266220ad9e39de2b55d1ad58526be9d6a01de17"
+        "sha256": "182bd76ccd80f92504708d98c9894b8561f109bb1dea31b4cc5c63c7bc6284db"
       },
       {
         "path": "aiyou/vendor/codex-workspace-enhancer/asset-browser/public/ui-v3.css",
         "sha256": "ddd838a42ddce4cfdd8db8a1ae365d12d1228f2c5222d27a687fdc44bb708111"
+      },
+      {
+        "path": "aiyou/lib/canvas/project-store.mjs",
+        "sha256": "041b6651d0d1c0253b6b32a9ed04d500679022495039055fba956bf331ae12ca"
+      },
+      {
+        "path": "aiyou/lib/canvas/model-service.mjs",
+        "sha256": "6b423067eeb9c7dcad5cc9c6df4801eb80992361cd5cdcce78f29b5b0c1ebc16"
+      },
+      {
+        "path": "aiyou/modules/asset-console/client.js",
+        "sha256": "8bef8ba928a0c219e11137c4ac38564bfec66f0fcf3c0d648418beb06370a2d4"
+      },
+      {
+        "path": "aiyou/vendor/canvas-model-settings/app.js",
+        "sha256": "c1c93e821ce2223abee6f554ffe68630e45e6c0edd174bb09d7f157b6131a643"
+      },
+      {
+        "path": "aiyou/vendor/codex-workspace-enhancer/asset-browser/canvas-asset-store.js",
+        "sha256": "ff2b3f29769c66ecb65e3c24a3720934015c0f73f8d6af7286b15cd93af3bab8"
+      },
+      {
+        "path": "aiyou/vendor/codex-workspace-enhancer/asset-browser/server.js",
+        "sha256": "21fcb9ca2ac920894bb41f2f2f959201d37e4a01e5cba1ef4403bea95ef028eb"
+      },
+      {
+        "path": "aiyou/modules/conversation-folders/client.js",
+        "sha256": "b55d300fcb3c0460a41631e357de82dad8a4d49196204ee8840423e02a5a04cf"
+      },
+      {
+        "path": "aiyou/modules/efficiency/client.js",
+        "sha256": "7f15d3234a458d2505b5b9314f67dc5e8bb266094553c1c4c1c4cca9986546e4"
+      },
+      {
+        "path": "aiyou/modules/media-tools/client.js",
+        "sha256": "c3900fa01a581dee5cd579749236c2a7d6878f7b268f17746f13b3dcbe137153"
+      },
+      {
+        "path": "aiyou/modules/model-arena/client.js",
+        "sha256": "dec2daed5443d97e9aa4c7cb5ab34b8aa6146d8f0030150fce6d40a592c8cc4e"
+      },
+      {
+        "path": "aiyou/modules/model-arena/index.js",
+        "sha256": "9d67551ab262fdbe1952f9ea9a1e5578b998e93030e21e68da1dddc2f0abea26"
+      },
+      {
+        "path": "aiyou/modules/reset-monitor/client.js",
+        "sha256": "44aad791c99eda37696cc72f5fa31aea88e29c2d0843cdd8a722eaece09763ba"
+      },
+      {
+        "path": "aiyou/modules/session-context/client.js",
+        "sha256": "9e507d208a0adad19957a17cc067d224c4719b6bfaca2408f1b385f8d8a58408"
+      },
+      {
+        "path": "aiyou/modules/session-context/index.js",
+        "sha256": "1eed29ea96e7c56a8f71003274d649a1d835be11e48bfc7687b44655f2984ae9"
+      },
+      {
+        "path": "aiyou/modules/session-transcript/client.js",
+        "sha256": "4478aac3c730bc321d39f9ce10ab9e8bb15432531ef58b7ccbb3e30f26e76fa0"
+      },
+      {
+        "path": "aiyou/modules/skills/client.js",
+        "sha256": "24e73e35466c131216bfa4db505984d82b9e988ed051aa4af6c38f39895b6505"
+      },
+      {
+        "path": "aiyou/modules/usage/client.js",
+        "sha256": "54bafcc25ddbd653caca9dbc001bb1f3b8726b8e529807a54f1e1dae516b7090"
       }
     ]
   }

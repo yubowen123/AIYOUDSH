@@ -76,10 +76,10 @@ function validateState(value){
   return value;
 }
 
-export function createCanvasAssetStore({root,loadConfig,updateConfig,listLegacy,resolveLegacy,renameLegacy,deleteLegacy,syncPaths=async()=>{},notify=()=>{}}){
+export function createCanvasAssetStore({root,loadConfig,updateConfig,listLegacy,resolveLegacy,renameLegacy,deleteLegacy,recoverLegacyRename=async()=>{},syncPaths=async()=>{},notify=()=>{}}){
   root=path.resolve(root);const registryFile=path.join(root,'canvas-assets.json'),ownedRoot=path.join(root,'assets','canvas-originals');
-  let state,loading,queue=Promise.resolve();
-  async function ready(){if(state)return state;return loading||=fs.readFile(registryFile,'utf8').then(raw=>validateState(JSON.parse(raw))).catch(error=>{if(error.code==='ENOENT')return empty();throw error;}).then(value=>(state=value)).catch(error=>{loading=null;throw error;});}
+  let state,loading,recovering,renaming=false,queue=Promise.resolve();
+  async function ready(){if(!state)await(loading||=fs.readFile(registryFile,'utf8').then(raw=>validateState(JSON.parse(raw))).catch(error=>{if(error.code==='ENOENT')return empty();throw error;}).then(value=>(state=value)).catch(error=>{loading=null;throw error;}));if(!renaming&&Object.keys(state.pendingRenames||{}).length){if(!recovering)recovering=recoverRenames().finally(()=>{recovering=null;});await recovering;}return state;}
   async function persist(draft){
     await fs.mkdir(root,{recursive:true});const temp=registryFile+'.'+randomUUID()+'.tmp';
     try{await fs.writeFile(temp,JSON.stringify(draft)+'\n',{mode:0o600,flag:'wx'});await fs.rename(temp,registryFile);}finally{await fs.rm(temp,{force:true});}
@@ -87,6 +87,20 @@ export function createCanvasAssetStore({root,loadConfig,updateConfig,listLegacy,
   function serial(operation){const pending=queue.catch(()=>{}).then(async()=>{await ready();return operation();});queue=pending;return pending;}
   function find(value,snapshot=state){return snapshot&&Object.hasOwn(snapshot.assets,value)?snapshot.assets[value]:Object.values(snapshot?.assets||{}).find(a=>a.aliases.includes(value)||a.path===value)||null;}
   function addAliases(draft,asset,values){for(const alias of values){const existing=find(alias,draft);if(existing&&existing.id!==asset.id)fail('资产别名已绑定其它原件',409,'ASSET_ALIAS_CONFLICT');if(alias!==asset.id&&!asset.aliases.includes(alias))asset.aliases.push(alias);}}
+  async function recoverRenames(){
+    const draft=structuredClone(state);
+    for(const [id,intent]of Object.entries(draft.pendingRenames||{})){
+      const asset=draft.assets[id];
+      if(!asset||intent.from!==asset.path||!path.isAbsolute(intent.to||'')||path.dirname(intent.from)!==path.dirname(intent.to)||intent.to===intent.from||intent.sha256!==asset.sha256)fail('改名恢复记录无效，已保留登记和引用保护',500,'ASSET_RENAME_RECOVERY_REQUIRED');
+      const matches=async file=>{try{return digest((await readOriginal(file)).bytes)===asset.sha256;}catch(error){if(error.code==='ENOENT')return false;throw error;}};
+      const fromExists=await matches(intent.from),toExists=fromExists?false:await matches(intent.to);
+      if(!fromExists&&!toExists)fail('改名后的原件位置尚不能确认，已保留登记和引用保护',409,'ASSET_RENAME_RECOVERY_REQUIRED');
+      if(!fromExists){await recoverLegacyRename({previousPath:intent.from,nextPath:intent.to});asset.path=intent.to;asset.name=path.basename(intent.to);asset.updatedAt=now();addAliases(draft,asset,[intent.from,legacyId(intent.from),intent.to,legacyId(intent.to)]);}
+      delete draft.pendingRenames[id];
+    }
+    if(!Object.keys(draft.pendingRenames||{}).length)delete draft.pendingRenames;
+    await persist(draft);state=draft;
+  }
   async function ensureProject(projectId){
     let selected;
     await updateConfig(config=>{
@@ -180,10 +194,25 @@ export function createCanvasAssetStore({root,loadConfig,updateConfig,listLegacy,
       const extension=path.extname(asset.path);if(!path.extname(name))name+=extension;
       if(path.extname(name).toLowerCase()!==extension.toLowerCase())fail('重命名不能改变原件格式');
       if(name===asset.name)return publicAsset(asset);
-      const previousPath=asset.path;let nextPath=previousPath;
-      if(!asset.owned){const renamed=await renameLegacy({assetId:legacyId(previousPath),name});nextPath=renamed.filePath||Buffer.from(renamed.assetId,'base64url').toString();}
-      asset.path=nextPath;asset.name=asset.owned?name:path.basename(nextPath);asset.updatedAt=now();addAliases(draft,asset,[legacyId(previousPath),previousPath,legacyId(nextPath),nextPath]);
-      await commit(draft,[previousPath,nextPath]);return publicAsset(asset);
+      const previousPath=asset.path;let nextPath=previousPath,physicalRenamed=false;
+      if(asset.owned){asset.name=name;asset.updatedAt=now();await commit(draft,[previousPath]);return publicAsset(asset);}
+      const intendedPath=path.join(path.dirname(previousPath),name),staged=structuredClone(state);
+      staged.pendingRenames||={};staged.pendingRenames[id]={from:previousPath,to:intendedPath,sha256:asset.sha256,createdAt:now()};
+      // A durable intent reserves the existing canonical ID and references even
+      // if the process exits between the physical move and registry commit.
+      await persist(staged);state=staged;renaming=true;
+      try{
+        const renamed=await renameLegacy({assetId:legacyId(previousPath),name});nextPath=renamed.filePath||Buffer.from(renamed.assetId,'base64url').toString();physicalRenamed=true;
+        if(path.resolve(nextPath)!==intendedPath)fail('改名结果与已登记的目标不一致',409,'ASSET_RENAME_RECOVERY_REQUIRED');
+        asset.path=nextPath;asset.name=path.basename(nextPath);asset.updatedAt=now();addAliases(draft,asset,[legacyId(previousPath),previousPath,legacyId(nextPath),nextPath]);
+        await commit(draft,[previousPath,nextPath]);return publicAsset(asset);
+      }catch(error){
+        // Legacy metadata failures roll their files back themselves. A later
+        // canonical persistence failure also attempts the inverse operation.
+        if(physicalRenamed&&state.pendingRenames?.[id])await renameLegacy({assetId:legacyId(intendedPath),name:path.basename(previousPath)}).catch(()=>{});
+        if(state.pendingRenames?.[id])await recoverRenames().catch(recovery=>{error.recoveryCode=recovery.code||'ASSET_RENAME_RECOVERY_REQUIRED';});
+        throw error;
+      }finally{renaming=false;}
     });
   }
   async function remove(assetId){

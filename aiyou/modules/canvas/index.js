@@ -57,7 +57,7 @@ export function apply(ctx){
  route(ctx,BASE+'/take-control',async(req,res)=>{requirePost(req);respond(res,await coordinator.takeControl(await context(await body(req))));});
  route(ctx,BASE+'/panel',async(req,res)=>{requirePost(req);respond(res,await coordinator.panel(await body(req,16*1024*1024)));});
  route(ctx,BASE+'/events',async(req,res,url)=>{const abort=new AbortController();res.on('close',()=>abort.abort());respond(res,await coordinator.poll(Object.fromEntries(url.searchParams),{signal:abort.signal}));});
- route(ctx,BASE+'/reply',async(req,res)=>{requirePost(req);respond(res,await coordinator.reply(await body(req,16*1024*1024)));});
+ route(ctx,BASE+'/reply',async(req,res)=>{try{requirePost(req);respond(res,await coordinator.reply(await body(req,16*1024*1024)));}catch(error){json(res,error.status||500,{ok:false,error:error.message||String(error),...(typeof error.code==='string'?{code:error.code}:{})});}});
  route(ctx,BASE+'/close',async(req,res)=>{requirePost(req);respond(res,await coordinator.close(await body(req)));});
  route(ctx,BASE+'/open-requests',async(req,res,url)=>{const cursor=Number(url.searchParams.get('cursor'))||0;respond(res,{cursor:serial,requests:openRequests.filter(r=>r.id>cursor&&r.sessionId===url.searchParams.get('sessionId'))});});
  route(ctx,BASE+'/snapshot',async(req,res,url)=>respond(res,await coordinator.snapshot(await context(Object.fromEntries(url.searchParams)))));

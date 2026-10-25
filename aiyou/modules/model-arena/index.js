@@ -34,6 +34,7 @@ import { guardContext } from '../../runtime.mjs';
 import { mkdir, readFile, writeFile, rename } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import {createHash,randomUUID} from 'node:crypto';
 
 /**
  * Status files are written with temp + rename.
@@ -168,7 +169,7 @@ export const SCENES = Object.freeze({
 export function buildPrepare({ kind, projectId, canvasId, prompt, negativePrompt, models, defaults }) {
   const scene = SCENES[kind];
   if (!scene) throw new Error('kind must be image or video');
-  if (!projectId || !canvasId) throw new Error('projectId and canvasId are required');
+  if (![Number(projectId),Number(canvasId)].every(id=>Number.isSafeInteger(id)&&id>0)) throw new Error('projectId and canvasId must be positive integers');
   const text = String(prompt ?? '').trim();
   if (!text) throw new Error('prompt is required');
   const list = Array.isArray(models) ? models.filter((model) => model && typeof model.model === 'string') : [];
@@ -194,7 +195,7 @@ export function buildPrepare({ kind, projectId, canvasId, prompt, negativePrompt
     canvasId: Number(canvasId),
     items,
     ...(Object.keys(shared).length ? { defaults: shared } : {}),
-    idempotencyKeyPrefix: `arena-${Date.now().toString(36)}`,
+    idempotencyKeyPrefix: `arena-${randomUUID()}`,
   };
   return {
     scene: scene.label,
@@ -212,6 +213,45 @@ export function buildPrepare({ kind, projectId, canvasId, prompt, negativePrompt
   };
 }
 
+/** Short-lived confirmation receipts. The exact prepared spec is submitted at most once. */
+export function createArenaPreparations({submit=callTool,configuration=resolveEndpoint,isSession=()=>true,now=Date.now,ttlMs=15*60*1000,maxEntries=128}={}){
+ let closed=false;const tickets=new Map(),hash=value=>createHash('sha256').update(value).digest('hex');
+ const failure=(message,status=409)=>Object.assign(new Error(message),{status});
+ function owner(value){
+  if(closed)throw failure('竞技场面板已关闭，请重新打开',409);
+  for(const key of ['sessionId','panelId'])if(typeof value?.[key]!=='string'||!value[key]||value[key].length>240||/[\x00-\x1f\x7f]/.test(value[key]))throw failure('准备和提交需要当前DSH对话及面板标识',400);
+  if(!isSession(value.sessionId))throw failure('所属DSH对话已失效，请重新打开模型竞技场',409);
+  return value.sessionId+'\0'+value.panelId;
+ }
+ const canonical=prepared=>hash(JSON.stringify({tool:prepared.tool,args:{...prepared.args,idempotencyKeyPrefix:undefined}}));
+ async function configHash(){return hash(String(await configuration()||''));}
+ function prune(){for(const [id,t]of tickets)if(t.expiresAt<=now()&&t.state!=='submitting')tickets.delete(id);}
+ async function prepare(value){
+  const scope=owner(value),prepared=buildPrepare(value),configurationHash=await configHash();owner(value);prune();
+  for(const [id,t]of tickets)if(t.owner===scope&&t.state==='prepared')tickets.delete(id);
+  if(tickets.size>=maxEntries)throw failure('待确认请求过多，请稍后重试',429);
+  const preparationId=randomUUID(),expiresAt=now()+ttlMs,ticket={owner:scope,prepared,fingerprint:canonical(prepared),configuration:configurationHash,expiresAt,state:'prepared'};
+  tickets.set(preparationId,ticket);return{...structuredClone(prepared),preparationId,expiresAt};
+ }
+ async function submitPrepared(value){
+  if(value?.confirm!==true)throw failure('请先准备并明确确认该次提交',428);
+  const scope=owner(value),ticket=tickets.get(value.preparationId);
+  if(!ticket||ticket.owner!==scope)throw failure('准备回执不存在或不属于当前对话/面板，请重新准备',409);
+  if(ticket.expiresAt<=now())throw failure('准备回执已过期，请重新准备',410);
+  if(canonical(buildPrepare(value))!==ticket.fingerprint)throw failure('输入已改变，未提交生成，请重新准备',409);
+  if(await configHash()!==ticket.configuration)throw failure('模型服务配置已改变，请重新准备',409);
+  if(ticket.state==='completed')return structuredClone(ticket.result);
+  if(ticket.state==='uncertain')throw failure('上次提交结果未确认，请先核对原任务；不会重新生成',409);
+  if(ticket.state==='submitting')return ticket.promise;
+  ticket.state='submitting';
+  ticket.promise=(async()=>{
+   try{const result=await submit(ticket.prepared.tool,structuredClone(ticket.prepared.args),{timeoutMs:120000});ticket.result={ok:true,submitted:true,tool:ticket.prepared.tool,impact:ticket.prepared.impact,result};ticket.state='completed';return structuredClone(ticket.result);}
+   catch{ticket.state='uncertain';throw failure('提交结果未确认，请核对原任务；相同准备回执不会自动重提',502);}
+  })();return ticket.promise;
+ }
+ return{prepare,submit:submitPrepared,dispose(){closed=true;tickets.clear();}};
+}
+
 export function apply(ctx) {
   ctx = guardContext(ctx);
   const lifecycle = () => {
@@ -224,7 +264,9 @@ export function apply(ctx) {
   else lifecycle();
 
   if (!ctx.inject) return;
-  ctx.inject(['webServer'], (webCtx) => {
+  ctx.inject(['webServer','agents'], (webCtx) => {
+    const preparations=createArenaPreparations({isSession:id=>webCtx.agents?.get(id)?.session?.id===id});
+    webCtx.effect(()=>()=>preparations.dispose(),'model-arena:preparations');
     webCtx.effect(() => webCtx.webServer.register({
       kind: 'exact',
       path: `${BASE}/catalog`,
@@ -298,9 +340,9 @@ export function apply(ctx) {
         try {
           const payload = await readBody(req);
           // Pure: builds the payload and reports the cost. Sends nothing.
-          json(res, 200, { ok: true, prepared: buildPrepare(payload ?? {}) });
+          json(res, 200, { ok: true, prepared: await preparations.prepare(payload ?? {}) });
         } catch (error) {
-          json(res, 400, { error: String(error?.message ?? error) });
+          json(res, error.status||400, { error: String(error?.message ?? error) });
         }
       },
     }), 'aiyoucodex-model-arena:prepare');
@@ -318,20 +360,11 @@ export function apply(ctx) {
         if (req.method !== 'POST') return json(res, 405, { error: 'POST only' });
         try {
           const payload = await readBody(req);
-          // The gate. Without an explicit confirm flag this endpoint does nothing at
-          // all, so no client bug can spend credits by accident.
-          if (payload?.confirm !== true) {
-            return json(res, 428, { error: 'submission requires {confirm:true}', prepared: buildPrepare(payload ?? {}) });
-          }
-          const prepared = buildPrepare(payload ?? {});
-          const result = await callTool(prepared.tool, prepared.args, { timeoutMs: 120000 });
-          void record({
-            phase: 'serving',
-            lastSubmit: { at: Date.now(), tool: prepared.tool, models: prepared.models.length, nodeIds: result?.canvasNodeIds ?? null },
-          });
-          json(res, 200, { ok: true, submitted: true, tool: prepared.tool, impact: prepared.impact, result });
+          const result=await preparations.submit(payload??{});
+          void record({phase:'serving',lastSubmit:{at:Date.now(),tool:result.tool,models:result.impact.generations,nodeIds:result.result?.canvasNodeIds??null}});
+          json(res,200,result);
         } catch (error) {
-          json(res, 502, { error: String(error?.message ?? error) });
+          json(res, error.status||502, { error: String(error?.message ?? error) });
         }
       },
     }), 'aiyoucodex-model-arena:submit');

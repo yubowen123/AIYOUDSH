@@ -2,11 +2,25 @@ const $=id=>document.getElementById(id),query=new URLSearchParams(location.searc
 const context=Object.fromEntries(['sessionId','projectId','panelId'].map(k=>[k,query.get(k)||'']));
 let selected=null,config,busy=false;
 const status=(text,error=false)=>{$('status').textContent=text;$('status').dataset.error=String(error);};
+// Keep drafts in this document; switching services must never silently discard them.
+const draftFields=['name','base-url','protocol','auth-type','auth-header','api-key','session-only','test-only','clear-key','docs-url','catalog','defaults'];
+const draftSignature=()=>JSON.stringify([selected,...draftFields.map(id=>{const el=$(id);return el.type==='checkbox'?el.checked:el.value;})]);
+let cleanSignature=draftSignature(),confirmation=null;
+function updateDraft(){const dirty=cleanSignature!==draftSignature();$('draft-status').textContent=dirty?'有未保存的修改':'当前表单无未保存修改';$('draft-status').dataset.dirty=String(dirty);return dirty;}
+function markClean(){cleanSignature=draftSignature();updateDraft();}
+function confirmChange(title,message,label){
+ if(confirmation)return Promise.resolve(false);
+ const dialog=$('change-confirmation');$('confirmation-title').textContent=title;$('confirmation-message').textContent=message;$('confirmation-accept').textContent=label;
+ return new Promise(resolve=>{const finish=value=>{dialog.close();confirmation=null;dialog.removeEventListener('cancel',cancel);$('confirmation-cancel').removeEventListener('click',no);$('confirmation-accept').removeEventListener('click',yes);resolve(value);},cancel=event=>{event.preventDefault();finish(false);},no=()=>finish(false),yes=()=>finish(true);confirmation=finish;dialog.addEventListener('cancel',cancel);$('confirmation-cancel').addEventListener('click',no);$('confirmation-accept').addEventListener('click',yes);dialog.showModal();});
+}
+async function changeService(action){if(busy)return;if(updateDraft()&&!await confirmChange('放弃未保存的修改？','切换或刷新会替换当前表单。你可以取消后先保存。','放弃修改'))return;await run(action);}
+$('settings').addEventListener('input',updateDraft);$('settings').addEventListener('change',updateDraft);
+
 async function invoke(command,args={}){
  const response=await fetch('/aiyoucodex-dsh/canvas/rpc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({command,args,...context})});
  const result=await response.json();if(!response.ok||!result.ok)throw new Error(result.error?.message||result.error||'请求未完成');return result.value;
 }
-async function run(action){if(busy)return;busy=true;for(const b of document.querySelectorAll('#settings button,#settings input,#settings select,#settings textarea,#services button,#new,#refresh'))b.disabled=true;try{await action();}catch(e){status(e.message,true);}finally{busy=false;for(const b of document.querySelectorAll('#settings button,#settings input,#settings select,#settings textarea,#services button,#new,#refresh'))b.disabled=false;}}
+async function run(action){if(busy)return;busy=true;for(const b of document.querySelectorAll('#settings button,#settings input,#settings select,#settings textarea,#services button,#new,#refresh'))b.disabled=true;try{await action();}catch(e){status(e.message,true);}finally{busy=false;for(const b of document.querySelectorAll('#settings button,#settings input,#settings select,#settings textarea,#services button,#new,#refresh'))b.disabled=false;updateDraft();}}
 function models(catalog){
  $('models').replaceChildren();
  for(const kind of ['image','video','audio','music']){
@@ -33,14 +47,14 @@ function discoveryReport(d){
 
 function fill(profile={}){
  $('discovery-result').hidden=true;selected=profile.provider||null;$('name').value=profile.name||'';$('base-url').value=profile.baseUrl||'';$('protocol').value=profile.protocol||'openai-compatible';$('auth-type').value=profile.authType||'bearer';$('auth-header').value=profile.authHeader||'Authorization';$('docs-url').value=profile.docsUrl||'';
- $('api-key').value='';$('clear-key').checked=false;$('test-only').checked=profile.scope==='test';$('session-only').checked=profile.scope==='test'||profile.storage==='session';$('key-status').textContent=profile.hasKey?'凭证已配置，原值不回显。':'尚未配置凭证。';$('catalog').value=JSON.stringify(profile.modelCatalog||[],null,2);$('defaults').value=JSON.stringify(profile.models||{},null,2);models(profile.modelCatalog);status(selected?'已加载服务。':'请填写服务资料。');
+ $('api-key').value='';$('clear-key').checked=false;$('test-only').checked=profile.scope==='test';$('session-only').checked=Boolean(profile.sessionOnly)||profile.scope==='test'||profile.storage==='session';$('key-status').textContent=profile.hasKey?'凭证已配置，原值不回显。':'尚未配置凭证。';$('catalog').value=JSON.stringify(profile.modelCatalog||[],null,2);$('defaults').value=JSON.stringify(profile.models||{},null,2);models(profile.modelCatalog);status(selected?'已加载服务。':'请填写服务资料。');markClean();
 }
 function render(){
  const host=config.profiles?.host,caps=host?.capabilities;$('host-status').textContent=caps?.selected?(caps.selected.provider+' / '+caps.selected.model+(caps.authorizationVerified?'':'（授权状态由宿主管理）')):host?.available?'已连接宿主模型。':'当前模型尚未就绪，请在 DSH 选择模型。';
- $('services').replaceChildren();for(const p of Object.values(config.profiles||{})){if(p.provider==='host')continue;const b=document.createElement('button');b.type='button';b.textContent=p.name+(p.scope==='test'?' · 测试':'');b.addEventListener('click',()=>fill(p));$('services').append(b);}
+ $('services').replaceChildren();for(const p of Object.values(config.profiles||{})){if(p.provider==='host')continue;const b=document.createElement('button');b.type='button';b.textContent=p.name+(p.scope==='test'?' · 测试':'');b.setAttribute('aria-pressed',String(p.provider===selected));b.addEventListener('click',()=>void changeService(()=>{fill(p);render();}));$('services').append(b);}
 }
-async function refresh(){config=await invoke('aiyouplus_model_config');render();if(selected&&config.profiles?.[selected])fill(config.profiles[selected]);}
-$('new').addEventListener('click',()=>fill());$('refresh').addEventListener('click',()=>run(refresh));
+async function refresh(){config=await invoke('aiyouplus_model_config');render();if(selected&&config.profiles?.[selected])fill(config.profiles[selected]);else fill();}
+$('new').addEventListener('click',()=>void changeService(()=>{fill();render();}));$('refresh').addEventListener('click',()=>void changeService(refresh));
 $('auth-type').addEventListener('change',()=>{$('auth-header').value=$('auth-type').value==='api-key'?'X-API-Key':$('auth-type').value==='none'?'':'Authorization';});
 $('test-only').addEventListener('change',()=>{if($('test-only').checked)$('session-only').checked=true;});
 $('catalog').addEventListener('input',()=>{try{models(JSON.parse($('catalog').value));}catch{}});
@@ -59,7 +73,7 @@ $('discover').addEventListener('click',()=>run(async()=>{
  const {discovery:d}=await invoke('aiyouplus_model_discover',{url:$('docs-url').value});
  const sameOrigin=(()=>{try{return new URL(before.baseUrl).origin===new URL(d.baseUrl).origin;}catch{return !before.baseUrl;}})();
  const custom=before.provider?.startsWith('service-')&&sameOrigin;
- fill({...d,provider:custom?before.provider:null,hasKey:custom&&before.hasKey});
+ fill({...d,provider:custom?before.provider:null,hasKey:custom&&before.hasKey});cleanSignature=null;
  // Never inherit a stored credential after switching API origin. A newly typed
  // credential stays in memory only when bound to the same API or a blank draft.
  if(sameOrigin)$('api-key').value=before.key;
@@ -71,7 +85,7 @@ $('discover').addEventListener('click',()=>run(async()=>{
  status('已自动保存媒体通道，共 '+(d.modelCatalog?.length||0)+' 个模型。'+(config.profiles?.[selected]?.hasKey?'':' 尚未配置 Key，可在上方填写后保存。')+' 未提交生成请求。');
 }));
 $('catalog-refresh').addEventListener('click',()=>run(async()=>{if(!selected)throw new Error('请先保存服务。');const result=await invoke('aiyouplus_model_catalog',{provider:selected});models(result.modelCatalog||config.profiles[selected]?.modelCatalog);status(result.liveDiscovery?'模型目录已核对；实际生成权限仍需逐项验证。':'已读取配置目录；'+(result.requiresKey?'需要配置凭证。':'尚未验证当前账户生成权限。'));}));
-$('delete').addEventListener('click',()=>run(async()=>{if(!selected)throw new Error('请先选择服务。');config=await invoke('aiyouplus_model_delete',{provider:selected});selected=null;render();fill();status('服务配置已删除。');}));
+$('delete').addEventListener('click',()=>void run(async()=>{if(!selected)throw new Error('请先选择服务。');const id=selected,temporary=Boolean(config.profiles?.[id]?.sessionOnly);if(!await confirmChange(temporary?'移除本次对话的临时服务？':'删除当前服务？',temporary?'仅移除当前对话的临时配置。原先保存的服务和已生成素材会保留。':'将移除服务配置与凭证绑定，相关未完成任务将无法按原配置恢复。已生成素材会保留。',temporary?'移除临时服务':'删除服务'))return;config=await invoke('aiyouplus_model_delete',{provider:id});selected=null;render();fill();status(config.profiles?.[id]?'临时配置已移除，原先保存的服务已恢复。':'服务配置已删除。');}));
 void run(refresh);
 
 // Local CLI metadata only. No OAuth, login URL, authorization code or API Key.

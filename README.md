@@ -6,13 +6,13 @@
 
 **让官方 DeepSeek Harness 拥有更完整的工作台、主题和创作入口。**
 
-AIYOUDSH 是可安装、可卸载的桌面增强包：基于官方安装包的原生扩展接口，重新整理导航和对话侧栏，加入主题配置、动态背景、本地资产与项目管理。v0.8.2 延续 AIYOUPLUS 画布与创作工具的本地融合，文字使用宿主模型，素材使用 DSH 统一素材库；新增全插件主题同步和独立的画布外观配置；素材库采用左目录右素材，支持目录关联与扫描，媒体 API 支持文档、模型目录与调用合同自动关联配置。本轮主题检查在 macOS Apple Silicon 与隔离浏览器中分层验证；v0.5.0 的 Windows x64 支持保留，新增主题及画布能力尚未完成 Windows 桌面实测。
+AIYOUDSH 是可安装、可卸载的桌面增强包：基于官方安装包的原生扩展接口，重新整理导航和对话侧栏，加入主题配置、动态背景、本地资产与项目管理。v0.8.3 延续 AIYOUPLUS 画布与创作工具的本地融合，文字使用宿主模型，素材使用 DSH 统一素材库；新增全插件主题同步和独立的画布外观配置；素材库采用左目录右素材，支持目录关联与扫描，媒体 API 支持文档、模型目录与调用合同自动关联配置。本轮主题检查在 macOS Apple Silicon 与隔离浏览器中分层验证；v0.5.0 的 Windows x64 支持保留，新增主题及画布能力尚未完成 Windows 桌面实测。
 
 [下载 v0.5.0](https://github.com/yubowen123/AIYOUDSH/releases/tag/v0.5.0) · [安装与卸载](docs/installation.md) · [功能说明](docs/features.md) · [主题与动效](docs/themes.md) · [构建源码](docs/development.md) · [问题反馈](https://github.com/yubowen123/AIYOUDSH/issues)
 
 ![AIYOUDSH 工作台：左侧功能栏与对话列表、中间聊天和主题背景；macOS 实机](docs/screenshots/overview.jpg)
 
-本轮变更与验证边界见 [v0.8.2 说明](docs/releases/v0.8.2.md)。下方保留 v0.5.0 的历史公开下载链接；新版本产物、校验和安装结果以本次交付记录为准。
+本轮变更与验证边界见 [v0.8.3 说明](docs/releases/v0.8.3.md)。下方保留 v0.5.0 的历史公开下载链接；新版本产物、校验和安装结果以本次交付记录为准。
 
 ## 下载与兼容
 

@@ -131,6 +131,7 @@ window.__ModuleLoader__.load({
       }, [load]);
 
       const openDetail = React.useCallback(async (id) => {
+        setError(null);
         try {
           setDetail(await request(`${API}/detail?id=${encodeURIComponent(id)}`));
         } catch (failure) {
@@ -141,6 +142,7 @@ window.__ModuleLoader__.load({
       const mutate = React.useCallback(async (path, body, after) => {
         try {
           setBusy(true);
+          setError(null);
           await request(`${API}/${path}`, {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
@@ -148,8 +150,10 @@ window.__ModuleLoader__.load({
           });
           await load();
           if (after) await after();
+          return true;
         } catch (failure) {
           setError(String(failure?.message ?? failure));
+          return false;
         } finally {
           setBusy(false);
         }
@@ -196,6 +200,10 @@ window.__ModuleLoader__.load({
             }, isFavorite ? '★' : '☆'),
           ),
           h('div', { style: S.list },
+            error ? h('div', { role: 'alert', style: { ...S.card, borderColor: 'var(--dsw-alias-border-l4)' } },
+              h('div', { style: S.cardTitle }, '操作失败'),
+              h('div', { style: S.cardDesc }, error),
+            ) : null,
             h('div', { style: S.meta }, `${detail.classificationSource === 'manual' ? t.manual : t.auto} · ${detail.source}`),
             detail.whenToUse ? h('div', { style: S.cardDesc }, `${t.whenToUse}: ${detail.whenToUse}`) : null,
             h('div', { style: S.cardDesc }, detail.description),
@@ -281,7 +289,8 @@ window.__ModuleLoader__.load({
                   disabled: busy || !newLabel.trim(),
                   onClick: () => {
                     const keywords = newKeywords.split(/[,，\s]+/u).map((item) => item.trim()).filter(Boolean);
-                    void mutate('groups', { action: 'create', label: newLabel.trim(), keywords }).then(() => {
+                    void mutate('groups', { action: 'create', label: newLabel.trim(), keywords }).then((ok) => {
+                      if (!ok) return;
                       setNewLabel('');
                       setNewKeywords('');
                       setCreating(false);
@@ -304,7 +313,7 @@ window.__ModuleLoader__.load({
 
         h('div', { style: S.list },
           error
-            ? h('div', { style: { ...S.card, borderColor: 'var(--dsw-alias-border-l4)' } },
+            ? h('div', { role: 'alert', style: { ...S.card, borderColor: 'var(--dsw-alias-border-l4)' } },
                 h('div', { style: S.cardTitle }, '操作失败'),
                 h('div', { style: S.cardDesc }, error),
                 h('button', { type: 'button', style: S.btn, onClick: () => void load() }, t.retry),
@@ -322,6 +331,7 @@ window.__ModuleLoader__.load({
               tabIndex: 0,
               onClick: () => void openDetail(skill.id),
               onKeyDown: (event) => {
+                if (event.target !== event.currentTarget) return;
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault();
                   void openDetail(skill.id);

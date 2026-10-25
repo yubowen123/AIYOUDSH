@@ -143,7 +143,7 @@ window.__ModuleLoader__.load({
       );
     }
 
-    function UsagePanel() {
+    function UsagePanel({ sessionId = '' } = {}) {
       const [snapshot, setSnapshot] = React.useState(null);
       const [error, setError] = React.useState(null);
       const [busy, setBusy] = React.useState(false);
@@ -169,7 +169,8 @@ window.__ModuleLoader__.load({
 
       const sessions = snapshot?.sessions ?? [];
       const aggregate = snapshot?.aggregate;
-      const current = sessions.find((session) => session.id === snapshot?.currentSessionId);
+      const exact = sessions.find((session) => session.id === sessionId);
+      const current = exact ?? sessions.find((session) => session.id === snapshot?.currentSessionId);
 
       return h('div', { style: S.root },
         h('div', { style: S.header },
@@ -189,7 +190,7 @@ window.__ModuleLoader__.load({
           current
             ? h(SessionCard, {
                 session: current,
-                badge: snapshot?.currentSessionIdSource === 'env' ? t.current : t.recentActivity,
+                badge: exact || snapshot?.currentSessionIdSource === 'env' ? t.current : t.recentActivity,
               })
             : null,
 
@@ -213,7 +214,7 @@ window.__ModuleLoader__.load({
             ? h('div', { style: S.label, marginTop: '2px' }, t.sessions)
             : null,
           ...sessions
-            .filter((session) => session.id !== snapshot?.currentSessionId)
+            .filter((session) => session.id !== current?.id)
             .map((session) => h(SessionCard, { key: session.id, session })),
         ),
       );
@@ -225,6 +226,11 @@ window.__ModuleLoader__.load({
      * the exact session instead of falling back to "newest log write". This
      * probe reports the prop shape and any session-shaped string on first mount.
      */
+    function UsageTab(props) {
+      const tab = typeof props.useTabInfo === 'function' ? props.useTabInfo().tab : null;
+      return h(UsagePanel, { sessionId: tab?.navigation?.params?.sessionId ?? props.sessionId ?? props.session ?? '' });
+    }
+
     return {
       inject: ['slots', 'sidebarRightTabs', 'sidebarRight'],
       apply(ctx) {
@@ -234,7 +240,7 @@ window.__ModuleLoader__.load({
         }), 'usage:type');
         ctx.effect(() => ctx.slots.inject('sidebar.right.pane.tab', () =>
           ctx.slots.register({ name: 'sidebar.right.pane.tab', key: TYPE_ID },
-            (props) => h(UsagePanel, { ...props, __sidebarRight: ctx.sidebarRight }))), 'usage:panel');
+            (props) => h(UsageTab, props))), 'usage:panel');
       },
     };
   },

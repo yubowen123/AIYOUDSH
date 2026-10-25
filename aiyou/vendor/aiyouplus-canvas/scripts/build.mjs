@@ -17,6 +17,8 @@ replace('  if (nativeChatAdapter?.isNativeChat(e.modelId)) return nativeChatAdap
 replace('      handleLoadProject: y5r,\n      handleImportWorkflow: b5r','      handleSaveProject: dshExportProject,\n      handleLoadProject: y5r,\n      handleImportWorkflow: b5r');
 replace('    } = W2i(CVt);\n  hfi({','    } = W2i(CVt);\n  window.__DSH_CANVAS_BINDINGS__.importProject = y5r;\n  window.__DSH_CANVAS_BINDINGS__.exportProject = dshExportProject;\n  hfi({');
 replace('          className: "relative z-10",\n          children: x("下载")','          className: "relative z-10",\n          children: x("下载所选素材")');
+// Retain the actual media kind in shared snapshots so followers use video/audio controls.
+replaceOnce('        hasMedia: V || void 0,\n        referenceAssetId:', '        hasMedia: V || void 0,\n        mediaKind: ["image","video","audio"].includes(k.mediaType) ? k.mediaType : void 0,\n        referenceAssetId:');
 // Read-only presentation hooks reuse the recovered state branches, never the graph writer.
 replaceOnce('function GOi() {\n  const e = scr();', 'function DSHUseTheme(){const adapter=window.__DSH_THEME_ADAPTER__;return g.useSyncExternalStore(adapter.subscribe,adapter.snapshot,adapter.snapshot);}\nfunction GOi() {\n  const dshTheme=DSHUseTheme();\n  const e = scr();');
 replaceOnce('    a = (r == null ? void 0 : r.tone) ?? t,', '    a = dshTheme?.mode ?? (r == null ? void 0 : r.tone) ?? t,');

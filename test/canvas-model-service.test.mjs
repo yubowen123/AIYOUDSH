@@ -104,3 +104,49 @@ test('multiple originals receive distinct asset-writer request IDs, stable acros
  assert.equal(result.paths.length,2);assert.deepEqual(f.ingests.map(i=>i.opts.requestId),['two-images:output:0','two-images:output:1']);
  assert.equal(new Set(f.ingests.map(i=>i.opts.alias)).size,2);
 });
+test('session-only origin overlays, clear and delete preserve the hidden durable binding; explicit persistent clear still clears',async t=>{
+ const f=await fixture(t,(_req,res)=>json(res,{}));await f.setup();
+ const persistedBefore=await fs.readFile(path.join(f.root,'model-services.json'),'utf8');
+ await f.service.invoke('aiyouplus_model_configure',{...f.profile,baseUrl:'https://session.fixture.invalid',sessionOnly:true,apiKey:'ephemeral-fixture-only'},context);
+ assert.equal(f.records.size,1);assert.equal(await fs.readFile(path.join(f.root,'model-services.json'),'utf8'),persistedBefore);
+ const other=(await f.service.invoke('aiyouplus_model_config',{}, {...context,sessionId:'different-session'})).profiles[ID];assert.equal(other.baseUrl,f.baseUrl);assert.equal(other.hasKey,true);
+ const restored=await f.service.invoke('aiyouplus_model_delete',{provider:ID},context);assert.equal(restored.profiles[ID].baseUrl,f.baseUrl);assert.equal(restored.profiles[ID].hasKey,true);assert.equal(f.records.size,1);
+ await f.service.invoke('aiyouplus_model_configure',{...f.profile,baseUrl:'https://session.fixture.invalid',sessionOnly:true,apiKey:'overlay-to-clear'},context);
+ await f.service.invoke('aiyouplus_model_configure',{provider:ID,clearKey:true},context);assert.equal(f.records.size,1);assert.equal((await f.service.invoke('aiyouplus_model_config',{},context)).profiles[ID].hasKey,false);
+ const durable=(await f.service.invoke('aiyouplus_model_config',{}, {...context,sessionId:'other'})).profiles[ID];assert.equal(durable.hasKey,true);assert.equal(durable.baseUrl,f.baseUrl);
+ await f.service.invoke('aiyouplus_model_delete',{provider:ID},context);await f.service.invoke('aiyouplus_model_configure',{provider:ID,clearKey:true},context);assert.equal(f.records.size,0,'explicit persistent clearKey still clears the selected durable service');
+});
+for(const tamper of [false,true])test('multi-output checkpoint '+(tamper?'rejects changed local bytes':'resumes only remaining downloads after restart and URL expiry'),async t=>{
+ let first=0,second=0;const f=await fixture(t,(req,res)=>{if(req.method==='POST')return json(res,{urls:[f.baseUrl+'/first.png',f.baseUrl+'/second.png']});if(req.url==='/first.png'&&first++)return json(res,{error:'expired'},410);if(req.url==='/second.png'&&!second++)return json(res,{error:'temporary'},503);res.writeHead(200,{'content-type':'image/png'});res.end(PNG);});
+ f.options.assets.get=async value=>f.ingests.find(row=>row.asset.id===value||row.asset.path===value)?.asset||null;
+ await f.setup({modelCatalog:[{...f.profile.modelCatalog[0],response:{urlsPath:'urls'}}]});
+ await assert.rejects(f.service.invoke('aiyouplus_model_generate',{kind:'image',provider:ID,prompt:'two',requestId:'checkpoint-two'},context),/503/);
+ const partial=JSON.parse(await fs.readFile(path.join(f.root,'model-jobs/checkpoint-two.json')));assert.equal(partial.outputCheckpoints.length,1);assert.equal(partial.assets.length,1);assert.equal(partial.outputCheckpoints[0].sha256,createHash('sha256').update(PNG).digest('hex'));
+ if(tamper)await fs.writeFile(partial.outputCheckpoints[0].assetPath,'changed bytes');
+ await f.service.dispose();f.service=createModelService(f.options);t.after(()=>f.service.dispose());const before=f.requests.length;
+ if(tamper){await assert.rejects(f.service.invoke('aiyouplus_model_resume',{requestId:'checkpoint-two'},context),/410/);assert.notEqual(JSON.parse(await fs.readFile(path.join(f.root,'model-jobs/checkpoint-two.json'))).status,'completed');}
+ else {const result=await f.service.invoke('aiyouplus_model_resume',{requestId:'checkpoint-two'},context);assert.equal(result.assets.length,2);assert.equal(f.ingests.length,2);assert.deepEqual(f.requests.slice(before).map(r=>r.path),['/second.png']);assert.equal(JSON.parse(await fs.readFile(path.join(f.root,'model-jobs/checkpoint-two.json'))).error,undefined);}
+ assert.equal(f.requests.filter(r=>r.method==='POST').length,1);
+});
+test('an uncheckpointed residual file cannot replace an expired remote result',async t=>{
+ const f=await fixture(t,(req,res)=>req.method==='POST'?json(res,{url:f.baseUrl+'/gone.png'}):json(res,{error:'expired'},410));
+ await f.setup({modelCatalog:[{...f.profile.modelCatalog[0],response:{urlsPath:'url'}}]});await fs.mkdir(path.join(f.root,'outputs'),{recursive:true});await fs.writeFile(path.join(f.root,'outputs/orphan-0.png'),PNG);
+ await assert.rejects(f.service.invoke('aiyouplus_model_generate',{kind:'image',provider:ID,prompt:'one',requestId:'orphan'},context),/410/);assert.equal(f.ingests.length,0);assert.equal(f.requests.filter(r=>r.method==='POST').length,1);
+});
+
+test('explicitly promoting a session overlay persists its matching credential under the new durable binding',async t=>{
+ const f=await fixture(t,(_req,res)=>json(res,{}));await f.setup();
+ await f.service.invoke('aiyouplus_model_configure',{...f.profile,baseUrl:'https://session.fixture.invalid',sessionOnly:true,apiKey:'promotion-fixture-only'},context);
+ await f.service.invoke('aiyouplus_model_configure',{provider:ID,sessionOnly:false},context);
+ await f.service.dispose();f.service=createModelService(f.options);t.after(()=>f.service.dispose());
+ const p=(await f.service.invoke('aiyouplus_model_config',{},context)).profiles[ID];assert.equal(p.baseUrl,'https://session.fixture.invalid');assert.equal(p.storage,'host-credentials');assert.equal(p.hasKey,true);
+ const record=[...f.records.values()][0];assert.equal(record.payload.origin,'https://session.fixture.invalid');assert.equal(record.payload.key,'promotion-fixture-only');
+});
+
+for(const authType of ['none','bearer'])test('temporary profile lifetime is explicit independently of credential storage: '+authType,async t=>{
+ const f=await fixture(t,(_req,res)=>json(res,{}));await f.setup();const persisted=await fs.readFile(path.join(f.root,'model-services.json'),'utf8');
+ await f.service.invoke('aiyouplus_model_configure',{...f.profile,baseUrl:'https://temporary.fixture.invalid',authType,authHeader:authType==='none'?'':'Authorization',sessionOnly:true},context);
+ let p=(await f.service.invoke('aiyouplus_model_config',{},context)).profiles[ID];assert.equal(p.sessionOnly,true);assert.equal(p.hasKey,false);assert.equal(p.storage,'none');
+ await f.service.invoke('aiyouplus_model_configure',{provider:ID,name:'Edited temporary metadata'},context);p=(await f.service.invoke('aiyouplus_model_config',{},context)).profiles[ID];assert.equal(p.sessionOnly,true);assert.equal(await fs.readFile(path.join(f.root,'model-services.json'),'utf8'),persisted);assert.equal(f.records.size,1);
+ const c=await f.service.invoke('aiyouplus_model_delete',{provider:ID},context);assert.equal(c.profiles[ID].sessionOnly,false);assert.equal(c.profiles[ID].baseUrl,f.baseUrl);assert.equal(c.profiles[ID].hasKey,true);
+});

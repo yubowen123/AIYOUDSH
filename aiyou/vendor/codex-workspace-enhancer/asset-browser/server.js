@@ -133,7 +133,7 @@ const canvasAssetStore=createCanvasAssetStore({
     return rows;
   },
   resolveLegacy:async id=>resolveManagedAssetLegacy(await loadConfig(),id),
-  renameLegacy:renameLibraryAssetLegacy,deleteLegacy:deleteLibraryAssetLegacy,
+  renameLegacy:renameLibraryAssetLegacy,deleteLegacy:deleteLibraryAssetLegacy,recoverLegacyRename:relocateLibraryAssetMetadata,
   syncPaths:async paths=>{reconciledProjectContexts.clear();await ensureWatchers();if(paths.length)await enqueueAssetIndexUpdate(paths);},
   notify:notifyClients,
 });
@@ -1863,6 +1863,26 @@ async function clearAssetProjectAssignment(body = {}) {
   return { assetId: encodeAssetRef(filePath), removed: true, previousProjectId };
 }
 
+async function relocateLibraryAssetMetadata({previousPath,nextPath,retainedCharacter=null,assetId=encodeAssetRef(previousPath)}) {
+  await promptAssociations.relocate(previousPath, nextPath);
+  await updateConfig((draft) => {
+    if (draft.assetAssignments[previousPath]) {
+      draft.assetAssignments[nextPath] = draft.assetAssignments[previousPath];
+      delete draft.assetAssignments[previousPath];
+    }
+    if (draft.assetMetadata[previousPath]) {
+      draft.assetMetadata[nextPath] = draft.assetMetadata[previousPath];
+      delete draft.assetMetadata[previousPath];
+    }
+    if (retainedCharacter && !draft.assetMetadata[nextPath]?.character) {
+      draft.assetMetadata[nextPath] = { ...draft.assetMetadata[nextPath], character: retainedCharacter };
+    }
+    for (const metadata of Object.values(draft.assetMetadata)) {
+      if (metadata.character?.parentAssetId === assetId) metadata.character.parentAssetId = encodeAssetRef(nextPath);
+    }
+  });
+}
+
 async function renameLibraryAssetLegacy(body = {}) {
   const config = await loadConfig();
   const { filePath } = await resolveManagedAsset(config, body.assetId);
@@ -1894,35 +1914,24 @@ async function renameLibraryAssetLegacy(body = {}) {
     renameMappings.push({ source, destination });
   }
   const renamed = [];
+  let metadataStarted = false;
   try {
     for (const mapping of renameMappings) {
       await fs.rename(mapping.source, mapping.destination);
       renamed.push(mapping);
     }
+    metadataStarted = true;
+    await relocateLibraryAssetMetadata({previousPath:filePath,nextPath,retainedCharacter,assetId:body.assetId});
+    await enqueueAssetIndexUpdate([filePath, nextPath]);
+    notifyClients("asset-change");
+    return { assetId: encodeAssetRef(nextPath), name: path.basename(nextPath), previousName: path.basename(filePath) };
   } catch (error) {
-    for (const mapping of renamed.reverse()) await fs.rename(mapping.destination, mapping.source).catch(() => {});
+    const rollbackErrors = [];
+    for (const mapping of renamed.reverse()) try { await fs.rename(mapping.destination, mapping.source); } catch (rollback) { rollbackErrors.push(rollback); }
+    if (metadataStarted && !rollbackErrors.length) try { await relocateLibraryAssetMetadata({previousPath:nextPath,nextPath:filePath,assetId:encodeAssetRef(nextPath)}); } catch (rollback) { rollbackErrors.push(rollback); }
+    if (rollbackErrors.length) error.recoveryCode = 'ASSET_RENAME_RECOVERY_REQUIRED';
     throw error;
   }
-  await promptAssociations.relocate(filePath, nextPath);
-  await updateConfig((draft) => {
-    if (draft.assetAssignments[filePath]) {
-      draft.assetAssignments[nextPath] = draft.assetAssignments[filePath];
-      delete draft.assetAssignments[filePath];
-    }
-    if (draft.assetMetadata[filePath]) {
-      draft.assetMetadata[nextPath] = draft.assetMetadata[filePath];
-      delete draft.assetMetadata[filePath];
-    }
-    if (retainedCharacter && !draft.assetMetadata[nextPath]?.character) {
-      draft.assetMetadata[nextPath] = { ...draft.assetMetadata[nextPath], character: retainedCharacter };
-    }
-    for (const metadata of Object.values(draft.assetMetadata)) {
-      if (metadata.character?.parentAssetId === body.assetId) metadata.character.parentAssetId = encodeAssetRef(nextPath);
-    }
-  });
-  await enqueueAssetIndexUpdate([filePath, nextPath]);
-  notifyClients("asset-change");
-  return { assetId: encodeAssetRef(nextPath), name: path.basename(nextPath), previousName: path.basename(filePath) };
 }
 
 async function deleteLibraryAssetLegacy(body = {}) {

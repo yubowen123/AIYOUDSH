@@ -47,6 +47,7 @@ window.__ModuleLoader__.load({
       const [interval, setIntervalMinutes] = React.useState(15);
       const [busy, setBusy] = React.useState(false);
       const [note, setNote] = React.useState('');
+      const [now, setNow] = React.useState(Date.now);
 
       const load = React.useCallback(async () => {
         try {
@@ -64,6 +65,15 @@ window.__ModuleLoader__.load({
       React.useEffect(() => {
         void load();
       }, [load]);
+      React.useEffect(() => {
+        setNow(Date.now());
+        if (!(data?.events ?? []).some(event => Number.isFinite(event.countdownAt) && event.countdownAt > Date.now())) return;
+        const timer = setInterval(() => {
+          const next = Date.now();setNow(next);
+          if (!(data?.events ?? []).some(event => Number.isFinite(event.countdownAt) && event.countdownAt > next)) clearInterval(timer);
+        }, 1000);
+        return () => clearInterval(timer);
+      }, [data]);
 
       const save = React.useCallback(async (patch) => {
         try {
@@ -104,7 +114,7 @@ window.__ModuleLoader__.load({
 
       const countdown = (event) => {
         if (!event.countdownAt) return null;
-        const delta = event.countdownAt - Date.now();
+        const delta = event.countdownAt - now;
         if (delta <= 0) return '已到时 · 待核验';
         const hours = Math.floor(delta / 3_600_000);
         const minutes = Math.floor((delta % 3_600_000) / 60_000);
@@ -170,6 +180,7 @@ window.__ModuleLoader__.load({
               h('input', {
                 style: S.input,
                 type: 'number',
+                'aria-label': '公告检查间隔（分钟）',
                 min: 1,
                 max: 10080,
                 value: interval,
