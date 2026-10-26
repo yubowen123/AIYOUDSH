@@ -56,11 +56,20 @@ window.__ModuleLoader__.load({
       const [data, setData] = React.useState(null);
       const [error, setError] = React.useState(null);
       const [scope, setScope] = React.useState('global');
-      const [project, setProject] = React.useState('');
-      const [session, setSession] = React.useState('');
+      const [project, setProject] = React.useState(props.project || '');
+      const [session, setSession] = React.useState(props.sessionId || '');
       const [note, setNote] = React.useState('');
+      const [loading, setLoading] = React.useState(false);
+      const [busy, setBusy] = React.useState(false);
+      const lifetime = React.useRef({ active: true, read: 0, writing: false });
+      const identity = React.useRef({ project, session });
+      identity.current = { project, session };
 
       const load = React.useCallback(async () => {
+        const owner = lifetime.current, request = ++owner.read;
+        const valid = () => owner.active && owner.read === request && identity.current.project === project && identity.current.session === session;
+        setLoading(true);
+        setData(null);
         try {
           setError(null);
           const params = new URLSearchParams();
@@ -69,25 +78,25 @@ window.__ModuleLoader__.load({
           const response = await fetch(`${BASE}?${params}`, { cache: 'no-store' });
           const value = await response.json();
           if (!response.ok) throw new Error(value?.error || `HTTP ${response.status}`);
-          setData(value);
-          if (!project && value?.layers?.project !== undefined) {
-            // The panel cannot read the conversation's cwd itself; ask the host.
-            const info = await fetch(`${BASE}?project=${encodeURIComponent('')}&session=${encodeURIComponent(session || 'current')}`, { cache: 'no-store' });
-            if (info.ok) {
-              const resolved = await info.json();
-              setSession(resolved?.sessionId ?? session);
-            }
-          }
+          if (valid()) setData(value);
         } catch (failure) {
-          setError(String(failure?.message ?? failure));
+          if (valid()) setError(String(failure?.message ?? failure));
+        } finally {
+          if (valid()) setLoading(false);
         }
       }, [project, session]);
 
       React.useEffect(() => {
         void load();
       }, [load]);
+      React.useEffect(() => { lifetime.current.active = true;return () => { lifetime.current.active = false; }; }, []);
 
       const write = React.useCallback(async (patch, targetScope = scope) => {
+        const owner = lifetime.current;
+        if (owner.writing || loading || !data) return;
+        if ((targetScope === 'project' && !project.trim()) || (targetScope === 'session' && !session.trim())) { setError('请先填写这一层的项目目录或对话 ID。');return; }
+        const valid = () => owner.active && identity.current.project === project && identity.current.session === session;
+        owner.writing = true;setBusy(true);setError(null);
         try {
           const response = await fetch(`${BASE}/set`, {
             method: 'POST',
@@ -102,14 +111,22 @@ window.__ModuleLoader__.load({
           });
           const value = await response.json();
           if (!response.ok) throw new Error(value?.error || `HTTP ${response.status}`);
-          setData((current) => current ? { ...current, layers: value.layers, resolved: value.resolved, appliedBy: value.appliedBy, instruction: value.instruction } : current);
+          if (!valid()) return;
+          const layers = { global: value.layers?.global ?? {}, project: value.layers?.project ?? value.layers?.projects?.[project] ?? {}, session: value.layers?.session ?? value.layers?.sessions?.[session] ?? {} };
+          setData((current) => current ? { ...current, layers, resolved: value.resolved, appliedBy: value.appliedBy, instruction: value.instruction } : current);
           setNote(`已写入${SCOPES.find((entry) => entry.id === targetScope)?.label ?? targetScope}层`);
         } catch (failure) {
-          setError(String(failure?.message ?? failure));
+          if (valid()) setError(String(failure?.message ?? failure));
+        } finally {
+          owner.writing = false;if (owner.active) setBusy(false);
         }
-      }, [scope, project, session]);
+      }, [scope, project, session, loading, data]);
 
       const reset = React.useCallback(async (layer) => {
+        const owner = lifetime.current;
+        if (owner.writing || loading || !data) return;
+        if ((layer === 'project' && !project.trim()) || (layer === 'session' && !session.trim())) { setError('请先填写这一层的项目目录或对话 ID。');return; }
+        owner.writing = true;setBusy(true);setError(null);
         try {
           const response = await fetch(`${BASE}/set`, {
             method: 'POST',
@@ -117,16 +134,20 @@ window.__ModuleLoader__.load({
             body: JSON.stringify({ scope: 'reset', layer, id: layer === 'project' ? project : session }),
           });
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          if (!owner.active) return;
           await load();
-          setNote(`已清除${layer}层覆盖`);
+          if (owner.active) setNote(`已清除${layer}层覆盖`);
         } catch (failure) {
-          setError(String(failure?.message ?? failure));
+          if (owner.active) setError(String(failure?.message ?? failure));
+        } finally {
+          owner.writing = false;if (owner.active) setBusy(false);
         }
-      }, [project, session, load]);
+      }, [project, session, load, loading, data]);
 
       const resolved = data?.resolved;
       const appliedBy = data?.appliedBy ?? {};
       const layer = data?.layers?.[scope] ?? {};
+      const blocked = loading || busy || !data || (scope === 'project' && !project.trim()) || (scope === 'session' && !session.trim());
       const isOverriddenHere = (key) => Object.prototype.hasOwnProperty.call(layer, key);
       const sourceBadge = (key) => {
         const from = appliedBy[key];
@@ -137,10 +158,11 @@ window.__ModuleLoader__.load({
       return h('div', { style: S.root },
         h('div', { style: S.bar },
           h('span', { style: { flex: 1, fontWeight: 600 } }, '输出效率'),
-          h('button', { type: 'button', style: S.btn, onClick: () => void load() }, '刷新'),
+          h('button', { type: 'button', style: S.btn, disabled: loading || busy, onClick: () => void load() }, '刷新'),
         ),
         h('div', { style: S.body },
-          error ? h('div', { style: { ...S.meta, color: 'var(--dsw-alias-state-error-primary)' } }, error) : null,
+          error ? h('div', { role: 'alert', style: { ...S.meta, color: 'var(--dsw-alias-state-error-primary)' } }, error) : null,
+          loading ? h('div', { role: 'status', style: S.meta }, '正在读取当前作用域的输出偏好…') : null,
 
           h('div', { style: S.card },
             h('div', { style: S.head }, h('span', null, '编辑层')),
@@ -148,6 +170,8 @@ window.__ModuleLoader__.load({
               ...SCOPES.map((entry) => h('button', {
                 key: entry.id,
                 type: 'button',
+                disabled: busy,
+                'aria-pressed': scope === entry.id,
                 style: scope === entry.id ? S.btnOn : S.btn,
                 onClick: () => setScope(entry.id),
               }, entry.label)),
@@ -156,6 +180,8 @@ window.__ModuleLoader__.load({
               ? h('input', {
                   style: { padding: '5px 8px', borderRadius: 'var(--dsw-radius-md)', border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-2)', color: 'var(--dsw-alias-label-primary)', fontSize: '12px' },
                   placeholder: '项目目录绝对路径',
+                  'aria-label': '输出偏好项目目录',
+                  disabled: busy,
                   value: project,
                   onChange: (event) => setProject(event.target.value),
                 })
@@ -163,7 +189,9 @@ window.__ModuleLoader__.load({
             scope === 'session'
               ? h('input', {
                   style: { padding: '5px 8px', borderRadius: 'var(--dsw-radius-md)', border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-2)', color: 'var(--dsw-alias-label-primary)', fontSize: '12px' },
-                  placeholder: '会话 id（留空则用最近活动会话）',
+                  placeholder: '对话 ID（未绑定时请明确填写）',
+                  'aria-label': '输出偏好对话 ID',
+                  disabled: busy,
                   value: session,
                   onChange: (event) => setSession(event.target.value),
                 })
@@ -181,21 +209,22 @@ window.__ModuleLoader__.load({
               ...(data?.modes ?? ['smart', 'concise', 'detailed']).map((mode) => h('button', {
                 key: mode,
                 type: 'button',
+                disabled: blocked,
                 style: (resolved?.mode === mode) ? S.btnOn : S.btn,
                 onClick: () => void write({ mode }),
               }, MODE_LABEL[mode] ?? mode)),
             ),
             h('div', { style: S.meta }, MODE_NOTE[resolved?.mode] ?? ''),
             h('div', { style: S.row },
-              h('button', { type: 'button', style: S.btn, onClick: () => void write({ mode: null }) }, '在本层清除模式覆盖'),
+              h('button', { type: 'button', style: S.btn, disabled: blocked, onClick: () => void write({ mode: null }) }, '在本层清除模式覆盖'),
             ),
           ),
 
           h('div', { style: S.card },
             h('div', { style: S.head }, h('span', null, '启用'), sourceBadge('enabled')),
             h('div', { style: S.row },
-              h('button', { type: 'button', style: resolved?.enabled ? S.btnOn : S.btn, onClick: () => void write({ enabled: true }) }, '启用'),
-              h('button', { type: 'button', style: resolved?.enabled ? S.btn : S.btnOn, onClick: () => void write({ enabled: false }) }, '停用'),
+              h('button', { type: 'button', style: resolved?.enabled ? S.btnOn : S.btn, disabled: blocked, onClick: () => void write({ enabled: true }) }, '启用'),
+              h('button', { type: 'button', style: resolved?.enabled ? S.btn : S.btnOn, disabled: blocked, onClick: () => void write({ enabled: false }) }, '停用'),
             ),
             h('div', { style: S.meta }, '停用后不注入任何输出偏好，等于本套件在此作用域不存在。'),
           ),
@@ -207,6 +236,7 @@ window.__ModuleLoader__.load({
               ...[900, 1400, 2000].map((value) => h('button', {
                 key: value,
                 type: 'button',
+                disabled: blocked,
                 style: resolved?.contextBudget === value ? S.btnOn : S.btn,
                 onClick: () => void write({ contextBudget: value }),
               }, String(value))),
@@ -227,15 +257,21 @@ window.__ModuleLoader__.load({
             ...SCOPES.map((entry) => h('div', { key: entry.id, style: S.meta },
               `${entry.label}：${JSON.stringify(data?.layers?.[entry.id] ?? {})}`)),
             h('div', { style: S.row },
-              h('button', { type: 'button', style: S.btn, onClick: () => void reset('project') }, '清除项目层'),
-              h('button', { type: 'button', style: S.btn, onClick: () => void reset('session') }, '清除对话层'),
-              h('button', { type: 'button', style: S.btn, onClick: () => void reset('global') }, '清除全局层'),
+              h('button', { type: 'button', style: S.btn, disabled: loading || busy || !data || !project.trim(), onClick: () => void reset('project') }, '清除项目层'),
+              h('button', { type: 'button', style: S.btn, disabled: loading || busy || !data || !session.trim(), onClick: () => void reset('session') }, '清除对话层'),
+              h('button', { type: 'button', style: S.btn, disabled: loading || busy || !data, onClick: () => void reset('global') }, '清除全局层'),
             ),
           ),
 
-          note ? h('div', { style: S.meta }, note) : null,
+          note ? h('div', { role: 'status', style: S.meta }, note) : null,
         ),
       );
+    }
+
+    function EfficiencyTab(props) {
+      const tab = typeof props.useTabInfo === 'function' ? props.useTabInfo().tab : null;
+      const params = tab?.navigation?.params ?? props;
+      return h(EfficiencyPanel, { key: `${params.sessionId || ''}:${params.project || params.cwd || ''}`, sessionId: params.sessionId || params.session || '', project: params.project || params.cwd || '' });
     }
 
     return {
@@ -247,7 +283,7 @@ window.__ModuleLoader__.load({
         }), 'efficiency:type');
         ctx.effect(() => ctx.slots.inject('sidebar.right.pane.tab', () =>
           ctx.slots.register({ name: 'sidebar.right.pane.tab', key: TYPE_ID },
-            (props) => h(EfficiencyPanel, { ...props, __sidebarRight: ctx.sidebarRight }))), 'efficiency:panel');
+            (props) => h(EfficiencyTab, props))), 'efficiency:panel');
       },
     };
   },

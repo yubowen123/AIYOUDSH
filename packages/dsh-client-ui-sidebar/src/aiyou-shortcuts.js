@@ -1,6 +1,7 @@
         // Artwork from AIYOUcodex (MIT); independent icon-rail layout follows the supplied screenshot.
         // Keep callbacks native: these controls never submit a message or simulate clicks.
         const AIYOU_SHORTCUT_ICONS = {
+    canvas: '<rect x="3" y="3" width="6" height="6" rx="1.5"/><rect x="15" y="15" width="6" height="6" rx="1.5"/><path d="M9 6h6a3 3 0 0 1 3 3v6M6 9v6a3 3 0 0 0 3 3h6"/>',
     home: '<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10Z"/>',
     sites: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a18 18 0 0 1 0 18 18 18 0 0 1 0-18Z"/>',
     plugins: '<path d="m8 3 1 5m6-5 1 5M6 9h12v3a6 6 0 0 1-12 0V9Zm6 9v4"/>',
@@ -22,6 +23,7 @@
             settings: "<path d=\"M19.13 9.68 L19.39 10.70 L21.31 10.69 L21.31 13.31 L19.39 13.30 L19.13 14.32 L18.68 15.40 L18.14 16.30 L19.51 17.66 L17.66 19.51 L16.30 18.14 L15.40 18.68 L14.32 19.13 L13.30 19.39 L13.31 21.31 L10.69 21.31 L10.70 19.39 L9.68 19.13 L8.60 18.68 L7.70 18.14 L6.34 19.51 L4.49 17.66 L5.86 16.30 L5.32 15.40 L4.87 14.32 L4.61 13.30 L2.69 13.31 L2.69 10.69 L4.61 10.70 L4.87 9.68 L5.32 8.60 L5.86 7.70 L4.49 6.34 L6.34 4.49 L7.70 5.86 L8.60 5.32 L9.68 4.87 L10.70 4.61 L10.69 2.69 L13.31 2.69 L13.30 4.61 L14.32 4.87 L15.40 5.32 L16.30 5.86 L17.66 4.49 L19.51 6.34 L18.14 7.70 L18.68 8.60Z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>"
         };
         const AIYOU_SHORTCUT_ICON_IDS = {
+            'aiyou-canvas': 'canvas', 'aiyou-media-tools': 'scissors', 'aiyou-media-models': 'plugins',
             'aiyou-agents': 'agent', 'aiyou-skills': 'skills', 'aiyou-assets': 'assets',
             'aiyou-arena': 'arena', 'aiyou-projects': 'project', 'aiyou-workbench': 'settings',
             'aiyou-context': 'book', 'aiyou-efficiency': 'sparkle', 'aiyou-usage': 'chart',

@@ -1,0 +1,41 @@
+{
+  "sourceProject": "AIYOUPLUS",
+  "files": [
+    {
+      "file": "aiyouplus-provider-registry.cjs",
+      "source": "/Users/yubowen/Documents/ChatGPT/AI 游戏拓展/安装 reverse-skill 技能/AIYOUPLUS/app/electron/aiyouplus-provider-registry.cjs",
+      "sourceSha256": "eba9672868453d8a0e95b55eb1532b24c0cc960b185f9f41e3581f3f13bcd0df",
+      "changes": "Node-only source reused; integration transport lives outside this file"
+    },
+    {
+      "file": "aiyouplus-generic-provider.cjs",
+      "source": "/Users/yubowen/Documents/ChatGPT/AI 游戏拓展/安装 reverse-skill 技能/AIYOUPLUS/app/electron/aiyouplus-generic-provider.cjs",
+      "sourceSha256": "3a159187b22ea59b996440d5d614f0954675717d825d23a782b4291480f6168c",
+      "changes": "Node-only source reused; integration transport lives outside this file"
+    },
+    {
+      "file": "aiyouplus-minimax-provider.cjs",
+      "source": "/Users/yubowen/Documents/ChatGPT/AI 游戏拓展/安装 reverse-skill 技能/AIYOUPLUS/app/electron/aiyouplus-minimax-provider.cjs",
+      "sourceSha256": "fd9739e54bbe04435694aa60d4c47a66beb480acf99b155637467073082277ff",
+      "changes": "Node-only source reused; integration transport lives outside this file"
+    },
+    {
+      "file": "aiyouplus-api-discovery.cjs",
+      "source": "/Users/yubowen/Documents/ChatGPT/AI 游戏拓展/安装 reverse-skill 技能/AIYOUPLUS/app/electron/aiyouplus-api-discovery.cjs",
+      "sourceSha256": "eb8568afa380847d8e115f0637e187293df4926e9efcdf01a0dc6930d918fee3",
+      "changes": "Node-only source reused; integration transport lives outside this file"
+    },
+    {
+      "file": "aiyouplus-chat-request.cjs",
+      "source": "/Users/yubowen/Documents/ChatGPT/AI 游戏拓展/安装 reverse-skill 技能/AIYOUPLUS/app/electron/aiyouplus-chat-request.cjs",
+      "sourceSha256": "9bd8e84fc23ea68282819ff628cb53080b7e374beae274c9987007281d9b4b42",
+      "changes": "Node-only source reused; integration transport lives outside this file"
+    },
+    {
+      "file": "aiyouplus-api-discovery.test.cjs",
+      "source": "/Users/yubowen/Documents/ChatGPT/AI 游戏拓展/安装 reverse-skill 技能/AIYOUPLUS/app/electron/aiyouplus-api-discovery.test.cjs",
+      "sourceSha256": "6697e33fb55daed5296dea1ee6798f9be31a2756fb63a2f800f8929fd8d5380c",
+      "changes": "unchanged offline/loopback parser contract regression"
+    }
+  ]
+}

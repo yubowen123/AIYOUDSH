@@ -1,0 +1,2204 @@
+{
+  "sourceProduct": "AIYOUPLUS",
+  "sourceVersion": "1.3.1",
+  "sourceBuildAsarSha256": "b427043f011bd661030f9cd7b727579b72dac0f50f89c08957e6ba896cb2416f",
+  "scope": "Recovered shared-scope canvas, referenced renderer resources, selected Node local engines. No app runtime, credentials, node_modules, supplier service, desktop pets or ML model weights copied.",
+  "files": [
+    {
+      "source": "renderer-src/js/renderer-036.js",
+      "target": "src/js/renderer-036.js",
+      "sha256": "280c4968b5eada54d6c29972c20c9890acfbfbc3411822c8988b24c3600a2b16",
+      "currentSha256": "280c4968b5eada54d6c29972c20c9890acfbfbc3411822c8988b24c3600a2b16",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-002.js",
+      "target": "src/js/renderer-002.js",
+      "sha256": "145841ff1f292cd1fa4aad3587de2500f815ed8b2d0a66ddc2a70a087e833ac0",
+      "currentSha256": "145841ff1f292cd1fa4aad3587de2500f815ed8b2d0a66ddc2a70a087e833ac0",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-012.js",
+      "target": "src/js/renderer-012.js",
+      "sha256": "36adedda02031da7ac019cb908f18be278b228cf24c1d6ff01c8b03d14bde6be",
+      "currentSha256": "36adedda02031da7ac019cb908f18be278b228cf24c1d6ff01c8b03d14bde6be",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-026.js",
+      "target": "src/js/renderer-026.js",
+      "sha256": "980847fe5b443ffe3f8d4f891f7c5ae97fa89719683da969b899673ff9432a6c",
+      "currentSha256": "980847fe5b443ffe3f8d4f891f7c5ae97fa89719683da969b899673ff9432a6c",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-006.js",
+      "target": "src/js/renderer-006.js",
+      "sha256": "aa2ec09d34c9f669ef2dbb56d538b33939cb36b98867dee0f7b510a70338a39e",
+      "currentSha256": "aa2ec09d34c9f669ef2dbb56d538b33939cb36b98867dee0f7b510a70338a39e",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-032.js",
+      "target": "src/js/renderer-032.js",
+      "sha256": "80779017077ecbf2c9ce0c0449710a1c042e7ac9405b7d6ba2b119448004c649",
+      "currentSha256": "80779017077ecbf2c9ce0c0449710a1c042e7ac9405b7d6ba2b119448004c649",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-022.js",
+      "target": "src/js/renderer-022.js",
+      "sha256": "bfd40e94e60596a3e1b6028a75dfb2df90e4bd95b5cad9f78cfbca9a3665d2b4",
+      "currentSha256": "bfd40e94e60596a3e1b6028a75dfb2df90e4bd95b5cad9f78cfbca9a3665d2b4",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-016.js",
+      "target": "src/js/renderer-016.js",
+      "sha256": "613bace7550bcc61611a54e751772f4fa7b2e01e4f8406f317aad5f824ea4561",
+      "currentSha256": "613bace7550bcc61611a54e751772f4fa7b2e01e4f8406f317aad5f824ea4561",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-007.js",
+      "target": "src/js/renderer-007.js",
+      "sha256": "23ba1169cd804a742a06c8ebbcade158ac968f54682ad2948dc56440f9a3a9c3",
+      "currentSha256": "23ba1169cd804a742a06c8ebbcade158ac968f54682ad2948dc56440f9a3a9c3",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-033.js",
+      "target": "src/js/renderer-033.js",
+      "sha256": "acf9cf7c66f35569d18a41ea1d7410a80766cd93dd5151d5266e2f1569345264",
+      "currentSha256": "acf9cf7c66f35569d18a41ea1d7410a80766cd93dd5151d5266e2f1569345264",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-023.js",
+      "target": "src/js/renderer-023.js",
+      "sha256": "604d0aa9c0398c28a1b7c1b7d82a4e69ddd80bd90f38a07398686ee19623c778",
+      "currentSha256": "604d0aa9c0398c28a1b7c1b7d82a4e69ddd80bd90f38a07398686ee19623c778",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-017.js",
+      "target": "src/js/renderer-017.js",
+      "sha256": "d889b75b3d4fedc4e343841e97d33941680af81e8d197d4f7b98dc1b8f55f25c",
+      "currentSha256": "d889b75b3d4fedc4e343841e97d33941680af81e8d197d4f7b98dc1b8f55f25c",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-037.js",
+      "target": "src/js/renderer-037.js",
+      "sha256": "37b536d856a224ab5b24d0c6c2068493443004351eceb1a31b093aa6c72e6575",
+      "currentSha256": "37b536d856a224ab5b24d0c6c2068493443004351eceb1a31b093aa6c72e6575",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-003.js",
+      "target": "src/js/renderer-003.js",
+      "sha256": "23ab9a8531870d243ad86d0b11bfdbbff1c4c6e34382155045c5baa8e5381a2f",
+      "currentSha256": "23ab9a8531870d243ad86d0b11bfdbbff1c4c6e34382155045c5baa8e5381a2f",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-013.js",
+      "target": "src/js/renderer-013.js",
+      "sha256": "8f11b0a2a33e80cefb484c46d9b70118a3242772008b8811a644a1119d9f63c5",
+      "currentSha256": "8f11b0a2a33e80cefb484c46d9b70118a3242772008b8811a644a1119d9f63c5",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-027.js",
+      "target": "src/js/renderer-027.js",
+      "sha256": "856e4d77d8cbb7a12a450c5d689b9d2796bef42269d7a1b3db8f75bed5572387",
+      "currentSha256": "856e4d77d8cbb7a12a450c5d689b9d2796bef42269d7a1b3db8f75bed5572387",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-008.js",
+      "target": "src/js/renderer-008.js",
+      "sha256": "549480e0149643d895aee7a7ff4fe5e2ae648db40cc4102a4488e696ec6bd036",
+      "currentSha256": "549480e0149643d895aee7a7ff4fe5e2ae648db40cc4102a4488e696ec6bd036",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-018.js",
+      "target": "src/js/renderer-018.js",
+      "sha256": "4d7473d8e421923376272e0570d737befac404c0289cbed34058359977d37e56",
+      "currentSha256": "4d7473d8e421923376272e0570d737befac404c0289cbed34058359977d37e56",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-038.js",
+      "target": "src/js/renderer-038.js",
+      "sha256": "e2cbee84bb504b3d7ac83085113c910f22c8b623f1b4d1ad530ef12b112bcbc5",
+      "currentSha256": "e2cbee84bb504b3d7ac83085113c910f22c8b623f1b4d1ad530ef12b112bcbc5",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-028.js",
+      "target": "src/js/renderer-028.js",
+      "sha256": "fe5ad49e31d459b29221da277edc11ae6efe3a928bdb8deeec41bac4e3e1975c",
+      "currentSha256": "fe5ad49e31d459b29221da277edc11ae6efe3a928bdb8deeec41bac4e3e1975c",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-039.js",
+      "target": "src/js/renderer-039.js",
+      "sha256": "b3b864a525cc29bcdec2592c4d504a2ba03f7194ade5aa1d87fbc09db9923e73",
+      "currentSha256": "b3b864a525cc29bcdec2592c4d504a2ba03f7194ade5aa1d87fbc09db9923e73",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-029.js",
+      "target": "src/js/renderer-029.js",
+      "sha256": "3fc8fe5f66ba6d473409950ec1dee37d13a632a30a6ebbaa0b0d8531c62cf1fd",
+      "currentSha256": "3fc8fe5f66ba6d473409950ec1dee37d13a632a30a6ebbaa0b0d8531c62cf1fd",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-009.js",
+      "target": "src/js/renderer-009.js",
+      "sha256": "d73a957c7ecbccb772683965aef0bf94e6aa6accff146e8b61265b5946c8bebc",
+      "currentSha256": "d73a957c7ecbccb772683965aef0bf94e6aa6accff146e8b61265b5946c8bebc",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-019.js",
+      "target": "src/js/renderer-019.js",
+      "sha256": "b23a0e27230df47455c9d7c06ee6fe038518fb8969ef7f0bb7268c3bea379d64",
+      "currentSha256": "b23a0e27230df47455c9d7c06ee6fe038518fb8969ef7f0bb7268c3bea379d64",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-004.js",
+      "target": "src/js/renderer-004.js",
+      "sha256": "72fdf7a03c235c8b7ff49303491ee7724e1929874dc9812556c151403b677f93",
+      "currentSha256": "72fdf7a03c235c8b7ff49303491ee7724e1929874dc9812556c151403b677f93",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-030.js",
+      "target": "src/js/renderer-030.js",
+      "sha256": "dadef108cb47b7863ac957df4fadb8259e3ff3c115e7b93fd185eecdac2f67c9",
+      "currentSha256": "dadef108cb47b7863ac957df4fadb8259e3ff3c115e7b93fd185eecdac2f67c9",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-020.js",
+      "target": "src/js/renderer-020.js",
+      "sha256": "3de3c78fd67a92341b84f3ec2a7e3c9dd54725d7bc49a28f3fdcb78b1bf7eda9",
+      "currentSha256": "3de3c78fd67a92341b84f3ec2a7e3c9dd54725d7bc49a28f3fdcb78b1bf7eda9",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-014.js",
+      "target": "src/js/renderer-014.js",
+      "sha256": "224a1740f7743853e1b9da08e3d86cac9025148f5ee2275aabb6203d09fd3a3e",
+      "currentSha256": "224a1740f7743853e1b9da08e3d86cac9025148f5ee2275aabb6203d09fd3a3e",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-034.js",
+      "target": "src/js/renderer-034.js",
+      "sha256": "62cfd47c00d549f229121f28ec19bd37b84dec8bd1d41409f3a5b1f1792af198",
+      "currentSha256": "62cfd47c00d549f229121f28ec19bd37b84dec8bd1d41409f3a5b1f1792af198",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-010.js",
+      "target": "src/js/renderer-010.js",
+      "sha256": "416da98a534b9c804e57b4463e1f5571529c244eb7ba3ef0be7352abb9ab54ed",
+      "currentSha256": "416da98a534b9c804e57b4463e1f5571529c244eb7ba3ef0be7352abb9ab54ed",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-041.js",
+      "target": "src/js/renderer-041.js",
+      "sha256": "329825b7dc4f56ba31d641c1988c4bc4e196ffade2f0fab66499a5fb3aa23b01",
+      "currentSha256": "329825b7dc4f56ba31d641c1988c4bc4e196ffade2f0fab66499a5fb3aa23b01",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-024.js",
+      "target": "src/js/renderer-024.js",
+      "sha256": "0207b29ff797c8f4c704a9e3188ec8d7ec29a53d3077f8e344b30970a2fb6218",
+      "currentSha256": "0207b29ff797c8f4c704a9e3188ec8d7ec29a53d3077f8e344b30970a2fb6218",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-035.js",
+      "target": "src/js/renderer-035.js",
+      "sha256": "c3c5aa79ae24087db64f8ab5c6aeaec9fdf4952a0b48d5bf58050505dd193981",
+      "currentSha256": "c3c5aa79ae24087db64f8ab5c6aeaec9fdf4952a0b48d5bf58050505dd193981",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-001.js",
+      "target": "src/js/renderer-001.js",
+      "sha256": "8e7796cf8cfa96884d7642b9e79ef4f2da36aef781d38554df578672be716d30",
+      "currentSha256": "8e7796cf8cfa96884d7642b9e79ef4f2da36aef781d38554df578672be716d30",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-011.js",
+      "target": "src/js/renderer-011.js",
+      "sha256": "07793437761a5ff571330afd3a889ccf17b77dea946a6b4f6a3dea605dbafae6",
+      "currentSha256": "07793437761a5ff571330afd3a889ccf17b77dea946a6b4f6a3dea605dbafae6",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-040.js",
+      "target": "src/js/renderer-040.js",
+      "sha256": "66275a04452a12cb459482cdc9fd2fcc92a10204ff57b5d3415745da70659676",
+      "currentSha256": "66275a04452a12cb459482cdc9fd2fcc92a10204ff57b5d3415745da70659676",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-025.js",
+      "target": "src/js/renderer-025.js",
+      "sha256": "106c82f01b8b655040772337410f787489d9402d486d3c86fe46457e55464b34",
+      "currentSha256": "106c82f01b8b655040772337410f787489d9402d486d3c86fe46457e55464b34",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-005.js",
+      "target": "src/js/renderer-005.js",
+      "sha256": "37bb5177e8b9087f7b9e884331361223a1f1daa306728294fc8e4af9a41ae307",
+      "currentSha256": "37bb5177e8b9087f7b9e884331361223a1f1daa306728294fc8e4af9a41ae307",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-031.js",
+      "target": "src/js/renderer-031.js",
+      "sha256": "53ef55313d226c54b60f30e967a30197fd8c8855d59db176b2ef793b4cd32a78",
+      "currentSha256": "53ef55313d226c54b60f30e967a30197fd8c8855d59db176b2ef793b4cd32a78",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-021.js",
+      "target": "src/js/renderer-021.js",
+      "sha256": "70f24e572125e9f69c6343ad88013a71fc605eaf864a92ee44e000d09b90d5ad",
+      "currentSha256": "70f24e572125e9f69c6343ad88013a71fc605eaf864a92ee44e000d09b90d5ad",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/js/renderer-015.js",
+      "target": "src/js/renderer-015.js",
+      "sha256": "9444d01bbb701b9071d29a1c8f5f4f8a2c83c64735170671c191d8f4ecc6a525",
+      "currentSha256": "9444d01bbb701b9071d29a1c8f5f4f8a2c83c64735170671c191d8f4ecc6a525",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/css/styles.css",
+      "target": "src/css/styles.css",
+      "sha256": "e3b9f38058e019127d42e4bce2ce5aa98e37ac6876c2b5553b5da7af0a994d99",
+      "currentSha256": "e3b9f38058e019127d42e4bce2ce5aa98e37ac6876c2b5553b5da7af0a994d99",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/local/canvas-model-adapter.js",
+      "target": "public/local/canvas-model-adapter.js",
+      "sha256": "4c20d7d1fe8fd639a95de9501d59751774f5d6aa98299b70807c73f3bbe3f3ae",
+      "currentSha256": "be31b5d3db2e88366c35f360b9e300a51c7551c4040e007aad415f1410910ca1",
+      "modifiedForHost": true
+    },
+    {
+      "source": "renderer-src/local/world.js",
+      "target": "public/local/world.js",
+      "sha256": "c52ed6c0738673e8f0d5a6084db8cbee26f1c5181292ec9f205b22ab5f952151",
+      "currentSha256": "c52ed6c0738673e8f0d5a6084db8cbee26f1c5181292ec9f205b22ab5f952151",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/local/production.js",
+      "target": "public/local/production.js",
+      "sha256": "811c2b034d42ebd069b59ce42cc35ca82598dcff9616819aaf18c11d0ba3ece3",
+      "currentSha256": "811c2b034d42ebd069b59ce42cc35ca82598dcff9616819aaf18c11d0ba3ece3",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/local/workspace.css",
+      "target": "public/local/workspace.css",
+      "sha256": "6158bb5db20459e594b21a2905ee14e58d6b2ad8954fdccefba3793616fcef0a",
+      "currentSha256": "6158bb5db20459e594b21a2905ee14e58d6b2ad8954fdccefba3793616fcef0a",
+      "modifiedForHost": false
+    },
+    {
+      "source": "renderer-src/local/production-center.css",
+      "target": "public/local/production-center.css",
+      "sha256": "4de4c6398e0cc693897ac6d5ab2a87a0a57b7923e88855bde97e300078ea74e3",
+      "currentSha256": "4de4c6398e0cc693897ac6d5ab2a87a0a57b7923e88855bde97e300078ea74e3",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/HKscs-B5-H-CXbBbq6g.bcmap",
+      "target": "public/assets/HKscs-B5-H-CXbBbq6g.bcmap",
+      "sha256": "08599378f41d96b40537adef6e6edcc4a787bc63f5accf47c026df4905a13914",
+      "currentSha256": "08599378f41d96b40537adef6e6edcc4a787bc63f5accf47c026df4905a13914",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/jimeng-color-CtBciSlW.webp",
+      "target": "public/assets/jimeng-color-CtBciSlW.webp",
+      "sha256": "e78702bfb200c8109ef60313ea50b2a8273c7e9265f5e4241e6a7907663f7f63",
+      "currentSha256": "e78702bfb200c8109ef60313ea50b2a8273c7e9265f5e4241e6a7907663f7f63",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/UniJIS-UTF16-H-BlDDPdCK.bcmap",
+      "target": "public/assets/UniJIS-UTF16-H-BlDDPdCK.bcmap",
+      "sha256": "f6a89c5688978548c83fcee990e205bc63c74274d5c69b49032a3bd4c49a05ee",
+      "currentSha256": "f6a89c5688978548c83fcee990e205bc63c74274d5c69b49032a3bd4c49a05ee",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/Adobe-Japan1-UCS2-BL-4M2vS.bcmap",
+      "target": "public/assets/Adobe-Japan1-UCS2-BL-4M2vS.bcmap",
+      "sha256": "66c5d0dc4964f4093e77b194023f3a0f689324028ec8330e1e1d0570bcba7c2f",
+      "currentSha256": "66c5d0dc4964f4093e77b194023f3a0f689324028ec8330e1e1d0570bcba7c2f",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/gemini-color-BRjDr-0b.webp",
+      "target": "public/assets/gemini-color-BRjDr-0b.webp",
+      "sha256": "64e92fd1aae85ed6c80e70ce54ceb931276c1e0112299a40d340e88ae12c3554",
+      "currentSha256": "64e92fd1aae85ed6c80e70ce54ceb931276c1e0112299a40d340e88ae12c3554",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/UniKS-UTF8-H-CbpebD-y.bcmap",
+      "target": "public/assets/UniKS-UTF8-H-CbpebD-y.bcmap",
+      "sha256": "3fac9c65145f72d7d42157a3b9c5ed6904632184e6a0888f2b828699afd2002f",
+      "currentSha256": "3fac9c65145f72d7d42157a3b9c5ed6904632184e6a0888f2b828699afd2002f",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/moonshot-Cy56VaSZ.webp",
+      "target": "public/assets/moonshot-Cy56VaSZ.webp",
+      "sha256": "7403676270e077f15c3ea3d17a16fedf3ada5b6abd007d2037c2bdbd62a04ff5",
+      "currentSha256": "7403676270e077f15c3ea3d17a16fedf3ada5b6abd007d2037c2bdbd62a04ff5",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/metaso-BgxKxPej.jpg",
+      "target": "public/assets/metaso-BgxKxPej.jpg",
+      "sha256": "83712fbc27a397502e4c4094699e48c809c14db7f4f8e45d37066118fac90c59",
+      "currentSha256": "83712fbc27a397502e4c4094699e48c809c14db7f4f8e45d37066118fac90c59",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/FoxitSerifItalic-CQs5lx9Y.pfb",
+      "target": "public/assets/FoxitSerifItalic-CQs5lx9Y.pfb",
+      "sha256": "610ae0687198045c4db5d1a6650fd5e92536631706382eb8b72e38df578d0ae9",
+      "currentSha256": "610ae0687198045c4db5d1a6650fd5e92536631706382eb8b72e38df578d0ae9",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/brand-logo-dark-BLKnMPm0.png",
+      "target": "public/assets/brand-logo-dark-BLKnMPm0.png",
+      "sha256": "a7ebefaceecbfc3f3353cbd5c1244654a44d2f7031f715e0b02a19804cb594a7",
+      "currentSha256": "a7ebefaceecbfc3f3353cbd5c1244654a44d2f7031f715e0b02a19804cb594a7",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/UniKS-UTF16-H-B0dvB-Td.bcmap",
+      "target": "public/assets/UniKS-UTF16-H-B0dvB-Td.bcmap",
+      "sha256": "42d35b396286499dfae1737a07adb3a64500df37b426580bfb1d3ea872938519",
+      "currentSha256": "42d35b396286499dfae1737a07adb3a64500df37b426580bfb1d3ea872938519",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/tokenflux-CvotEeez.png",
+      "target": "public/assets/tokenflux-CvotEeez.png",
+      "sha256": "257d01b9a9ca3a244aa1b369492eae1898f77d9f95e1df90726b23c78d1f3bc5",
+      "currentSha256": "257d01b9a9ca3a244aa1b369492eae1898f77d9f95e1df90726b23c78d1f3bc5",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/deepseek-color-XniBTJPh.webp",
+      "target": "public/assets/deepseek-color-XniBTJPh.webp",
+      "sha256": "d45637971092c5f9ddf11c717dc0516f9057df3038264281f819e64fe720c207",
+      "currentSha256": "d45637971092c5f9ddf11c717dc0516f9057df3038264281f819e64fe720c207",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/zhipu-CFgqzqwQ.png",
+      "target": "public/assets/zhipu-CFgqzqwQ.png",
+      "sha256": "17665d2fcf51cb9323baf97d89d0ccc85160d8ba3aab99e2fcdafc248996c6c9",
+      "currentSha256": "17665d2fcf51cb9323baf97d89d0ccc85160d8ba3aab99e2fcdafc248996c6c9",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/openai--2_yMGcs.png",
+      "target": "public/assets/openai--2_yMGcs.png",
+      "sha256": "9bf729cf67e057e764af4536d21912c686654e9c9f314cdf3145c0d954bac418",
+      "currentSha256": "9bf729cf67e057e764af4536d21912c686654e9c9f314cdf3145c0d954bac418",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/suno baise--dMPbHiP.webp",
+      "target": "public/assets/suno baise--dMPbHiP.webp",
+      "sha256": "c28f0f78f4ab2668d74804eefc6a3e5fd433617fa1be0f07d2cd5b922d596043",
+      "currentSha256": "c28f0f78f4ab2668d74804eefc6a3e5fd433617fa1be0f07d2cd5b922d596043",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/vidu-color-DfcYl6hz.webp",
+      "target": "public/assets/vidu-color-DfcYl6hz.webp",
+      "sha256": "e7a65677e978e8781407d510fc60e6008f4eb4247b15596419482b4c05fb7fc6",
+      "currentSha256": "e7a65677e978e8781407d510fc60e6008f4eb4247b15596419482b4c05fb7fc6",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/lmstudio-BKXYpFdb.png",
+      "target": "public/assets/lmstudio-BKXYpFdb.png",
+      "sha256": "d0ba79e028921a272a9f9e8a42ecfae9ca402442ae1fb382a89291f664da607c",
+      "currentSha256": "d0ba79e028921a272a9f9e8a42ecfae9ca402442ae1fb382a89291f664da607c",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/grsai-Djvu-ay6.png",
+      "target": "public/assets/grsai-Djvu-ay6.png",
+      "sha256": "42ae7ec84eed3548b2e37f633a74d4c8907c67683eac31362edea5c7891e6237",
+      "currentSha256": "42ae7ec84eed3548b2e37f633a74d4c8907c67683eac31362edea5c7891e6237",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/perplexity-BwIm93Ua.png",
+      "target": "public/assets/perplexity-BwIm93Ua.png",
+      "sha256": "b029cebd29ad8b700a14d8a8fd4a08b4901a46812dffba748b18a772f3fc5eaa",
+      "currentSha256": "b029cebd29ad8b700a14d8a8fd4a08b4901a46812dffba748b18a772f3fc5eaa",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/jimeng-transparent-CUj8SDSO.png",
+      "target": "public/assets/jimeng-transparent-CUj8SDSO.png",
+      "sha256": "334182b8074ac424452933b13b1a0aa4d430787dc76990d2ea218806fc8cfb35",
+      "currentSha256": "334182b8074ac424452933b13b1a0aa4d430787dc76990d2ea218806fc8cfb35",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/cursor-editorTextHighlight-kG3uUOwL.svg",
+      "target": "public/assets/cursor-editorTextHighlight-kG3uUOwL.svg",
+      "sha256": "c6252b0edcb68dac87557a027180fcbdbd93466841aa34792530f7cce54cec5d",
+      "currentSha256": "c6252b0edcb68dac87557a027180fcbdbd93466841aa34792530f7cce54cec5d",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/openrouter-CT0jBAsT.png",
+      "target": "public/assets/openrouter-CT0jBAsT.png",
+      "sha256": "6a1013ba2be58435cebbb9522c84da46ee8e7fab5253d2c329f32670ac813c40",
+      "currentSha256": "6a1013ba2be58435cebbb9522c84da46ee8e7fab5253d2c329f32670ac813c40",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/FoxitSerifBoldItalic-DSQtwd_X.pfb",
+      "target": "public/assets/FoxitSerifBoldItalic-DSQtwd_X.pfb",
+      "sha256": "a406cac82583bf98175cb62c87ed5e95c45fbb34eece63a10b0a13e793cb2e10",
+      "currentSha256": "a406cac82583bf98175cb62c87ed5e95c45fbb34eece63a10b0a13e793cb2e10",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/LiberationSans-Bold-BPt4bU5Z.ttf",
+      "target": "public/assets/LiberationSans-Bold-BPt4bU5Z.ttf",
+      "sha256": "361c61b82d575c5c35fd9157fda8b0194bcfcd0d88ea8521a4fb5dd53d33dddc",
+      "currentSha256": "361c61b82d575c5c35fd9157fda8b0194bcfcd0d88ea8521a4fb5dd53d33dddc",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/openai-transparent-p3my7i1K.png",
+      "target": "public/assets/openai-transparent-p3my7i1K.png",
+      "sha256": "8a33312f6bb17c1edddf8f9d7fbac09ce1d1d697d6601f37227afa879e94c52e",
+      "currentSha256": "8a33312f6bb17c1edddf8f9d7fbac09ce1d1d697d6601f37227afa879e94c52e",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/grok-DEnnqgaa.webp",
+      "target": "public/assets/grok-DEnnqgaa.webp",
+      "sha256": "e7d18cf305179f3d6caa648e855cc2b52eee56c54518724b79253167b5bcf353",
+      "currentSha256": "e7d18cf305179f3d6caa648e855cc2b52eee56c54518724b79253167b5bcf353",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/UniGB-UTF8-H-EROft1ro.bcmap",
+      "target": "public/assets/UniGB-UTF8-H-EROft1ro.bcmap",
+      "sha256": "f217b439c80ee5fa1bc2cf6d1defcc319f8d84483d166a00ee199e05a68588df",
+      "currentSha256": "f217b439c80ee5fa1bc2cf6d1defcc319f8d84483d166a00ee199e05a68588df",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/perplexity-transparent-m7RO8dUh.png",
+      "target": "public/assets/perplexity-transparent-m7RO8dUh.png",
+      "sha256": "db356520e20e84af5e899023f880193f8d57c6204ea5af1bada1870f132beee4",
+      "currentSha256": "db356520e20e84af5e899023f880193f8d57c6204ea5af1bada1870f132beee4",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/window-icon-BjcL9h3W.png",
+      "target": "public/assets/window-icon-BjcL9h3W.png",
+      "sha256": "a7ebefaceecbfc3f3353cbd5c1244654a44d2f7031f715e0b02a19804cb594a7",
+      "currentSha256": "a7ebefaceecbfc3f3353cbd5c1244654a44d2f7031f715e0b02a19804cb594a7",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/meta-CtU2Cz1W.svg",
+      "target": "public/assets/meta-CtU2Cz1W.svg",
+      "sha256": "32cc3a6d0a96ce9055092c5ebe02fef18a77a8dd91b4890e6f69df40376d0221",
+      "currentSha256": "32cc3a6d0a96ce9055092c5ebe02fef18a77a8dd91b4890e6f69df40376d0221",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/suno-Xv1k_XXC.webp",
+      "target": "public/assets/suno-Xv1k_XXC.webp",
+      "sha256": "e697146410a742c7d192828a4b4218f2267c5cdf092e720c965fba67bae657d2",
+      "currentSha256": "e697146410a742c7d192828a4b4218f2267c5cdf092e720c965fba67bae657d2",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/UniKS-UTF32-H-olR_LtmR.bcmap",
+      "target": "public/assets/UniKS-UTF32-H-olR_LtmR.bcmap",
+      "sha256": "3a01ec51ed1b828101351e337ffb8250abe11880032e5210f881170fed2588de",
+      "currentSha256": "3a01ec51ed1b828101351e337ffb8250abe11880032e5210f881170fed2588de",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/UniGB-UCS2-H-D7xzRvZN.bcmap",
+      "target": "public/assets/UniGB-UCS2-H-D7xzRvZN.bcmap",
+      "sha256": "9201569b402e81ad8860650bd86350c4fa28e5dd5971f05fcacaf40f51de18ed",
+      "currentSha256": "9201569b402e81ad8860650bd86350c4fa28e5dd5971f05fcacaf40f51de18ed",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/cerebras-CMYn4Ibf.webp",
+      "target": "public/assets/cerebras-CMYn4Ibf.webp",
+      "sha256": "bba7b3ef07f7d30a91afc438b9028a141baa4874e6ea0231462409a422fa6377",
+      "currentSha256": "bba7b3ef07f7d30a91afc438b9028a141baa4874e6ea0231462409a422fa6377",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/LiberationSans-BoldItalic-Bj53-jFw.ttf",
+      "target": "public/assets/LiberationSans-BoldItalic-Bj53-jFw.ttf",
+      "sha256": "a224075ac17495ad0a3af3bc0a419ac0704a8b3fd1095456201fb9b095fc281d",
+      "currentSha256": "a224075ac17495ad0a3af3bc0a419ac0704a8b3fd1095456201fb9b095fc281d",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/new-api-transparent-DWcrp7T6.png",
+      "target": "public/assets/new-api-transparent-DWcrp7T6.png",
+      "sha256": "85038077108a16a0acc260a3b165c72e4d38bc9d78c7e561aabb12a9bad089cf",
+      "currentSha256": "85038077108a16a0acc260a3b165c72e4d38bc9d78c7e561aabb12a9bad089cf",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/Adobe-CNS1-UCS2-fO900upv.bcmap",
+      "target": "public/assets/Adobe-CNS1-UCS2-fO900upv.bcmap",
+      "sha256": "e665837f2197c6bd08cd8955ad4d6932cee2398e2e328b25b00e6bfb3bd72af9",
+      "currentSha256": "e665837f2197c6bd08cd8955ad4d6932cee2398e2e328b25b00e6bfb3bd72af9",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/zhipu-transparent-BsvR28Ex.png",
+      "target": "public/assets/zhipu-transparent-BsvR28Ex.png",
+      "sha256": "7ef77db97d9d37669918847ea7faa49ac14b4fb188290d1f4edda5317037ba8c",
+      "currentSha256": "7ef77db97d9d37669918847ea7faa49ac14b4fb188290d1f4edda5317037ba8c",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/doubao-color-BfZ9o9VO.webp",
+      "target": "public/assets/doubao-color-BfZ9o9VO.webp",
+      "sha256": "03fe341594865b55fe7ae0f41aa8a70260d09c563481d8db94e3646a6b0760ba",
+      "currentSha256": "03fe341594865b55fe7ae0f41aa8a70260d09c563481d8db94e3646a6b0760ba",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/stepfun-transparent-BWJJI5Ho.png",
+      "target": "public/assets/stepfun-transparent-BWJJI5Ho.png",
+      "sha256": "4fabb84a7bb27454379f8f17d08983451afe578fde125fecfba1691878c1e748",
+      "currentSha256": "4fabb84a7bb27454379f8f17d08983451afe578fde125fecfba1691878c1e748",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/UniCNS-UTF32-H-IE_GrH2i.bcmap",
+      "target": "public/assets/UniCNS-UTF32-H-IE_GrH2i.bcmap",
+      "sha256": "bf26eb67fe19ee5ba915799e80ca72408400aa8342fdf6a244a4f44de8f97336",
+      "currentSha256": "bf26eb67fe19ee5ba915799e80ca72408400aa8342fdf6a244a4f44de8f97336",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/moonshot-DRX5773U.webp",
+      "target": "public/assets/moonshot-DRX5773U.webp",
+      "sha256": "05e6224597e98a83e80eba369bff153198b04d447b4cf31c3637ca6536f2994e",
+      "currentSha256": "05e6224597e98a83e80eba369bff153198b04d447b4cf31c3637ca6536f2994e",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/Adobe-Korea1-UCS2-BEQZuOdo.bcmap",
+      "target": "public/assets/Adobe-Korea1-UCS2-BEQZuOdo.bcmap",
+      "sha256": "857b723088be97255053562bfa41bd1075a7f7910d3bab59a0645c8bbc7060ff",
+      "currentSha256": "857b723088be97255053562bfa41bd1075a7f7910d3bab59a0645c8bbc7060ff",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/together-0h26j0S1.png",
+      "target": "public/assets/together-0h26j0S1.png",
+      "sha256": "15927673ac140d8bdcb6535d0bf899dbc304999dab08a894bcb4048a50fa9f1b",
+      "currentSha256": "15927673ac140d8bdcb6535d0bf899dbc304999dab08a894bcb4048a50fa9f1b",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/tencent-cloud-ti-transparent-yv0-5aMF.png",
+      "target": "public/assets/tencent-cloud-ti-transparent-yv0-5aMF.png",
+      "sha256": "3abcd712adfc7436c0564819aea62055a2c1ecc9be60f90c52f0d44d894f865c",
+      "currentSha256": "3abcd712adfc7436c0564819aea62055a2c1ecc9be60f90c52f0d44d894f865c",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/groq-transparent-DvCWuOtk.png",
+      "target": "public/assets/groq-transparent-DvCWuOtk.png",
+      "sha256": "bb018de642bd10aa7b7a64d90fb76b26da2b264627aa1278f9306c034f98c898",
+      "currentSha256": "bb018de642bd10aa7b7a64d90fb76b26da2b264627aa1278f9306c034f98c898",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/UniJIS2004-UTF32-H-CXrD-9YE.bcmap",
+      "target": "public/assets/UniJIS2004-UTF32-H-CXrD-9YE.bcmap",
+      "sha256": "8d2658e18741af7937d586a57c89729a6fec0d86121197c1f8518aa58b29cdfb",
+      "currentSha256": "8d2658e18741af7937d586a57c89729a6fec0d86121197c1f8518aa58b29cdfb",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/midjourney bai-4Fw3hs7F.webp",
+      "target": "public/assets/midjourney bai-4Fw3hs7F.webp",
+      "sha256": "c4485fb4e9f22557ad462fdb35a294d2b30f0f1471942e9338b8d08e3f46666e",
+      "currentSha256": "c4485fb4e9f22557ad462fdb35a294d2b30f0f1471942e9338b8d08e3f46666e",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/GBK2K-H-Cv55KPk8.bcmap",
+      "target": "public/assets/GBK2K-H-Cv55KPk8.bcmap",
+      "sha256": "3d919ae72af16c5cc6846ec87a4326a9f125e493c59d3628429d35c2c95fe8c4",
+      "currentSha256": "3d919ae72af16c5cc6846ec87a4326a9f125e493c59d3628429d35c2c95fe8c4",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/ort-wasm-simd-threaded.jsep-D5Jk56-t.wasm",
+      "target": "public/assets/ort-wasm-simd-threaded.jsep-D5Jk56-t.wasm",
+      "sha256": "0663b902fb3937883a34375926bdfe3e1c86cd4c99cbc04c06a7cdf46c78bdde",
+      "currentSha256": "0663b902fb3937883a34375926bdfe3e1c86cd4c99cbc04c06a7cdf46c78bdde",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/longcat-transparent-DeEtHOnl.png",
+      "target": "public/assets/longcat-transparent-DeEtHOnl.png",
+      "sha256": "b506f1eb31045e4351870a0fc899c600b5f660218803e703216f73087db5bca6",
+      "currentSha256": "b506f1eb31045e4351870a0fc899c600b5f660218803e703216f73087db5bca6",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/xai-transparent-C3BNIzoZ.png",
+      "target": "public/assets/xai-transparent-C3BNIzoZ.png",
+      "sha256": "402a3e4a6f8fc8b07cd22a24c11d94631cfcdbd02399787f8f1916a06cab47e6",
+      "currentSha256": "402a3e4a6f8fc8b07cd22a24c11d94631cfcdbd02399787f8f1916a06cab47e6",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/UniCNS-UTF8-H-BbLcFh6Q.bcmap",
+      "target": "public/assets/UniCNS-UTF8-H-BbLcFh6Q.bcmap",
+      "sha256": "2f2a742bcd1a84a148a4a518b9eed51a8f9c6ca5ed3bc5e2e41fff97de5dc2d8",
+      "currentSha256": "2f2a742bcd1a84a148a4a518b9eed51a8f9c6ca5ed3bc5e2e41fff97de5dc2d8",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/cerebras-transparent-B8iFxrHo.png",
+      "target": "public/assets/cerebras-transparent-B8iFxrHo.png",
+      "sha256": "542697161c2c7126f23f5897235a9948a8bf395f76706b1864cc84273f9a3273",
+      "currentSha256": "542697161c2c7126f23f5897235a9948a8bf395f76706b1864cc84273f9a3273",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/github-C6DM68zD.png",
+      "target": "public/assets/github-C6DM68zD.png",
+      "sha256": "6a328796c3295d1b4afe62cdfa4f7e81b63244a10c929b4db511a0659757f6a7",
+      "currentSha256": "6a328796c3295d1b4afe62cdfa4f7e81b63244a10c929b4db511a0659757f6a7",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/hyperbolic-DbK1JYGQ.png",
+      "target": "public/assets/hyperbolic-DbK1JYGQ.png",
+      "sha256": "35ed5bad651c8f692e952ebb12b5e82b2a16f757fc34fbdf312f51cde539d783",
+      "currentSha256": "35ed5bad651c8f692e952ebb12b5e82b2a16f757fc34fbdf312f51cde539d783",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/aihubmix-transparent-HoPVv22b.png",
+      "target": "public/assets/aihubmix-transparent-HoPVv22b.png",
+      "sha256": "01460e767d8803dcc7c1e919cfcb7260f2820bb6a3f087abba1d7bb061459b0c",
+      "currentSha256": "01460e767d8803dcc7c1e919cfcb7260f2820bb6a3f087abba1d7bb061459b0c",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/openrouter-transparent-D3I8mcaL.png",
+      "target": "public/assets/openrouter-transparent-D3I8mcaL.png",
+      "sha256": "8baea3b5b20c253dc52c7d2b98b3fb6616190d845d02a500d85304e3b87c3adc",
+      "currentSha256": "8baea3b5b20c253dc52c7d2b98b3fb6616190d845d02a500d85304e3b87c3adc",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/hunyuan-transparent-pJ0iDSb8.png",
+      "target": "public/assets/hunyuan-transparent-pJ0iDSb8.png",
+      "sha256": "c84ce6942f25359146c947f3bec36c593ea112caaddfed71b1a06c6c79033182",
+      "currentSha256": "c84ce6942f25359146c947f3bec36c593ea112caaddfed71b1a06c6c79033182",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/comfyui-CCz9u-7U.png",
+      "target": "public/assets/comfyui-CCz9u-7U.png",
+      "sha256": "1b83db9df247a64ecc5f68103eba1ac0d5053b76e185d5932be5bb97158d7cfb",
+      "currentSha256": "1b83db9df247a64ecc5f68103eba1ac0d5053b76e185d5932be5bb97158d7cfb",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/dashscope-B5l6zvuZ.png",
+      "target": "public/assets/dashscope-B5l6zvuZ.png",
+      "sha256": "231cd9ca6ad58113074467eb2a9f31504eea6284d39c93a0861bf53b26b9a3fe",
+      "currentSha256": "231cd9ca6ad58113074467eb2a9f31504eea6284d39c93a0861bf53b26b9a3fe",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/ppio-transparent-DtmgT7HZ.png",
+      "target": "public/assets/ppio-transparent-DtmgT7HZ.png",
+      "sha256": "7564aa41d297ac948b8f07b38e29b86b73ef3c575cfbed3c31ede5ae0d00373a",
+      "currentSha256": "7564aa41d297ac948b8f07b38e29b86b73ef3c575cfbed3c31ede5ae0d00373a",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/UniGB-UTF16-H-DKjbEwc0.bcmap",
+      "target": "public/assets/UniGB-UTF16-H-DKjbEwc0.bcmap",
+      "sha256": "386fd39581245c034da016a92d23f3df1117d169f996100050b264fc09a84e35",
+      "currentSha256": "386fd39581245c034da016a92d23f3df1117d169f996100050b264fc09a84e35",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/kling-color-O6Fl0YZh.webp",
+      "target": "public/assets/kling-color-O6Fl0YZh.webp",
+      "sha256": "2ac4a3bc6e6da68c734a3e4dd9c025fe04973cfbb7276e8763a9031139299726",
+      "currentSha256": "2ac4a3bc6e6da68c734a3e4dd9c025fe04973cfbb7276e8763a9031139299726",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/volcengine-ark-transparent-9kZWqf-q.png",
+      "target": "public/assets/volcengine-ark-transparent-9kZWqf-q.png",
+      "sha256": "78ec24c7cfb1c19b297f79c415f4ba469fa786cc8ccdaa52673180d6bb2ff05a",
+      "currentSha256": "78ec24c7cfb1c19b297f79c415f4ba469fa786cc8ccdaa52673180d6bb2ff05a",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/ph8-JO6U1vW7.png",
+      "target": "public/assets/ph8-JO6U1vW7.png",
+      "sha256": "af980bb78cf2e830018867c8dc6eb36324c331e667058ea7f6fe2e5dcb008584",
+      "currentSha256": "af980bb78cf2e830018867c8dc6eb36324c331e667058ea7f6fe2e5dcb008584",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/doubao-la_PI8m-.png",
+      "target": "public/assets/doubao-la_PI8m-.png",
+      "sha256": "f9789c3d449f2a0a5a2e8edcfb0c2b10b87781818c8a4a84c3bd9b0da6a59970",
+      "currentSha256": "f9789c3d449f2a0a5a2e8edcfb0c2b10b87781818c8a4a84c3bd9b0da6a59970",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/dualAlpha.worker-Bqzy6EuX.js",
+      "target": "public/assets/dualAlpha.worker-Bqzy6EuX.js",
+      "sha256": "3125fb63abb4dfeeb05a3b9cc755992a4973f81d3d9949843c8d74eeded82491",
+      "currentSha256": "3125fb63abb4dfeeb05a3b9cc755992a4973f81d3d9949843c8d74eeded82491",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/huggingface-C_i5qDcj.webp",
+      "target": "public/assets/huggingface-C_i5qDcj.webp",
+      "sha256": "288a7148a954de46d824f65e28afacd126ff8a387b341e65762d8cd79976a368",
+      "currentSha256": "288a7148a954de46d824f65e28afacd126ff8a387b341e65762d8cd79976a368",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/FoxitSymbol-BVtbc20u.pfb",
+      "target": "public/assets/FoxitSymbol-BVtbc20u.pfb",
+      "sha256": "47967d055530e7357088a08403115425643ec2cdfd6201ba8af0fbd7116c1539",
+      "currentSha256": "47967d055530e7357088a08403115425643ec2cdfd6201ba8af0fbd7116c1539",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/dmxapi-DEJq_RKL.png",
+      "target": "public/assets/dmxapi-DEJq_RKL.png",
+      "sha256": "0587ff44a83fad2f350b9cda2ffb55032659c6985b1bb0e33908e2b208ba752a",
+      "currentSha256": "0587ff44a83fad2f350b9cda2ffb55032659c6985b1bb0e33908e2b208ba752a",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/gemini-C4MGSIHw.png",
+      "target": "public/assets/gemini-C4MGSIHw.png",
+      "sha256": "cade1693f2f129f925319baeb93f62499bc36e8a2b8fa5f4a7069f4a8a99971c",
+      "currentSha256": "cade1693f2f129f925319baeb93f62499bc36e8a2b8fa5f4a7069f4a8a99971c",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/moonshot-transparent-8vfJ84GR.png",
+      "target": "public/assets/moonshot-transparent-8vfJ84GR.png",
+      "sha256": "d578871fe5b2c3bba76ce75d9ebe7e6b614961e0ec893574dbcbd796c7c67287",
+      "currentSha256": "d578871fe5b2c3bba76ce75d9ebe7e6b614961e0ec893574dbcbd796c7c67287",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/minimax-color-Dx2mFylD.webp",
+      "target": "public/assets/minimax-color-Dx2mFylD.webp",
+      "sha256": "eafa03393df0ec2e4ab09dd75dc0c4f6477030d2f0fa660cbaa6d87192163e25",
+      "currentSha256": "eafa03393df0ec2e4ab09dd75dc0c4f6477030d2f0fa660cbaa6d87192163e25",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/GBT-EUC-H-BTsQIL1M.bcmap",
+      "target": "public/assets/GBT-EUC-H-BTsQIL1M.bcmap",
+      "sha256": "dc5f44e48a39f3367ae28665027d8ab1d8cedb5a9dcc5068a900acd6709f60f9",
+      "currentSha256": "dc5f44e48a39f3367ae28665027d8ab1d8cedb5a9dcc5068a900acd6709f60f9",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/voyageai-UINPkc3N.png",
+      "target": "public/assets/voyageai-UINPkc3N.png",
+      "sha256": "2b225366eeb1754d4f74d0a56a6d8336862277ca3013c915042a750dfa041a0e",
+      "currentSha256": "2b225366eeb1754d4f74d0a56a6d8336862277ca3013c915042a750dfa041a0e",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/baidu-cloud-transparent-Wjv2HSn0.png",
+      "target": "public/assets/baidu-cloud-transparent-Wjv2HSn0.png",
+      "sha256": "fccefd0eea287f69eb6d26a1051ae748dfed975e31028cc1220de62f983381d0",
+      "currentSha256": "fccefd0eea287f69eb6d26a1051ae748dfed975e31028cc1220de62f983381d0",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/LiberationSans-Regular-cbskN6YR.ttf",
+      "target": "public/assets/LiberationSans-Regular-cbskN6YR.ttf",
+      "sha256": "f8ace1f892b2bd9dc1792ba7f097fa7588f84fed48321480e04de5390828221f",
+      "currentSha256": "f8ace1f892b2bd9dc1792ba7f097fa7588f84fed48321480e04de5390828221f",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/UniJIS-UCS2-H-2DbZ0MaQ.bcmap",
+      "target": "public/assets/UniJIS-UCS2-H-2DbZ0MaQ.bcmap",
+      "sha256": "ad2352f40870880fbf7f8ee5abadff743fbd025fbf9830b8ada472d1c5e4da0b",
+      "currentSha256": "ad2352f40870880fbf7f8ee5abadff743fbd025fbf9830b8ada472d1c5e4da0b",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/openai bai-C9wdsUvK.webp",
+      "target": "public/assets/openai bai-C9wdsUvK.webp",
+      "sha256": "e9ad319ea24bdde0474f8ccdd42d3ecc011b592aa03c948c9678fbceb1283494",
+      "currentSha256": "e9ad319ea24bdde0474f8ccdd42d3ecc011b592aa03c948c9678fbceb1283494",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/burncloud-transparent-BdgdRWc7.png",
+      "target": "public/assets/burncloud-transparent-BdgdRWc7.png",
+      "sha256": "975747456cd75747a03b18dbb430155c9025733aac4d332ef307d9c600fb64a8",
+      "currentSha256": "975747456cd75747a03b18dbb430155c9025733aac4d332ef307d9c600fb64a8",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/FoxitFixedBold-D5TuYRwj.pfb",
+      "target": "public/assets/FoxitFixedBold-D5TuYRwj.pfb",
+      "sha256": "f1b7159702973f54fc86254ea38bcf3712b2a736eb3a0995751e9f4bb45ad603",
+      "currentSha256": "f1b7159702973f54fc86254ea38bcf3712b2a736eb3a0995751e9f4bb45ad603",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/huggingface-transparent-D1yRfyT9.png",
+      "target": "public/assets/huggingface-transparent-D1yRfyT9.png",
+      "sha256": "862b5c465133aca86118908b5115ead4ae4150de770f8ebeb575be34bc9e8922",
+      "currentSha256": "862b5c465133aca86118908b5115ead4ae4150de770f8ebeb575be34bc9e8922",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/nvidia-oSS9qnh1.png",
+      "target": "public/assets/nvidia-oSS9qnh1.png",
+      "sha256": "d35cb0144f0a105356e1a140cb138aaca93d9c1624f509690e74c39ae5559c7b",
+      "currentSha256": "d35cb0144f0a105356e1a140cb138aaca93d9c1624f509690e74c39ae5559c7b",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/UniJIS2004-UTF8-H-BkOctZjn.bcmap",
+      "target": "public/assets/UniJIS2004-UTF8-H-BkOctZjn.bcmap",
+      "sha256": "691c614ce432b3e62486efb54e5c84c6da5afe9b51b21253bde4758feb484183",
+      "currentSha256": "691c614ce432b3e62486efb54e5c84c6da5afe9b51b21253bde4758feb484183",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/deepseek-BfIKgrKz.png",
+      "target": "public/assets/deepseek-BfIKgrKz.png",
+      "sha256": "ddf6a24bef50748b3becccbbe753b02095fdf86b709a91c0c6840f1879155a09",
+      "currentSha256": "ddf6a24bef50748b3becccbbe753b02095fdf86b709a91c0c6840f1879155a09",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/xirang-transparent-yKBVFxOc.png",
+      "target": "public/assets/xirang-transparent-yKBVFxOc.png",
+      "sha256": "04288234239c40a62f738aff3d5f474605c5f6d32256b06f81b1ca489ff1794d",
+      "currentSha256": "04288234239c40a62f738aff3d5f474605c5f6d32256b06f81b1ca489ff1794d",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/github-transparent-C6W0rgXx.png",
+      "target": "public/assets/github-transparent-C6W0rgXx.png",
+      "sha256": "d9c77a0f6d76c8209fc12485a16dee266addc96ab82d64c4a7aa1304af6035a9",
+      "currentSha256": "d9c77a0f6d76c8209fc12485a16dee266addc96ab82d64c4a7aa1304af6035a9",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/grok bai-CiCMAJ0q.webp",
+      "target": "public/assets/grok bai-CiCMAJ0q.webp",
+      "sha256": "79f877d10c0b74baa2329d84d666336ecedd5138d7f5deed86eac101a466aa1d",
+      "currentSha256": "79f877d10c0b74baa2329d84d666336ecedd5138d7f5deed86eac101a466aa1d",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/KSC-Johab-H-CGtV3MPT.bcmap",
+      "target": "public/assets/KSC-Johab-H-CGtV3MPT.bcmap",
+      "sha256": "939993d213f68db763bf156217c217ae23af082b91a0eacecf3d11eb4ff8ef8c",
+      "currentSha256": "939993d213f68db763bf156217c217ae23af082b91a0eacecf3d11eb4ff8ef8c",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/flux bai-CYYe7fkT.webp",
+      "target": "public/assets/flux bai-CYYe7fkT.webp",
+      "sha256": "a620261bdb0d39bcc2ab8b025d36c569c54507855759c622feb8f4e981bbaabc",
+      "currentSha256": "a620261bdb0d39bcc2ab8b025d36c569c54507855759c622feb8f4e981bbaabc",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/burncloud-Dv3aLUVa.png",
+      "target": "public/assets/burncloud-Dv3aLUVa.png",
+      "sha256": "0982b6fd60ea8e3f0e8f28bc1c2dd8ab6d2c7e2a18a714a034d33ad8a7ab3ea9",
+      "currentSha256": "0982b6fd60ea8e3f0e8f28bc1c2dd8ab6d2c7e2a18a714a034d33ad8a7ab3ea9",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/UniJIS-UTF8-H-CGusholx.bcmap",
+      "target": "public/assets/UniJIS-UTF8-H-CGusholx.bcmap",
+      "sha256": "798fb0bf06ab0788d1f6a91c2db7de581612eef03c628f10e8f7ecd8f70ab448",
+      "currentSha256": "798fb0bf06ab0788d1f6a91c2db7de581612eef03c628f10e8f7ecd8f70ab448",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/grok-transparent-BtWQ8AyA.png",
+      "target": "public/assets/grok-transparent-BtWQ8AyA.png",
+      "sha256": "f10ec0b2322f9d65a973d3d48fcdc41270d8b123a5d36e2826dabf9dcefb0762",
+      "currentSha256": "f10ec0b2322f9d65a973d3d48fcdc41270d8b123a5d36e2826dabf9dcefb0762",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/Adobe-GB1-UCS2-BA083yIo.bcmap",
+      "target": "public/assets/Adobe-GB1-UCS2-BA083yIo.bcmap",
+      "sha256": "20507620260c0c935c35afc1e70e5888aa7125d5ec7ffc03cef1959feb2c1641",
+      "currentSha256": "20507620260c0c935c35afc1e70e5888aa7125d5ec7ffc03cef1959feb2c1641",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/anthropic-hp89qtrg.png",
+      "target": "public/assets/anthropic-hp89qtrg.png",
+      "sha256": "52e8c246fcf6cfdfff8147d4ec54644e639bebf113472eb063371cea1313a334",
+      "currentSha256": "52e8c246fcf6cfdfff8147d4ec54644e639bebf113472eb063371cea1313a334",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/gemini-transparent-C3QVY56c.png",
+      "target": "public/assets/gemini-transparent-C3QVY56c.png",
+      "sha256": "77006e9ef5e66e09287040a00e7b03bd28153c41f47b452de646755ff5c62e9f",
+      "currentSha256": "77006e9ef5e66e09287040a00e7b03bd28153c41f47b452de646755ff5c62e9f",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/GBTpc-EUC-H-DnIh5WJ3.bcmap",
+      "target": "public/assets/GBTpc-EUC-H-DnIh5WJ3.bcmap",
+      "sha256": "7b23e2f7bfdb6c918f567b7324bf858f398bd8cd5f268d74ece19a3c91bf4f32",
+      "currentSha256": "7b23e2f7bfdb6c918f567b7324bf858f398bd8cd5f268d74ece19a3c91bf4f32",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/LiberationSans-Italic-5QhGB3P9.ttf",
+      "target": "public/assets/LiberationSans-Italic-5QhGB3P9.ttf",
+      "sha256": "832b4406dbef23628800d3aaad21048534ac84d7e3ad955be83b8172ed8ef512",
+      "currentSha256": "832b4406dbef23628800d3aaad21048534ac84d7e3ad955be83b8172ed8ef512",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/FoxitFixedBoldItalic-BqlXQ_Yv.pfb",
+      "target": "public/assets/FoxitFixedBoldItalic-BqlXQ_Yv.pfb",
+      "sha256": "8a000945843bd31add06aee63bf9fd41b7578b4f3242a4b7cd46349ad9d24d4d",
+      "currentSha256": "8a000945843bd31add06aee63bf9fd41b7578b4f3242a4b7cd46349ad9d24d4d",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/pdf.worker.min-BmVo14Nb.mjs",
+      "target": "public/assets/pdf.worker.min-BmVo14Nb.mjs",
+      "sha256": "a33cfe728c584fdba4fcc1fd54bcdc2f9f2f13889ddbb5b2bd1d0f8cbe49b84e",
+      "currentSha256": "a33cfe728c584fdba4fcc1fd54bcdc2f9f2f13889ddbb5b2bd1d0f8cbe49b84e",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/moonshot baise-CDuFHouK.webp",
+      "target": "public/assets/moonshot baise-CDuFHouK.webp",
+      "sha256": "f80e4d7cf9f7abd789d4a65e4110cc98e3f01d14b2e628a666a2a59a474133f5",
+      "currentSha256": "f80e4d7cf9f7abd789d4a65e4110cc98e3f01d14b2e628a666a2a59a474133f5",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/aihubmix-D0U6m6LU.png",
+      "target": "public/assets/aihubmix-D0U6m6LU.png",
+      "sha256": "c697a32ca483c5ed044c3fe65388c87d565293a2c8d703ab798d1bd4a428536f",
+      "currentSha256": "c697a32ca483c5ed044c3fe65388c87d565293a2c8d703ab798d1bd4a428536f",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/GBKp-EUC-H-CElrnV5g.bcmap",
+      "target": "public/assets/GBKp-EUC-H-CElrnV5g.bcmap",
+      "sha256": "d15ebd8e81fb4fe8a244f1b1e877922e03500ac69eddf5001093e502430451d2",
+      "currentSha256": "d15ebd8e81fb4fe8a244f1b1e877922e03500ac69eddf5001093e502430451d2",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/yi-CLSpCDeh.png",
+      "target": "public/assets/yi-CLSpCDeh.png",
+      "sha256": "795fd343d3254da5589d3db387509461870dfc4401d0bccbd0ded5df9c2efc1b",
+      "currentSha256": "795fd343d3254da5589d3db387509461870dfc4401d0bccbd0ded5df9c2efc1b",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/FoxitDingbats-BaQLufoW.pfb",
+      "target": "public/assets/FoxitDingbats-BaQLufoW.pfb",
+      "sha256": "845c752392b6c914fb989c75a08b7792b88f542d2499042ef2889f8c814a16ed",
+      "currentSha256": "845c752392b6c914fb989c75a08b7792b88f542d2499042ef2889f8c814a16ed",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/xirang-B42-6Dao.png",
+      "target": "public/assets/xirang-B42-6Dao.png",
+      "sha256": "009926e8f26d7315708fbbe0fa299c8d8213b80a58c3013865ab17b6ccafc103",
+      "currentSha256": "009926e8f26d7315708fbbe0fa299c8d8213b80a58c3013865ab17b6ccafc103",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/midjourney-BOG0L-7m.webp",
+      "target": "public/assets/midjourney-BOG0L-7m.webp",
+      "sha256": "63bd87f25a2d3c19520b6a7e5c42a61cabdc7e3050bf169644cd66f37428072b",
+      "currentSha256": "63bd87f25a2d3c19520b6a7e5c42a61cabdc7e3050bf169644cd66f37428072b",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/FoxitSerifBold-DZZ4CclT.pfb",
+      "target": "public/assets/FoxitSerifBold-DZZ4CclT.pfb",
+      "sha256": "0bdf4b04e964139818d51eda03d566ba999fc3ba2421b1c6c51f9dc969022e80",
+      "currentSha256": "0bdf4b04e964139818d51eda03d566ba999fc3ba2421b1c6c51f9dc969022e80",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/302ai-transparent-h6j6_5kk.png",
+      "target": "public/assets/302ai-transparent-h6j6_5kk.png",
+      "sha256": "5e7ddaab2c8b66ed605b88fb37d030a236d8e39dac86af1b809a987b75328890",
+      "currentSha256": "5e7ddaab2c8b66ed605b88fb37d030a236d8e39dac86af1b809a987b75328890",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/xai-C9APDUTb.png",
+      "target": "public/assets/xai-C9APDUTb.png",
+      "sha256": "a75e191aa1e1404d247cadaf2ada07f5f4f009448d2eaa3f36ae87e2f0da9620",
+      "currentSha256": "a75e191aa1e1404d247cadaf2ada07f5f4f009448d2eaa3f36ae87e2f0da9620",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/qwen-color-ig8k3JUL.webp",
+      "target": "public/assets/qwen-color-ig8k3JUL.webp",
+      "sha256": "90ee115e7544f58ac99022b2a95e45d92b3bbe33e96e666a08a9883eb119d1f4",
+      "currentSha256": "90ee115e7544f58ac99022b2a95e45d92b3bbe33e96e666a08a9883eb119d1f4",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/ort.bundle.min-OfoG_cy9.mjs",
+      "target": "public/assets/ort.bundle.min-OfoG_cy9.mjs",
+      "sha256": "355a5c80c7bfdf8737de2378d7c24539b019665423f2ac4e38e35ff766387f17",
+      "currentSha256": "355a5c80c7bfdf8737de2378d7c24539b019665423f2ac4e38e35ff766387f17",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/soonstudio-UX013Oqu.png",
+      "target": "public/assets/soonstudio-UX013Oqu.png",
+      "sha256": "b0e702f8c1e340f609a301fd8d2d1d70645dc9e9229f5b6539f5cc04165a2091",
+      "currentSha256": "b0e702f8c1e340f609a301fd8d2d1d70645dc9e9229f5b6539f5cc04165a2091",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/ocoolai-BqMN4HQx.png",
+      "target": "public/assets/ocoolai-BqMN4HQx.png",
+      "sha256": "cd957d1da22da1cd1e4f7c9c6ea0faebf109264f8455c6b86d55062e4af23328",
+      "currentSha256": "cd957d1da22da1cd1e4f7c9c6ea0faebf109264f8455c6b86d55062e4af23328",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/metaso-Ckt8-6-s.png",
+      "target": "public/assets/metaso-Ckt8-6-s.png",
+      "sha256": "b05f93bc99ae0b9947cc7d360dec2b0679fcb24b23419bed84516e046043eaf9",
+      "currentSha256": "b05f93bc99ae0b9947cc7d360dec2b0679fcb24b23419bed84516e046043eaf9",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/ocoolai-transparent-CUJotdYP.svg",
+      "target": "public/assets/ocoolai-transparent-CUJotdYP.svg",
+      "sha256": "c7a9cd5c75fe7c3578f5416f94240908c869a6f7394f38c1216b73119ca6e293",
+      "currentSha256": "c7a9cd5c75fe7c3578f5416f94240908c869a6f7394f38c1216b73119ca6e293",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/dmxapi-transparent-CzwcFpbK.png",
+      "target": "public/assets/dmxapi-transparent-CzwcFpbK.png",
+      "sha256": "32132a307cad98d7f93b0384de87411f087bb34c148c932dcd5eea92101cbec3",
+      "currentSha256": "32132a307cad98d7f93b0384de87411f087bb34c148c932dcd5eea92101cbec3",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/GBK-EUC-H-CAORqCkf.bcmap",
+      "target": "public/assets/GBK-EUC-H-CAORqCkf.bcmap",
+      "sha256": "2103fed28650ede096a2281104a1a8a4304dae0db414342c636867522307123b",
+      "currentSha256": "2103fed28650ede096a2281104a1a8a4304dae0db414342c636867522307123b",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/UniKS-UCS2-H-YeUc7k1L.bcmap",
+      "target": "public/assets/UniKS-UCS2-H-YeUc7k1L.bcmap",
+      "sha256": "a1081396ab4adb6f4a5b6c15f896963c244c1c9bcb65ce5616d06096a1b9811c",
+      "currentSha256": "a1081396ab4adb6f4a5b6c15f896963c244c1c9bcb65ce5616d06096a1b9811c",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/hunyuan-el6x823I.png",
+      "target": "public/assets/hunyuan-el6x823I.png",
+      "sha256": "5609f7ef2a3219d4ed67a1fec0abd51f433d68073f36747448d507d6323621de",
+      "currentSha256": "5609f7ef2a3219d4ed67a1fec0abd51f433d68073f36747448d507d6323621de",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/select-frame-DAfa60lA.ico",
+      "target": "public/assets/select-frame-DAfa60lA.ico",
+      "sha256": "a830871bdd860930b513dd99a1341f9f69b92a98acd3e0f4ec72bea08da240e9",
+      "currentSha256": "a830871bdd860930b513dd99a1341f9f69b92a98acd3e0f4ec72bea08da240e9",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/dashscope-transparent-BoIZoHgT.png",
+      "target": "public/assets/dashscope-transparent-BoIZoHgT.png",
+      "sha256": "dc20c132aeb2c4ad407c9249628f6cd26b354dd7196be6ee8577dbf65a5782c4",
+      "currentSha256": "dc20c132aeb2c4ad407c9249628f6cd26b354dd7196be6ee8577dbf65a5782c4",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/brand-logo-DFJpb1GX.png",
+      "target": "public/assets/brand-logo-DFJpb1GX.png",
+      "sha256": "a7ebefaceecbfc3f3353cbd5c1244654a44d2f7031f715e0b02a19804cb594a7",
+      "currentSha256": "a7ebefaceecbfc3f3353cbd5c1244654a44d2f7031f715e0b02a19804cb594a7",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/doubao-transparent-CPF5GdO9.png",
+      "target": "public/assets/doubao-transparent-CPF5GdO9.png",
+      "sha256": "28b3dfa6b0af09c34efbaf895536958916fc380d6a0a22f763b4f0d17a16a4e8",
+      "currentSha256": "28b3dfa6b0af09c34efbaf895536958916fc380d6a0a22f763b4f0d17a16a4e8",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/UniJIS-UTF32-H-BIQPWkjv.bcmap",
+      "target": "public/assets/UniJIS-UTF32-H-BIQPWkjv.bcmap",
+      "sha256": "96195950ce0fe24443d8eb426fa6b88534ec421d7bef9046f0b2362809cfba73",
+      "currentSha256": "96195950ce0fe24443d8eb426fa6b88534ec421d7bef9046f0b2362809cfba73",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/FoxitFixedItalic-DqjQkmbS.pfb",
+      "target": "public/assets/FoxitFixedItalic-DqjQkmbS.pfb",
+      "sha256": "5007faf8320fa1fcc08b8894b356ad976f60b992ba29ee5272578bbdebaf3876",
+      "currentSha256": "5007faf8320fa1fcc08b8894b356ad976f60b992ba29ee5272578bbdebaf3876",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/minimax-B0Eo-1V9.png",
+      "target": "public/assets/minimax-B0Eo-1V9.png",
+      "sha256": "8784d915b61f88db9ad0552f14584c31f679ee7408ca785eddc76170dbc32818",
+      "currentSha256": "8784d915b61f88db9ad0552f14584c31f679ee7408ca785eddc76170dbc32818",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/zhipu-color-PY4a2Lc6.webp",
+      "target": "public/assets/zhipu-color-PY4a2Lc6.webp",
+      "sha256": "b356d7fa8715404dcf2c46bc2e9b0f75d063586535aacb099ce2d4a9797db3a9",
+      "currentSha256": "b356d7fa8715404dcf2c46bc2e9b0f75d063586535aacb099ce2d4a9797db3a9",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/ort-wasm-simd-threaded.jsep-C9FfgNCC.mjs",
+      "target": "public/assets/ort-wasm-simd-threaded.jsep-C9FfgNCC.mjs",
+      "sha256": "b69c8812bf2d8356dd248fef0abb35e22d1f05f9c593ca34d4b942f35ea93592",
+      "currentSha256": "b69c8812bf2d8356dd248fef0abb35e22d1f05f9c593ca34d4b942f35ea93592",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/groq-DxjL3oyr.png",
+      "target": "public/assets/groq-DxjL3oyr.png",
+      "sha256": "c3e8df668d436a9f828d334b2a270f9ce7a7e252caa4c16b29c1796ff3aff115",
+      "currentSha256": "c3e8df668d436a9f828d334b2a270f9ce7a7e252caa4c16b29c1796ff3aff115",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/voyageai-transparent-WfYON6eV.png",
+      "target": "public/assets/voyageai-transparent-WfYON6eV.png",
+      "sha256": "d1f95b2b7c718f4c3aea079dd55c1acd6e3f40018924031cc2c8795cf987be77",
+      "currentSha256": "d1f95b2b7c718f4c3aea079dd55c1acd6e3f40018924031cc2c8795cf987be77",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/FoxitSerif-qbgiDIe-.pfb",
+      "target": "public/assets/FoxitSerif-qbgiDIe-.pfb",
+      "sha256": "4f57d2b9d884af8f907bf22df6019b52d86cbf6214fdbd02b1ae05472a543f35",
+      "currentSha256": "4f57d2b9d884af8f907bf22df6019b52d86cbf6214fdbd02b1ae05472a543f35",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/flux-CzJA5PDw.webp",
+      "target": "public/assets/flux-CzJA5PDw.webp",
+      "sha256": "033e330f0742c1dc5eebe8952479ef1b7528847d1a521861336616ddeaf42cfd",
+      "currentSha256": "033e330f0742c1dc5eebe8952479ef1b7528847d1a521861336616ddeaf42cfd",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/UniJISX02132004-UTF32-H-DAH-AgUq.bcmap",
+      "target": "public/assets/UniJISX02132004-UTF32-H-DAH-AgUq.bcmap",
+      "sha256": "f80ea5a989be30ccda5a8804baef6d3b4b044d2b339bf8b31c671b2466171cf6",
+      "currentSha256": "f80ea5a989be30ccda5a8804baef6d3b4b044d2b339bf8b31c671b2466171cf6",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/UniGB-UTF32-H-Behfouj5.bcmap",
+      "target": "public/assets/UniGB-UTF32-H-Behfouj5.bcmap",
+      "sha256": "f48a145dc4e3ed1dca1dde7111716a72306a2a4191ab05c6bae3a5c3a961cd2f",
+      "currentSha256": "f48a145dc4e3ed1dca1dde7111716a72306a2a4191ab05c6bae3a5c3a961cd2f",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/together-transparent-CNlZvdT3.png",
+      "target": "public/assets/together-transparent-CNlZvdT3.png",
+      "sha256": "7ee479297215ba1d7c7fd45f4d82cf4839caeb1b9f94b85d8cc8bc99b1d9cc6c",
+      "currentSha256": "7ee479297215ba1d7c7fd45f4d82cf4839caeb1b9f94b85d8cc8bc99b1d9cc6c",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/depth-video-engine-D_SswNZ9.js",
+      "target": "public/assets/depth-video-engine-D_SswNZ9.js",
+      "sha256": "daa502b48c61f49b704423ce6de231affd1ddf79213a0a3b39577933ab9c27de",
+      "currentSha256": "daa502b48c61f49b704423ce6de231affd1ddf79213a0a3b39577933ab9c27de",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/302ai-OYnezl-B.webp",
+      "target": "public/assets/302ai-OYnezl-B.webp",
+      "sha256": "a530770888869eb1425f6c9427156ed9307bc44c8c62efd93aa21af25c4c1d8d",
+      "currentSha256": "a530770888869eb1425f6c9427156ed9307bc44c8c62efd93aa21af25c4c1d8d",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/modelscope-CJyewHiF.png",
+      "target": "public/assets/modelscope-CJyewHiF.png",
+      "sha256": "8a0c4a68974c3cd92bb71ce3006d1ba1c55e1d9263b4cf067f804116a62f8397",
+      "currentSha256": "8a0c4a68974c3cd92bb71ce3006d1ba1c55e1d9263b4cf067f804116a62f8397",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/minimax-transparent-D4SISBHw.png",
+      "target": "public/assets/minimax-transparent-D4SISBHw.png",
+      "sha256": "9b3a27e9154f062c93dee964c6c9b71965a9cb4e98e51431e6f8425e4ba3696e",
+      "currentSha256": "9b3a27e9154f062c93dee964c6c9b71965a9cb4e98e51431e6f8425e4ba3696e",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/UniJISX0213-UTF32-H-BavAhZjb.bcmap",
+      "target": "public/assets/UniJISX0213-UTF32-H-BavAhZjb.bcmap",
+      "sha256": "692044e1fb33445668632bc9fe7386805c624864be1ddeb29d65bb0c99fc630c",
+      "currentSha256": "692044e1fb33445668632bc9fe7386805c624864be1ddeb29d65bb0c99fc630c",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/new-api-9xdaY7q5.png",
+      "target": "public/assets/new-api-9xdaY7q5.png",
+      "sha256": "352a16065ed23bb9c13c5512e0c4bb487f9a6b61cbfcdaae170d603ac751940b",
+      "currentSha256": "352a16065ed23bb9c13c5512e0c4bb487f9a6b61cbfcdaae170d603ac751940b",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/FoxitFixed-Dyd5Nipw.pfb",
+      "target": "public/assets/FoxitFixed-Dyd5Nipw.pfb",
+      "sha256": "b6c8fe53f134b8b6d4578cd2d544df4cee9624c4efa8d51a560fb40ea296101b",
+      "currentSha256": "b6c8fe53f134b8b6d4578cd2d544df4cee9624c4efa8d51a560fb40ea296101b",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/lmstudio-transparent-B0Xc0F1h.png",
+      "target": "public/assets/lmstudio-transparent-B0Xc0F1h.png",
+      "sha256": "48e2c912ef1b0628ca9d2def113af0acd6e12b09a8510ebab4b08595c6a4b4c0",
+      "currentSha256": "48e2c912ef1b0628ca9d2def113af0acd6e12b09a8510ebab4b08595c6a4b4c0",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/ETHK-B5-H-1MLb5v9x.bcmap",
+      "target": "public/assets/ETHK-B5-H-1MLb5v9x.bcmap",
+      "sha256": "d2f10fa519336bc4efcc7b6deb9604b75429946b40d82e311cb3a97a1994c89a",
+      "currentSha256": "d2f10fa519336bc4efcc7b6deb9604b75429946b40d82e311cb3a97a1994c89a",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/ort.webgpu.bundle.min-CEayb2S6.mjs",
+      "target": "public/assets/ort.webgpu.bundle.min-CEayb2S6.mjs",
+      "sha256": "74cf72f9a2b7befc115acca04ae3974735ebd30b802d11ac5097a59ad34ae526",
+      "currentSha256": "74cf72f9a2b7befc115acca04ae3974735ebd30b802d11ac5097a59ad34ae526",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/openai-DM5htlBi.webp",
+      "target": "public/assets/openai-DM5htlBi.webp",
+      "sha256": "b417d7f18e5a2baff62c4a25b983c2426a413a1c1d42a3f7d064f20fd96e0648",
+      "currentSha256": "b417d7f18e5a2baff62c4a25b983c2426a413a1c1d42a3f7d064f20fd96e0648",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/UniCNS-UCS2-H-DWzv8UhH.bcmap",
+      "target": "public/assets/UniCNS-UCS2-H-DWzv8UhH.bcmap",
+      "sha256": "779428116752f34e2490a1941d24e4634c71e3c22d053b811d2090ae2fb3c704",
+      "currentSha256": "779428116752f34e2490a1941d24e4634c71e3c22d053b811d2090ae2fb3c704",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/hyperbolic-transparent-BkxWkJGJ.png",
+      "target": "public/assets/hyperbolic-transparent-BkxWkJGJ.png",
+      "sha256": "cffdd96f107b42a108ec01375ad60f075dafa218f0fd14caeadf65de6f3675be",
+      "currentSha256": "cffdd96f107b42a108ec01375ad60f075dafa218f0fd14caeadf65de6f3675be",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/soullens-DzBKmjGP.svg",
+      "target": "public/assets/soullens-DzBKmjGP.svg",
+      "sha256": "6fed139a32f6b097cd6f06551517770b3b64a178e7317ffe5397c59f5431733a",
+      "currentSha256": "6fed139a32f6b097cd6f06551517770b3b64a178e7317ffe5397c59f5431733a",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/UniJIS2004-UTF16-H-KXixH-HI.bcmap",
+      "target": "public/assets/UniJIS2004-UTF16-H-KXixH-HI.bcmap",
+      "sha256": "710a32d7cb43fd6bd9dbf30da5971f8c941590f74441e208d852c2be0e74cc97",
+      "currentSha256": "710a32d7cb43fd6bd9dbf30da5971f8c941590f74441e208d852c2be0e74cc97",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/ollama-transparent-CEPfkvcY.png",
+      "target": "public/assets/ollama-transparent-CEPfkvcY.png",
+      "sha256": "2818613ff0dde6370819dcd6206316710ff01ee7821063cec55e1608b3a60296",
+      "currentSha256": "2818613ff0dde6370819dcd6206316710ff01ee7821063cec55e1608b3a60296",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/ollama-BiKnEc5r.png",
+      "target": "public/assets/ollama-BiKnEc5r.png",
+      "sha256": "8dc9dcd5eb031af51df7cb7a183eab395e4d88b3f85dd17f25c31a311a9aee7f",
+      "currentSha256": "8dc9dcd5eb031af51df7cb7a183eab395e4d88b3f85dd17f25c31a311a9aee7f",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/sessionHarnessWorker-BTF-khGk.js",
+      "target": "public/assets/sessionHarnessWorker-BTF-khGk.js",
+      "sha256": "fef1387ea00a664aa75659f1e41728441f2e257225eb5e03f83593e0b7769536",
+      "currentSha256": "fef1387ea00a664aa75659f1e41728441f2e257225eb5e03f83593e0b7769536",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/cherryin-BIxUyRnC.png",
+      "target": "public/assets/cherryin-BIxUyRnC.png",
+      "sha256": "c103a8c3e93c3d4524f015769fdc7a8c56b5ada2c7e39e1c2469f47074f3e737",
+      "currentSha256": "c103a8c3e93c3d4524f015769fdc7a8c56b5ada2c7e39e1c2469f47074f3e737",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/lanyun-B8brKWPb.png",
+      "target": "public/assets/lanyun-B8brKWPb.png",
+      "sha256": "749a2baa10cc49cdee11e982569997351c5ad8ae0d003384f6c397aba18d8281",
+      "currentSha256": "749a2baa10cc49cdee11e982569997351c5ad8ae0d003384f6c397aba18d8281",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/GBT-H-DL9h-WkS.bcmap",
+      "target": "public/assets/GBT-H-DL9h-WkS.bcmap",
+      "sha256": "8afda745a505763f3ff54c8126eeb48ef376ea9ed07d9f42ff9a22c5c547ec57",
+      "currentSha256": "8afda745a505763f3ff54c8126eeb48ef376ea9ed07d9f42ff9a22c5c547ec57",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/deepseek-transparent-DBEvtqqy.png",
+      "target": "public/assets/deepseek-transparent-DBEvtqqy.png",
+      "sha256": "8e0fd5830630f21d38bd57a277008149c3d73c77f3c41afe6cd102239b3ee2e7",
+      "currentSha256": "8e0fd5830630f21d38bd57a277008149c3d73c77f3c41afe6cd102239b3ee2e7",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/UniCNS-UTF16-H-Bw0JKgCq.bcmap",
+      "target": "public/assets/UniCNS-UTF16-H-Bw0JKgCq.bcmap",
+      "sha256": "32ff139b3c7b91d6ad25f994701f3ce7b242906022c418fd73e6493fc228bfe5",
+      "currentSha256": "32ff139b3c7b91d6ad25f994701f3ce7b242906022c418fd73e6493fc228bfe5",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/nvidia-transparent-D4wI7Hgj.png",
+      "target": "public/assets/nvidia-transparent-D4wI7Hgj.png",
+      "sha256": "65da318b3f3dadd1e42fa4dccd5f76d3faf1ba8ad9211aaff26b7754c0a05060",
+      "currentSha256": "65da318b3f3dadd1e42fa4dccd5f76d3faf1ba8ad9211aaff26b7754c0a05060",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/assets/fireworks-2wG1MQGi.png",
+      "target": "public/assets/fireworks-2wG1MQGi.png",
+      "sha256": "8b56f8e26ad4c052fedbb6b08f20d0d5b81967584a0b2a78d32d3dff52bdf3f3",
+      "currentSha256": "8b56f8e26ad4c052fedbb6b08f20d0d5b81967584a0b2a78d32d3dff52bdf3f3",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/arriflex-435-DqI5jc3N.webp",
+      "target": "public/cinema/arriflex-435-DqI5jc3N.webp",
+      "sha256": "0bf94a8c34f36b969a2f123461c628fc6780149b6fd57a116e22a02aa079a1f6",
+      "currentSha256": "0bf94a8c34f36b969a2f123461c628fc6780149b6fd57a116e22a02aa079a1f6",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/hawk-class-x-CD3GvtF4.webp",
+      "target": "public/cinema/hawk-class-x-CD3GvtF4.webp",
+      "sha256": "114bdeab29a96a6323063f61037ff2b06558776acccc53948628e818a462df22",
+      "currentSha256": "114bdeab29a96a6323063f61037ff2b06558776acccc53948628e818a462df22",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/f4-Or-YmP2I.webp",
+      "target": "public/cinema/f4-Or-YmP2I.webp",
+      "sha256": "076bce97ca71e910c565ddd990659590d65b30f5963e9077b42088df2050bb40",
+      "currentSha256": "076bce97ca71e910c565ddd990659590d65b30f5963e9077b42088df2050bb40",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/arricam-lt-DEzXr_FR.webp",
+      "target": "public/cinema/arricam-lt-DEzXr_FR.webp",
+      "sha256": "6f09abea61569e19476dd73dc948e5226d4445704cfd6df367736c3f4e7f8d17",
+      "currentSha256": "6f09abea61569e19476dd73dc948e5226d4445704cfd6df367736c3f4e7f8d17",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/sony-venice-BgicSddP.webp",
+      "target": "public/cinema/sony-venice-BgicSddP.webp",
+      "sha256": "f610064ccc0725651b09c12406855fda4563fc8d3f06b00c2136b9f32ffd92ef",
+      "currentSha256": "f610064ccc0725651b09c12406855fda4563fc8d3f06b00c2136b9f32ffd92ef",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/imax-keighley-Cu9FJnlP.webp",
+      "target": "public/cinema/imax-keighley-Cu9FJnlP.webp",
+      "sha256": "be9f2d0a93a200880a4f91ea35fb8f0b51b9700c9b09bee4fa31e0685389e02f",
+      "currentSha256": "be9f2d0a93a200880a4f91ea35fb8f0b51b9700c9b09bee4fa31e0685389e02f",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/Zeiss Ultra Prime.webp",
+      "target": "public/cinema/Zeiss Ultra Prime.webp",
+      "sha256": "5c1abf4e965cda22d01056d27f3cdde90293af5c5bdd4928b53c6c54657f483e",
+      "currentSha256": "5c1abf4e965cda22d01056d27f3cdde90293af5c5bdd4928b53c6c54657f483e",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/helios-CWg35ubk.webp",
+      "target": "public/cinema/helios-CWg35ubk.webp",
+      "sha256": "328fde124420105915c952138560b3ff4f4b1fb15841d34f7f296c9364c28b88",
+      "currentSha256": "328fde124420105915c952138560b3ff4f4b1fb15841d34f7f296c9364c28b88",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/Red V-Raptor.webp",
+      "target": "public/cinema/Red V-Raptor.webp",
+      "sha256": "d8df67815c127904ec63a8b2a3761d439a03e2784d0b6bbe237b2cd668a70f6c",
+      "currentSha256": "d8df67815c127904ec63a8b2a3761d439a03e2784d0b6bbe237b2cd668a70f6c",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/Arriflex 16SR.webp",
+      "target": "public/cinema/Arriflex 16SR.webp",
+      "sha256": "ada7d37e0c7e496e29d06d0343b8c1462fe05647d2a2d0a2da643af751137b5d",
+      "currentSha256": "ada7d37e0c7e496e29d06d0343b8c1462fe05647d2a2d0a2da643af751137b5d",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/Canon K-35.webp",
+      "target": "public/cinema/Canon K-35.webp",
+      "sha256": "81c993665e6a0d1423a0eb66ebfabc90f2cc61b5a1b131e1e1aff2ce272ccc8b",
+      "currentSha256": "81c993665e6a0d1423a0eb66ebfabc90f2cc61b5a1b131e1e1aff2ce272ccc8b",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/Alexa 65.webp",
+      "target": "public/cinema/Alexa 65.webp",
+      "sha256": "8b421d437fba31e421757f4603e35fb05a0602813f10293e3a73ee93820868f3",
+      "currentSha256": "8b421d437fba31e421757f4603e35fb05a0602813f10293e3a73ee93820868f3",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/f1_4-DoQLC9Jc.webp",
+      "target": "public/cinema/f1_4-DoQLC9Jc.webp",
+      "sha256": "408df69f5b89dd151c1b17b9bc996c50364f3b883341024cde77fc2bdf264084",
+      "currentSha256": "408df69f5b89dd151c1b17b9bc996c50364f3b883341024cde77fc2bdf264084",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/Helios.webp",
+      "target": "public/cinema/Helios.webp",
+      "sha256": "694381fd9f49fb93aa78437d4520ede39071be0aea94339a047624f62d92d076",
+      "currentSha256": "694381fd9f49fb93aa78437d4520ede39071be0aea94339a047624f62d92d076",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/panavision-c-series-LLl1Xpct.webp",
+      "target": "public/cinema/panavision-c-series-LLl1Xpct.webp",
+      "sha256": "cd62188610d7b8e6f8923f4fade670e3c6c90daecf3f0a7c76738649617e7f1f",
+      "currentSha256": "cd62188610d7b8e6f8923f4fade670e3c6c90daecf3f0a7c76738649617e7f1f",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/f-11.webp",
+      "target": "public/cinema/f-11.webp",
+      "sha256": "a274b6e0ac4b25d1f5a662876f00428cf7fa66e5a7ca759038336896bc16cfca",
+      "currentSha256": "a274b6e0ac4b25d1f5a662876f00428cf7fa66e5a7ca759038336896bc16cfca",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/JDC Xtal Xpress.webp",
+      "target": "public/cinema/JDC Xtal Xpress.webp",
+      "sha256": "c720eebaa9652477ce97b001c0dcabe4b1fa7c5ae8319d62f20d8dcc75ecc0e7",
+      "currentSha256": "c720eebaa9652477ce97b001c0dcabe4b1fa7c5ae8319d62f20d8dcc75ecc0e7",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/Cooke S4.webp",
+      "target": "public/cinema/Cooke S4.webp",
+      "sha256": "46f28aaa5ce7125e1fb5f72153c2985f5b065ebddbde9eeb3383f2204e53f77e",
+      "currentSha256": "46f28aaa5ce7125e1fb5f72153c2985f5b065ebddbde9eeb3383f2204e53f77e",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/canon-k35-BhokCUBz.webp",
+      "target": "public/cinema/canon-k35-BhokCUBz.webp",
+      "sha256": "607593300ec98b9a5a2602029d68ac29b90fcfa84c2c43fa9a9a90e5d9157874",
+      "currentSha256": "607593300ec98b9a5a2602029d68ac29b90fcfa84c2c43fa9a9a90e5d9157874",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/Panavision C-Series.webp",
+      "target": "public/cinema/Panavision C-Series.webp",
+      "sha256": "c125898a939a13b7d2d515bbde5ba8920d38d47f8e1d5598ffa9574e427c1bb0",
+      "currentSha256": "c125898a939a13b7d2d515bbde5ba8920d38d47f8e1d5598ffa9574e427c1bb0",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/arri-signature-prime-ZwjUyRcz.webp",
+      "target": "public/cinema/arri-signature-prime-ZwjUyRcz.webp",
+      "sha256": "350a745c5db51a011e878dfb91a6aeff91bbe2bc7e4fa8a91ab7a9f5207d668a",
+      "currentSha256": "350a745c5db51a011e878dfb91a6aeff91bbe2bc7e4fa8a91ab7a9f5207d668a",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/f11.webp",
+      "target": "public/cinema/f11.webp",
+      "sha256": "a274b6e0ac4b25d1f5a662876f00428cf7fa66e5a7ca759038336896bc16cfca",
+      "currentSha256": "a274b6e0ac4b25d1f5a662876f00428cf7fa66e5a7ca759038336896bc16cfca",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/Hawk V-Lite.webp",
+      "target": "public/cinema/Hawk V-Lite.webp",
+      "sha256": "f1c4b49eb20b9b59f5c1313b4fc69ddab2bf397855bd4172291f27640c2a120a",
+      "currentSha256": "f1c4b49eb20b9b59f5c1313b4fc69ddab2bf397855bd4172291f27640c2a120a",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/arri-alexa-35-hW6-4chH.webp",
+      "target": "public/cinema/arri-alexa-35-hW6-4chH.webp",
+      "sha256": "7fff2514faa8e3215970aa207a34225e479eb24d44ceafcb14f1338037ffd9a9",
+      "currentSha256": "7fff2514faa8e3215970aa207a34225e479eb24d44ceafcb14f1338037ffd9a9",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/f1.4.webp",
+      "target": "public/cinema/f1.4.webp",
+      "sha256": "4f44bf3e9260c83445e5eadf7282c05ad40a7911f739a4a75a32f779c2bf1baf",
+      "currentSha256": "4f44bf3e9260c83445e5eadf7282c05ad40a7911f739a4a75a32f779c2bf1baf",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/Laowa Macro.webp",
+      "target": "public/cinema/Laowa Macro.webp",
+      "sha256": "3c2ce08bade80e442e5b62299deee6508a55cef5ba936963ae1e72f061df5753",
+      "currentSha256": "3c2ce08bade80e442e5b62299deee6508a55cef5ba936963ae1e72f061df5753",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/panavision-dxl2-nu2CVKjg .webp",
+      "target": "public/cinema/panavision-dxl2-nu2CVKjg .webp",
+      "sha256": "462a47c841a7b60a1c8927bbc3139c95e8eeb23aefb64e969db6b64cd0c6aa1b",
+      "currentSha256": "462a47c841a7b60a1c8927bbc3139c95e8eeb23aefb64e969db6b64cd0c6aa1b",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/red-v-raptor-DOT1sij6.webp",
+      "target": "public/cinema/red-v-raptor-DOT1sij6.webp",
+      "sha256": "a2b3a31105831bfe33e89b009a5300ff2a950bf49a7d92b251fadb1a26cc0705",
+      "currentSha256": "a2b3a31105831bfe33e89b009a5300ff2a950bf49a7d92b251fadb1a26cc0705",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/Sony Venice.webp",
+      "target": "public/cinema/Sony Venice.webp",
+      "sha256": "9a6fd211e1f5b1329d0c26b5012325e770f5e68ca6cdbdeb7aa093e9dfa8759a",
+      "currentSha256": "9a6fd211e1f5b1329d0c26b5012325e770f5e68ca6cdbdeb7aa093e9dfa8759a",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/Petzval.webp",
+      "target": "public/cinema/Petzval.webp",
+      "sha256": "427adb546a152c1a4246f3d78df18b8f4dcb0514bb52deb5b0c62bd2a68a18be",
+      "currentSha256": "427adb546a152c1a4246f3d78df18b8f4dcb0514bb52deb5b0c62bd2a68a18be",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/zeiss-ultra-prime-DdBHzrBr.webp",
+      "target": "public/cinema/zeiss-ultra-prime-DdBHzrBr.webp",
+      "sha256": "2e687fc807bab8d952a5836398fae7cccb8c9263f23bf4529837465a9d3be64b",
+      "currentSha256": "2e687fc807bab8d952a5836398fae7cccb8c9263f23bf4529837465a9d3be64b",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/Lensbaby.webp",
+      "target": "public/cinema/Lensbaby.webp",
+      "sha256": "ced16ec08303e2557d7818be249883d7fe2749a0eda2d127a8463c27006bba06",
+      "currentSha256": "ced16ec08303e2557d7818be249883d7fe2749a0eda2d127a8463c27006bba06",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/Arri Alexa 35.webp",
+      "target": "public/cinema/Arri Alexa 35.webp",
+      "sha256": "50979fdaf393a48c37624556df31c35a6c3ef69afb8e6c089032323aaac04daf",
+      "currentSha256": "50979fdaf393a48c37624556df31c35a6c3ef69afb8e6c089032323aaac04daf",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/Panavision Millennium DXL2.webp",
+      "target": "public/cinema/Panavision Millennium DXL2.webp",
+      "sha256": "07b3c7a0102737793b65b890ef47fef282b0fc0ac14f7e8ced23443888cd5e21",
+      "currentSha256": "07b3c7a0102737793b65b890ef47fef282b0fc0ac14f7e8ced23443888cd5e21",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/cooke-speed-panchro-jWogQ6i5.webp",
+      "target": "public/cinema/cooke-speed-panchro-jWogQ6i5.webp",
+      "sha256": "ea0e5ffe65c34ab1f4b5aa819202951e0455a32de5077215abc2e4663a26059a",
+      "currentSha256": "ea0e5ffe65c34ab1f4b5aa819202951e0455a32de5077215abc2e4663a26059a",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/IMAX Film Camera.webp",
+      "target": "public/cinema/IMAX Film Camera.webp",
+      "sha256": "76c40ec5e910be854734bf213350b27d64ee47049e1644fdc48a68dca5e566d0",
+      "currentSha256": "76c40ec5e910be854734bf213350b27d64ee47049e1644fdc48a68dca5e566d0",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/ARRI Signature Prime.webp",
+      "target": "public/cinema/ARRI Signature Prime.webp",
+      "sha256": "1607f443430f921d50c44df084f032f2d8e47bcbbdd7acec2ee885faf8cf274b",
+      "currentSha256": "1607f443430f921d50c44df084f032f2d8e47bcbbdd7acec2ee885faf8cf274b",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/cooke-s4-BKM_5Nte.webp",
+      "target": "public/cinema/cooke-s4-BKM_5Nte.webp",
+      "sha256": "b367641f7d67836494b8a4a282c265232feaa2137ded4d46901fa0cf082cf1ce",
+      "currentSha256": "b367641f7d67836494b8a4a282c265232feaa2137ded4d46901fa0cf082cf1ce",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/f4.webp",
+      "target": "public/cinema/f4.webp",
+      "sha256": "68ad9e7cb330dc28f48cf2de789576af4d8d3fd8232e147dc13439e8776cd11e",
+      "currentSha256": "68ad9e7cb330dc28f48cf2de789576af4d8d3fd8232e147dc13439e8776cd11e",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/panavision-primo-Cui4J6lP.webp",
+      "target": "public/cinema/panavision-primo-Cui4J6lP.webp",
+      "sha256": "610bec2eab11867850bcf3ddcbaf4e08e81b4f234bf693da16c689afd6d1758e",
+      "currentSha256": "610bec2eab11867850bcf3ddcbaf4e08e81b4f234bf693da16c689afd6d1758e",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/cinema/cooke-sf-18x-BegGlnlc.webp",
+      "target": "public/cinema/cooke-sf-18x-BegGlnlc.webp",
+      "sha256": "db83be29ec4349e5f6b0bfee0d2faddb11ec7d77c27646678534c97df78eb046",
+      "currentSha256": "db83be29ec4349e5f6b0bfee0d2faddb11ec7d77c27646678534c97df78eb046",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/luts/film_luts.json",
+      "target": "public/luts/film_luts.json",
+      "sha256": "1292dcb06d42fe8bdd025bc666d6f44cd7852117f27d2c8a88964cf29b8e1164",
+      "currentSha256": "1292dcb06d42fe8bdd025bc666d6f44cd7852117f27d2c8a88964cf29b8e1164",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/aiyouplus-brand/aiyouplus-symbol-light.svg",
+      "target": "public/aiyouplus-brand/aiyouplus-symbol-light.svg",
+      "sha256": "ec08ef60a8293b66252e87a649086436cb9d206acdf7fa5a284f6977180126a8",
+      "currentSha256": "ec08ef60a8293b66252e87a649086436cb9d206acdf7fa5a284f6977180126a8",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/aiyouplus-brand/aiyouplus-wordmark-light.svg",
+      "target": "public/aiyouplus-brand/aiyouplus-wordmark-light.svg",
+      "sha256": "0d64f6b0e6a4e2dd402d53331eaa35bee3939c30f8166635d9f146b5611db1ec",
+      "currentSha256": "0d64f6b0e6a4e2dd402d53331eaa35bee3939c30f8166635d9f146b5611db1ec",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/aiyouplus-brand/aiyouplus-wordmark-dark.svg",
+      "target": "public/aiyouplus-brand/aiyouplus-wordmark-dark.svg",
+      "sha256": "8bd4cf3f5c2a47f4ba441a5b6ba2a48877bc3b287b89576d2bfa09245378c078",
+      "currentSha256": "8bd4cf3f5c2a47f4ba441a5b6ba2a48877bc3b287b89576d2bfa09245378c078",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/aiyouplus-brand/aiyouplus-symbol-dark.svg",
+      "target": "public/aiyouplus-brand/aiyouplus-symbol-dark.svg",
+      "sha256": "f59414b879cb1d0d895c0c02b8485eae95845c810b81e4d8b682a623dbc7c633",
+      "currentSha256": "f59414b879cb1d0d895c0c02b8485eae95845c810b81e4d8b682a623dbc7c633",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/brand-logo.png",
+      "target": "public/brand-logo.png",
+      "sha256": "a7ebefaceecbfc3f3353cbd5c1244654a44d2f7031f715e0b02a19804cb594a7",
+      "currentSha256": "a7ebefaceecbfc3f3353cbd5c1244654a44d2f7031f715e0b02a19804cb594a7",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/doodle-cursor.svg",
+      "target": "public/doodle-cursor.svg",
+      "sha256": "abc4c81287d0fb51c76050c116d18775920e88b2d68b51ade3df9a5a68022ec1",
+      "currentSha256": "abc4c81287d0fb51c76050c116d18775920e88b2d68b51ade3df9a5a68022ec1",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/select-frame.ico",
+      "target": "public/select-frame.ico",
+      "sha256": "a830871bdd860930b513dd99a1341f9f69b92a98acd3e0f4ec72bea08da240e9",
+      "currentSha256": "a830871bdd860930b513dd99a1341f9f69b92a98acd3e0f4ec72bea08da240e9",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/vendor/three.module.js",
+      "target": "public/vendor/three.module.js",
+      "sha256": "d8ecc4fc0852d9690085411d17307c50e25de9dabb14f4d5a942c6ae0e2bad29",
+      "currentSha256": "d8ecc4fc0852d9690085411d17307c50e25de9dabb14f4d5a942c6ae0e2bad29",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/vendor/three.core.js",
+      "target": "public/vendor/three.core.js",
+      "sha256": "6a7fc83437818534d5e30ce8c8e0ce76230ca2245446ea24744bb3d88c436583",
+      "currentSha256": "6a7fc83437818534d5e30ce8c8e0ce76230ca2245446ea24744bb3d88c436583",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/dist/vendor/THREE-LICENSE.txt",
+      "target": "public/vendor/THREE-LICENSE.txt",
+      "sha256": "8b378ebe60e2fe500158cb0ac71cb5e8b7d92953c2abcc63a0eb90499653b5bc",
+      "currentSha256": "8b378ebe60e2fe500158cb0ac71cb5e8b7d92953c2abcc63a0eb90499653b5bc",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/electron/aiyouplus-local-media.cjs",
+      "target": "node/aiyouplus-local-media.cjs",
+      "sha256": "da8b6ccb63c598d354a447052bd121a07521089a4910deebe7f6ba1886058b0a",
+      "currentSha256": "da8b6ccb63c598d354a447052bd121a07521089a4910deebe7f6ba1886058b0a",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/electron/local-image-math.cjs",
+      "target": "node/local-image-math.cjs",
+      "sha256": "3af60d872b01aba1f6e4bd88c9b8e35a33af59c404b4e6da0c9c74464edc7769",
+      "currentSha256": "3af60d872b01aba1f6e4bd88c9b8e35a33af59c404b4e6da0c9c74464edc7769",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/electron/aiyouplus-media-tools.cjs",
+      "target": "node/aiyouplus-media-tools.cjs",
+      "sha256": "0864a5e3d2e1172553ceae9261601237291771d140a65553a31590b003b704b8",
+      "currentSha256": "0864a5e3d2e1172553ceae9261601237291771d140a65553a31590b003b704b8",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/electron/aiyouplus-compat.cjs",
+      "target": "node/aiyouplus-compat.cjs",
+      "sha256": "b09ded774095af37a10188156848f53899f2e798a89bd64a02786242de451265",
+      "currentSha256": "b09ded774095af37a10188156848f53899f2e798a89bd64a02786242de451265",
+      "modifiedForHost": false
+    },
+    {
+      "source": "app/electron/aiyouplus-local-core.cjs",
+      "target": "node/aiyouplus-local-core.cjs",
+      "sha256": "05f4f9cb0db2e8dd462cd11efb28eccbba259e1a6a422d3e085a0a3adee134c8",
+      "currentSha256": "a71cf91b48808c19821a28b15ea04df23549f32132a423659faf9d231a83d4ea",
+      "modifiedForHost": true
+    },
+    {
+      "source": "app/electron/aiyouplus-local-workspace.cjs",
+      "target": "node/aiyouplus-local-workspace.cjs",
+      "sha256": "687a4031840fa6ccd9f121552bac1fd85d8b177e5828b8752a3f830a9ab82351",
+      "currentSha256": "270d7af3823aad114d9a932348ccf830dc3b489b04ce5d3c62b028ffc07c581d",
+      "modifiedForHost": true
+    },
+    {
+      "source": "app/electron/manifest-db.cjs",
+      "target": "node/manifest-db.cjs",
+      "sha256": "737bcb1c57bacb57eac927b583b1658e8e5da333e9673252ccb4a987f90f8632",
+      "currentSha256": "75a0d618364926dfaf2e2dfde12153ec302ff0c8c8fed59cbb07bb09e600d645",
+      "modifiedForHost": true
+    },
+    {
+      "source": "app/electron/history-db.cjs",
+      "target": "node/history-db.cjs",
+      "sha256": "d96802f4cb1b7a343f2eea5d1cf74d7f5f13be27188c37945ce12f2dd7497b88",
+      "currentSha256": "1e23e90feaf1d0f2818a76ec228f05d350fb3cffc967e7dd83fe3e97d8ce1738",
+      "modifiedForHost": true
+    },
+    {
+      "source": "app/electron/chat-db.cjs",
+      "target": "node/chat-db.cjs",
+      "sha256": "cf04b12a12d5f30080b7b25b1f331c80de2bdb55345eec45796d628e27611da3",
+      "currentSha256": "5eb5098a32fef317506f617b6898f5d6efc857931574e945dd0beff593f10a12",
+      "modifiedForHost": true
+    },
+    {
+      "source": "app/electron/project-memory-db.cjs",
+      "target": "node/project-memory-db.cjs",
+      "sha256": "d75aef9fe9d78a3017f40f7eaa0ed5e9ad344c8631f6dfc279c8de2379ce9787",
+      "currentSha256": "99a0b6856a91ae632f876a9fea2557f08efdffeb4c51ff8e35f0522d593f2154",
+      "modifiedForHost": true
+    },
+    {
+      "source": "app/electron/production-state-db.cjs",
+      "target": "node/production-state-db.cjs",
+      "sha256": "a82d8c2144dae28783b63d204c63eaff421087d9b02a905229495aabc832a1b7",
+      "currentSha256": "6fb769313aa8a6d2af94c22fb05c6d6899e280edc0aed8e72514bb415eadd24b",
+      "modifiedForHost": true
+    },
+    {
+      "source": "app/electron/production-trigger-runtime.cjs",
+      "target": "node/production-trigger-runtime.cjs",
+      "sha256": "435c1e1014c689dd5bfb0d977b0ea4e6808e20f1920f66f13cc99d11366d9762",
+      "currentSha256": "350ec1ecb2f8ecf6264894fa8c5de167e66484f3884a7b6536bf2425d57955b6",
+      "modifiedForHost": true
+    },
+    {
+      "source": "THIRD_PARTY_NOTICES.md",
+      "target": "notices/THIRD_PARTY_NOTICES.md",
+      "sha256": "fcacd24bf05f47770986436fcdfc442355b42e1f5d8af286756cae3bdf362f42",
+      "currentSha256": "bac5040a5be517f41e0917ad1e97ca8be8bff79f883cabd92115eecf0222728c",
+      "modifiedForHost": true
+    },
+    {
+      "source": "renderer-src/notices/original-bundle-comments.txt",
+      "target": "notices/original-bundle-comments.txt",
+      "sha256": "444604e37a6913f08f388e45fbd01f6537cf69ecf6c398f192507d0cd52255a0",
+      "currentSha256": "444604e37a6913f08f388e45fbd01f6537cf69ecf6c398f192507d0cd52255a0",
+      "modifiedForHost": false
+    }
+  ],
+  "hostPort": {
+    "host": "AIYOUDSH",
+    "runtimeHost": "aiyou/lib/canvas/runtime-host.mjs",
+    "runtimeHostSha256": "43d2dfdaf364c29fec2997bdf76aa169ee26a0d9636dc3ab5f1575e994f3b532",
+    "changes": [
+      "Canvas-only original $Oi mount; actual executor/readSnapshot bindings",
+      "Frame-scoped Storage/IDB and same-origin RPC/events/file bridge",
+      "Host default Chat; host media registry; no renderer supplier calls",
+      "Per-project Node owned-root storage and actual media/SQLite engines",
+      "Unified asset gateway imports/staging references, read-only shared originals",
+      "Actual save receipts and keepalive panel close",
+      "Browser file input + bounded staging uploads and actual saved-file download handles",
+      "Original W2i project ZIP file callbacks, source/host revision mapping across import",
+      "Model-manager subscription prevents recovered default registry resurrection",
+      "Document-scoped persistent canonical reference add/remove with conservative legacy migration",
+      "Embedded-only header/browser removal and clearer project/file/result UI",
+      "Parent/MIME imports await actual panel heartbeat before command revision submission",
+      "Browser upload/export ownership includes the exact native panel identity",
+      "Complete original Olo 22-card creative-tool module with eight configurable host workspaces",
+      "Exactly seven canvas menu tools; native project manager and DSH character library also replace pinned callbacks",
+      "Canonical timeline source import, original trim/reorder/undo and decoded MP4 export",
+      "Original full 3D director and global perspective rendering; preview puzzle retains original composition",
+      "Original dualAlpha worker recovered unchanged; original script project/episode state and multilayer editor retained",
+      "Owned local image-preview cache with decode/size verification; same-origin media byte bridge only",
+      "Saved graph payload plus matching autosave patch determines canonical asset references, including timeline settings",
+      "Global perspective captures carry the same original/cache asset identifiers as imported image nodes",
+      "Three retained local module types gain create/update for layout and name only, with original Ki defaults and no supplier execution",
+      "Two original UI input-image edges to global-perspective/preview gain exact capability support and default-slot checks; global accepts one input",
+      "Original magnifier and material entry invoke one DSH library bridge; central toggle and persisted panel mounting cannot reopen old pose/material libraries",
+      "Original save-to-library callbacks resolve a canonical original first, otherwise upload the actual original Blob and ingest through the DSH gateway; thumbnail-only inputs fail",
+      "Timeline picker embeds the existing DSH asset-console with video/audio filtering and source/origin/request validation; authorized legacy aliases resolve to canonical originals",
+      "UTF-8 txt/md/markdown originals up to 4 MiB create actual text nodes with canonical reference IDs and real project-save receipts; other document formats fail before import",
+      "Same-origin host theme attributes and semantic variables drive a lifecycle-owned presentation adapter in all three public entries; same-ID stylesheet updates refresh the renderer",
+      "Exact read-only GOi and Oy hooks reuse recovered light/dark branches without writing graph content or local appearance preferences",
+      "Canvas background alpha and controlled theme image use a separate backdrop pseudo-layer; original SVG grid pan/zoom supports dots/lines/none and original connection canvas receives the configured edge color",
+      "The original bottom background/theme buttons navigate to DSH theme settings with source-bound project/session/panel identity instead of ineffective local appearance settings",
+      "All 22 workspaces, node/menu surfaces and retained dialogs use host presentation colors; original pattern/tiling/cutout artwork, canonical media and 3D capture pixels remain unchanged",
+      "The original app-canvas-viewport wrapper stays transparent along with every canvas background ancestor; native range and checkbox accents follow the host theme without affecting media opacity"
+    ],
+    "files": [
+      {
+        "path": "README.md",
+        "sha256": "9f52b01157d88f16af730d7a896b3c265611216a59311315610da1227f806dd0"
+      },
+      {
+        "path": "scripts/build.mjs",
+        "sha256": "79a49ac0139d0fd596c81788d0a3e3d5ffeeb2beb6c9fa292c9b86e37adc9829"
+      },
+      {
+        "path": "public/index.html",
+        "sha256": "d084d7b840800351c1da04d04ba5d03970ded416a2c916058c2af469f4f57b88"
+      },
+      {
+        "path": "public/embedded.js",
+        "sha256": "e3fd96cd8d48d6c5c1ddef578cc0a088ae09dbcff82d8e8bf31689ae4ff770e1"
+      },
+      {
+        "path": "public/embedded.css",
+        "sha256": "533b79bee62b28c7752d10092f552b7973ba4ea3dbba75dcc3cdae97c42bc31c"
+      },
+      {
+        "path": "public/host-shim.js",
+        "sha256": "03dabb7673b04e466540f6de935208a8a35eff74b28fcef1bf42d833ca02dde5"
+      },
+      {
+        "path": "public/tools.html",
+        "sha256": "272a1c07e44939a11dd6d5f875c0dce9141da0ab2f0fa32286527b60e5ca001d"
+      },
+      {
+        "path": "public/tools.js",
+        "sha256": "2baf795fbfb827fdc3446ece415d60063348323c312f24770e78fe959fd0753e"
+      },
+      {
+        "path": "public/tools.css",
+        "sha256": "83344f27fbaf47c58301de427d2ffe048618afb5e631c9c66c2b6a9b1a3de282"
+      },
+      {
+        "path": "public/actions.json",
+        "sha256": "ffc6dcc36fc695222489e4c991c2209270f43e7d587bc1bd0d29a780d8898605"
+      },
+      {
+        "path": "public/local/canvas-model-adapter.js",
+        "sha256": "be31b5d3db2e88366c35f360b9e300a51c7551c4040e007aad415f1410910ca1"
+      },
+      {
+        "path": "test/runtime-host.test.mjs",
+        "sha256": "6f0ecef6d1f07a4f943bfab2e193426f530ca439e326ea7a43e47c18a11c08c2"
+      },
+      {
+        "path": "test/verify-browser.mjs",
+        "sha256": "431c1145e506d98c49641d814ac11b2b361080c2b7e89df9898714a1db254f57"
+      },
+      {
+        "path": "test/verify-file-dialog.mjs",
+        "sha256": "bb1c112ca3727c1d5f5102f9638fa417e8879e64d1b9940c5f55e917c3116753"
+      },
+      {
+        "path": "build.json",
+        "sha256": "1586338a530f28edf59a86538f8973f21551935b2f642735234e7cacc1b6688f"
+      },
+      {
+        "path": "test/verify-submit-sync.mjs",
+        "sha256": "935eb4506ff980db32a5e944e0a1727fd1a3969d9dd2a9aa82d1cd7c95eeaf35"
+      },
+      {
+        "path": "public/creative-tools.html",
+        "sha256": "6e74ae93db7da93d3d7f2b704a6da047bf9dcf6dd00cc4b8de80635af863237b"
+      },
+      {
+        "path": "public/creative-tools.js",
+        "sha256": "9d0b90eddbb6c16c8b8e01f7fc968e3033d25a2337a8bdc2c387c194d3d48265"
+      },
+      {
+        "path": "public/creative-tools.css",
+        "sha256": "c6c0eed12edaaea195dc458af4821515e987fbe1455dcca4914332fcd0e11844"
+      },
+      {
+        "path": "public/local/generic-tool-workspace.js",
+        "sha256": "e49624f1edf68bc0bcfd4b4cf95cdb3242308cb3942c36e5e96aedf19a7ae453"
+      },
+      {
+        "path": "public/local/character-library.js",
+        "sha256": "00d5f980e1fcd576c218bafedf3bc717ab781f38e488bd285b548bcab1bebb74"
+      },
+      {
+        "path": "test/verify-creative-tools.mjs",
+        "sha256": "8b92d8e2652d2267d93180664d2dd7e051262312601d62cfe877b5d94a8055f6"
+      },
+      {
+        "path": "test/verify-more-tools.mjs",
+        "sha256": "6393ccf526a93317e0ab729d2ed3cb5f8a6dd04e06fe474e3d33753cd61f3f26"
+      },
+      {
+        "path": "test/verify-tool-functions.mjs",
+        "sha256": "03c2aabd30ab58692e42d377c260e0fbf0e6752fdcc7dd3b3d763c98383fd914"
+      },
+      {
+        "path": "test/verify-library-entry.mjs",
+        "sha256": "6e877daf2ba3f6fe0b1ce9d2494e5ccd0f11027b18577b539048c75b6aa673d4"
+      },
+      {
+        "path": "public/theme-adapter.js",
+        "sha256": "f18250d9666ef50ebaee1e7ffef427f88a913672c0debf8f99e821f72268f072"
+      },
+      {
+        "path": "public/theme-adapter.css",
+        "sha256": "018f7f1e90c5c4d5a69d755fb11885d7b1975b79607a1dc3b0c421cb8ee2177e"
+      },
+      {
+        "path": "test/verify-theme.mjs",
+        "sha256": "43f7b0914167a5d7fc6ba24b1694b796f9bd96c3213e5f500fc4e54b2973b85c"
+      }
+    ],
+    "hostIntegrationFiles": [
+      {
+        "path": "aiyou/modules/canvas/client.js",
+        "sha256": "fe23d9f8ad15d2a979f29bd686ca0ec26195a74060e58e0ac45a17046a7d9318"
+      },
+      {
+        "path": "aiyou/modules/canvas/index.js",
+        "sha256": "d145ca58e5031ff0632151c26633761f0065d08d364268e314717d00bfb8b2d3"
+      },
+      {
+        "path": "aiyou/vendor/codex-workspace-enhancer/asset-browser/public/canvas-asset-picker.js",
+        "sha256": "fc153bb20db66470106fc04f9eaae47e2625b4e2733c917dbe86b4add521a067"
+      },
+      {
+        "path": "aiyou/vendor/codex-workspace-enhancer/asset-browser/public/app.js",
+        "sha256": "07adf454b8a3d9029909305308bce76ce0d0cf3ee7d3100a06201326e8593bf8"
+      },
+      {
+        "path": "aiyou/modules/theme/client.js",
+        "sha256": "fa32c8313fa1cf734c2e8db66f473dd5961ccd173f1e820bc84290210574b7b2"
+      },
+      {
+        "path": "aiyou/modules/theme/index.js",
+        "sha256": "00dbecbfbcf75d3673aa2b871ad7052a2811d5a95397c50153cf7a10ca51ca26"
+      },
+      {
+        "path": "aiyou/modules/theme/configuration.mjs",
+        "sha256": "850e2d1e2e30ff90db500178b352d2033132b726b4694a42b893a84bd890346d"
+      },
+      {
+        "path": "aiyou/modules/agent-workspace/client.js",
+        "sha256": "f7528e063dfc4996468e620efb9124a63ed84f056345194b2d2738da95ad779e"
+      },
+      {
+        "path": "aiyou/vendor/canvas-model-settings/index.html",
+        "sha256": "182bd76ccd80f92504708d98c9894b8561f109bb1dea31b4cc5c63c7bc6284db"
+      },
+      {
+        "path": "aiyou/vendor/codex-workspace-enhancer/asset-browser/public/ui-v3.css",
+        "sha256": "ddd838a42ddce4cfdd8db8a1ae365d12d1228f2c5222d27a687fdc44bb708111"
+      },
+      {
+        "path": "aiyou/lib/canvas/project-store.mjs",
+        "sha256": "041b6651d0d1c0253b6b32a9ed04d500679022495039055fba956bf331ae12ca"
+      },
+      {
+        "path": "aiyou/lib/canvas/model-service.mjs",
+        "sha256": "6b423067eeb9c7dcad5cc9c6df4801eb80992361cd5cdcce78f29b5b0c1ebc16"
+      },
+      {
+        "path": "aiyou/modules/asset-console/client.js",
+        "sha256": "8bef8ba928a0c219e11137c4ac38564bfec66f0fcf3c0d648418beb06370a2d4"
+      },
+      {
+        "path": "aiyou/vendor/canvas-model-settings/app.js",
+        "sha256": "c1c93e821ce2223abee6f554ffe68630e45e6c0edd174bb09d7f157b6131a643"
+      },
+      {
+        "path": "aiyou/vendor/codex-workspace-enhancer/asset-browser/canvas-asset-store.js",
+        "sha256": "ff2b3f29769c66ecb65e3c24a3720934015c0f73f8d6af7286b15cd93af3bab8"
+      },
+      {
+        "path": "aiyou/vendor/codex-workspace-enhancer/asset-browser/server.js",
+        "sha256": "21fcb9ca2ac920894bb41f2f2f959201d37e4a01e5cba1ef4403bea95ef028eb"
+      },
+      {
+        "path": "aiyou/modules/conversation-folders/client.js",
+        "sha256": "b55d300fcb3c0460a41631e357de82dad8a4d49196204ee8840423e02a5a04cf"
+      },
+      {
+        "path": "aiyou/modules/efficiency/client.js",
+        "sha256": "7f15d3234a458d2505b5b9314f67dc5e8bb266094553c1c4c1c4cca9986546e4"
+      },
+      {
+        "path": "aiyou/modules/media-tools/client.js",
+        "sha256": "c3900fa01a581dee5cd579749236c2a7d6878f7b268f17746f13b3dcbe137153"
+      },
+      {
+        "path": "aiyou/modules/model-arena/client.js",
+        "sha256": "dec2daed5443d97e9aa4c7cb5ab34b8aa6146d8f0030150fce6d40a592c8cc4e"
+      },
+      {
+        "path": "aiyou/modules/model-arena/index.js",
+        "sha256": "9d67551ab262fdbe1952f9ea9a1e5578b998e93030e21e68da1dddc2f0abea26"
+      },
+      {
+        "path": "aiyou/modules/reset-monitor/client.js",
+        "sha256": "44aad791c99eda37696cc72f5fa31aea88e29c2d0843cdd8a722eaece09763ba"
+      },
+      {
+        "path": "aiyou/modules/session-context/client.js",
+        "sha256": "9e507d208a0adad19957a17cc067d224c4719b6bfaca2408f1b385f8d8a58408"
+      },
+      {
+        "path": "aiyou/modules/session-context/index.js",
+        "sha256": "1eed29ea96e7c56a8f71003274d649a1d835be11e48bfc7687b44655f2984ae9"
+      },
+      {
+        "path": "aiyou/modules/session-transcript/client.js",
+        "sha256": "4478aac3c730bc321d39f9ce10ab9e8bb15432531ef58b7ccbb3e30f26e76fa0"
+      },
+      {
+        "path": "aiyou/modules/skills/client.js",
+        "sha256": "24e73e35466c131216bfa4db505984d82b9e988ed051aa4af6c38f39895b6505"
+      },
+      {
+        "path": "aiyou/modules/usage/client.js",
+        "sha256": "54bafcc25ddbd653caca9dbc001bb1f3b8726b8e529807a54f1e1dae516b7090"
+      }
+    ]
+  }
+}

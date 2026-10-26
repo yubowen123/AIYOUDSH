@@ -19,7 +19,7 @@ import { DEFAULT_THEME_ID, SYSTEM_THEME_ID, THEMES, themeById } from './themes.j
 import { MINIMUM, PAIRS, scaffoldTheme, validateTheme } from './contract.mjs';
 import { publicBackground } from './backgrounds.js';
 import { readBackground,mediaResponse } from './media.mjs';
-import {configureTheme,normalizeConfiguration} from './configuration.mjs';
+import {configureTheme,normalizeConfiguration,normalizeSystemConfiguration} from './configuration.mjs';
 
 /**
  * Status files are written with temp + rename.
@@ -147,8 +147,16 @@ async function writeSelection(id,theme,configuration,ifRevision) {
   const next=stateWrite.catch(()=>{}).then(async()=>{
     const state=await readThemeState();
     if(ifRevision!==undefined&&(!Number.isSafeInteger(ifRevision)||ifRevision!==state.revision))throw Object.assign(new Error('配置已在其他窗口更新，请刷新后重试'),{status:409});
-    const options={...state.options};if(configuration!==undefined&&theme)options[id]=normalizeConfiguration(configuration,theme);
-    const result={...state,schemaVersion:2,active:id,revision:state.revision+1,options,at:new Date().toISOString()};
+    const options={...state.options};
+    if(configuration!==undefined){
+      const normalize=value=>id===SYSTEM_THEME_ID?normalizeSystemConfiguration(value):normalizeConfiguration(value,theme);
+      normalize(configuration);
+      const previous=options[id]||{},merged={...previous,...configuration};
+      for(const group of ['alpha','colors','background'])if(previous[group]||configuration[group])merged[group]={...previous[group],...configuration[group]};
+      if(previous.canvas||configuration.canvas){merged.canvas={...previous.canvas,...configuration.canvas};for(const group of ['colors','opacity','background'])if(previous.canvas?.[group]||configuration.canvas?.[group])merged.canvas[group]={...previous.canvas?.[group],...configuration.canvas?.[group]};}
+      options[id]=normalize(merged);
+    }
+    const result={...state,schemaVersion:3,active:id,revision:state.revision+1,options,at:new Date().toISOString()};
     await mkdir(ROOT,{recursive:true});await writeStatusAtomic(STATE_FILE,JSON.stringify(result,null,2)+'\n');return result;
   });stateWrite=next;return next;
 }
@@ -240,6 +248,7 @@ export function apply(ctx) {
             active: resolved,
             detail: resolved === SYSTEM_THEME_ID ? null : detailFor(themes[resolved] ?? themeById(resolved),state),
             revision:state.revision,
+            systemConfiguration:normalizeSystemConfiguration(state.options?.system||{}),
             userThemeProblems: problems,
             contract: { pairs: PAIRS.length, minimums: MINIMUM, scaffold: true },
           });
@@ -248,6 +257,11 @@ export function apply(ctx) {
         }
       },
     });
+
+    register('state', {kind:'exact',path:BASE+'/state',handler:async(req,res)=>{
+      if(req.method!=='GET'&&req.method!=='HEAD')return json(res,405,{error:'GET or HEAD only'});
+      try{const state=await readThemeState();json(res,200,{active:state.active,revision:state.revision});}catch(error){json(res,500,{error:error.message||String(error)});}
+    }});
 
     register('detail', {
       kind: 'exact',
@@ -335,9 +349,9 @@ export function apply(ctx) {
           const id = String(payload?.id ?? '');
           const { themes } = await allThemes();
           if (id !== SYSTEM_THEME_ID && (!/^[a-z][a-z0-9-]{1,60}$/u.test(id)||!Object.hasOwn(themes,id))) return json(res, 400, { error: 'unknown theme' });
-          if(id===SYSTEM_THEME_ID&&payload.options!==undefined)return json(res,400,{error:'默认外观没有主题配置'});
+          if(id===SYSTEM_THEME_ID&&payload.options!==undefined)normalizeSystemConfiguration(payload.options);
           const state=await writeSelection(id,id===SYSTEM_THEME_ID?null:themes[id],payload.options,payload.ifRevision);
-          json(res, 200, { ok: true, active: id, detail: id === SYSTEM_THEME_ID ? null : detailFor(themes[id],state),revision:state.revision });
+          json(res, 200, { ok: true, active: id, detail: id === SYSTEM_THEME_ID ? null : detailFor(themes[id],state),revision:state.revision,systemConfiguration:normalizeSystemConfiguration(state.options?.system||{}) });
         } catch (error) {
           json(res, error.status||400, { error: String(error?.message ?? error) });
         }

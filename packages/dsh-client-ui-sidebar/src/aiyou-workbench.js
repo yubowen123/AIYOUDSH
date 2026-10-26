@@ -1,5 +1,8 @@
         // AIYOU workbench: native actions keep the conversation mounted.
         const AIYOU_FEATURES = [
+            { id: 'aiyou-canvas', kind: 'aiyoucodex-canvas', label: '画布', group: '创作与资产', primary: true, standalone: true },
+            { id: 'aiyou-media-tools', kind: 'aiyoucodex-media-tools', label: '创作工具', group: '创作与资产', primary: true, standalone: true },
+            { id: 'aiyou-media-models', kind: 'aiyoucodex-media-models', label: '媒体模型', group: '外观与服务', standalone: true },
             { id: 'aiyou-moke', kind: 'browser', native: true, label: 'MOKE AIGC', group: '创作与资产', primary: true },
             { id: 'aiyou-agents', kind: 'aiyoucodex-agent-workspace', label: 'Agent 工作区', glyph: '◈', group: '项目与协作', primary: true },
             { id: 'aiyou-skills', kind: 'aiyoucodex-skills', label: 'Skills 分组', glyph: '✧', group: '创作与资产', primary: true },
@@ -28,6 +31,11 @@
                 : ctx.get('sessions').list.getSnapshot().byId[extra.sessionId];
             if (extra.sessionId !== undefined && (!session || session.id !== current?.id))
                 throw new Error('当前对话已切换，请在新对话顶部重新打开工具。');
+            if (!session && feature?.standalone) {
+                ctx.layout.selectPanel(feature.kind);
+                AIYOU_NAV_NOTICE.set({ message: '', activeId: featureId });
+                return feature.kind;
+            }
             if (!session) throw new Error('请先打开或新建一个对话，再使用工作台工具。');
             if (featureId === 'aiyou-moke') {
                 const kind = openAiyouMoke(ctx, session, { toggle });

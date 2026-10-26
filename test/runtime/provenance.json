@@ -36,7 +36,8 @@
     "safe-buffer",
     "vary",
     "zod",
-    "node-addon-require-builtin-win32-x64-msvc"
+    "node-addon-require-builtin-win32-x64-msvc",
+    "@deepseek-ai/dsh-authorization"
   ],
   "embeddedWebServer": {
     "source": "Current installed DeepSeek Harness 0.2.1-rc.2 application payload; package bytes unchanged",
@@ -251,5 +252,14 @@
     ],
     "execution": "Not executable on this macOS arm64 host; actual native load must run on Windows x64 CI.",
     "treeHashFormat": "SHA-256 of Unicode code-point-sorted package-relative path, NUL, file bytes, NUL"
-  }
+  },
+  "referenceFiles": [
+    {
+      "file": "native-json-schema.mjs",
+      "source": "@deepseek-ai/dsh-tools/lib/types/json-schema.js",
+      "version": "0.2.1-rc.2",
+      "sha256": "912e04e68c2455cbb77651031449574f992720c90311e6cbecb1d35020bc1072",
+      "license": "native-json-schema.LICENSE"
+    }
+  ]
 }

@@ -46,7 +46,12 @@ window.__ModuleLoader__.load({
       grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '7px' },
     };
 
-    function ModelArena() {
+    function ModelArena({useTabInfo,sessionId:providedSessionId=''}={}) {
+      const tabInfo=typeof useTabInfo==='function'?useTabInfo():null;
+      const sessionId=tabInfo?.tab?.navigation?.params?.sessionId||providedSessionId;
+      const panel=React.useRef(null);if(!panel.current)panel.current=globalThis.crypto.randomUUID();
+      const currentSession=React.useRef(sessionId);currentSession.current=sessionId;
+      const catalogSequence=React.useRef(0),prepareSequence=React.useRef(0),inputRevision=React.useRef(0),targetSequence=React.useRef(0);
       const [targets, setTargets] = React.useState(null);
       const [kind, setKind] = React.useState('image');
       const [catalog, setCatalog] = React.useState(null);
@@ -56,106 +61,66 @@ window.__ModuleLoader__.load({
       const [submitted, setSubmitted] = React.useState(null);
       const [statuses, setStatuses] = React.useState(null);
       const [error, setError] = React.useState(null);
-      const [busy, setBusy] = React.useState(false);
+      const [targetsState,setTargetsState]=React.useState('loading');
+      const [catalogBusy,setCatalogBusy]=React.useState(false),[prepareBusy,setPrepareBusy]=React.useState(false),[submitBusy,setSubmitBusy]=React.useState(false);
+      const busy=catalogBusy||prepareBusy||submitBusy;
+      const invalidate=React.useCallback(()=>{inputRevision.current++;setPrepared(null);setSubmitted(null);setStatuses(null);},[]);
 
       const target = targets?.canvases?.[0] ?? null;
+      React.useEffect(()=>{invalidate();},[sessionId,invalidate]);
 
-      React.useEffect(() => {
-        void (async () => {
-          try {
-            const response = await fetch(`${BASE}/targets`, { cache: 'no-store' });
-            const value = await response.json();
-            if (!response.ok) throw new Error(value?.error || `HTTP ${response.status}`);
-            setTargets(value);
-          } catch (failure) {
-            setError(String(failure?.message ?? failure));
-          }
-        })();
-      }, []);
-
-      const loadCatalog = React.useCallback(async () => {
-        if (!target) return;
-        setBusy(true);
-        setError(null);
-        try {
-          const response = await fetch(`${BASE}/catalog?kind=${kind}&projectId=${target.projectId}&canvasId=${target.id}`, { cache: 'no-store' });
-          const value = await response.json();
-          if (!response.ok) throw new Error(value?.error || `HTTP ${response.status}`);
-          setCatalog(value);
-          setPicked([]);
-          setPrepared(null);
-        } catch (failure) {
-          setError(String(failure?.message ?? failure));
-        } finally {
-          setBusy(false);
-        }
-      }, [kind, target]);
-
-      React.useEffect(() => {
-        void loadCatalog();
-      }, [loadCatalog]);
-
+      const loadTargets=React.useCallback(async()=>{
+        const sequence=++targetSequence.current;setTargetsState('loading');setError(null);
+        try{
+          const response=await fetch(`${BASE}/targets`,{cache:'no-store'}),value=await response.json();
+          if(!response.ok)throw new Error(value?.error||`HTTP ${response.status}`);
+          if(!Array.isArray(value?.projects)||!Array.isArray(value?.canvases))throw new Error('项目目录格式无效，请重试。');
+          if(sequence!==targetSequence.current)return;setTargets(value);setTargetsState('ready');
+        }catch(failure){if(sequence===targetSequence.current){setTargets(null);setTargetsState('error');setError(String(failure?.message??failure));}}
+      },[]);
+      React.useEffect(()=>{void loadTargets();return()=>{targetSequence.current++;catalogSequence.current++;prepareSequence.current++;};},[loadTargets]);
+      const loadCatalog=React.useCallback(async()=>{
+        if(!target)return;const sequence=++catalogSequence.current;
+        setCatalogBusy(true);setError(null);setCatalog(null);setPicked([]);invalidate();
+        try{
+          const response=await fetch(`${BASE}/catalog?kind=${kind}&projectId=${target.projectId}&canvasId=${target.id}`,{cache:'no-store'}),value=await response.json();
+          if(!response.ok)throw new Error(value?.error||`HTTP ${response.status}`);
+          if(sequence===catalogSequence.current)setCatalog(value);
+        }catch(failure){if(sequence===catalogSequence.current)setError(String(failure?.message??failure));}
+        finally{if(sequence===catalogSequence.current)setCatalogBusy(false);}
+      },[kind,target,invalidate]);
+      React.useEffect(()=>{void loadCatalog();return()=>{catalogSequence.current++;};},[loadCatalog]);
+      const changeKind=value=>{if(value!==kind){invalidate();setKind(value);}};
       const toggle = (modelCode) => {
-        setPrepared(null);
+        invalidate();
         setPicked((current) => current.includes(modelCode)
           ? current.filter((value) => value !== modelCode)
           : current.length >= 8 ? current : [...current, modelCode]);
       };
 
-      const prepare = React.useCallback(async () => {
-        if (!target || !prompt.trim() || picked.length === 0) return;
-        setBusy(true);
-        setError(null);
-        try {
-          const response = await fetch(`${BASE}/prepare`, {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({
-              kind,
-              projectId: target.projectId,
-              canvasId: target.id,
-              prompt,
-              models: picked.map((model) => ({ model })),
-            }),
-          });
-          const value = await response.json();
-          if (!response.ok) throw new Error(value?.error || `HTTP ${response.status}`);
-          setPrepared(value.prepared);
-          setSubmitted(null);
-        } catch (failure) {
-          setError(String(failure?.message ?? failure));
-          setPrepared(null);
-        } finally {
-          setBusy(false);
-        }
-      }, [kind, target, prompt, picked]);
-
-      const submit = React.useCallback(async () => {
-        if (!prepared) return;
-        setBusy(true);
-        setError(null);
-        try {
-          const response = await fetch(`${BASE}/submit`, {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({
-              confirm: true,
-              kind,
-              projectId: target.projectId,
-              canvasId: target.id,
-              prompt,
-              models: picked.map((model) => ({ model })),
-            }),
-          });
-          const value = await response.json();
-          if (!response.ok) throw new Error(value?.error || `HTTP ${response.status}`);
-          setSubmitted(value);
-        } catch (failure) {
-          setError(String(failure?.message ?? failure));
-        } finally {
-          setBusy(false);
-        }
-      }, [prepared, kind, target, prompt, picked]);
+      const prepare=React.useCallback(async()=>{
+        if(!target||!prompt.trim()||!picked.length||prepareBusy||submitBusy)return;
+        const sequence=++prepareSequence.current,revision=inputRevision.current;
+        const requestSpec={sessionId,panelId:panel.current,kind,projectId:target.projectId,canvasId:target.id,prompt,models:picked.map(model=>({model}))};
+        setPrepareBusy(true);setError(null);setPrepared(null);
+        try{
+          const response=await fetch(`${BASE}/prepare`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(requestSpec)}),value=await response.json();
+          if(sequence!==prepareSequence.current||revision!==inputRevision.current||requestSpec.sessionId!==currentSession.current)return;
+          if(!response.ok)throw new Error(value?.error||`HTTP ${response.status}`);
+          setPrepared({...value.prepared,requestSpec,revision});setSubmitted(null);
+        }catch(failure){if(sequence===prepareSequence.current&&revision===inputRevision.current){setError(String(failure?.message??failure));setPrepared(null);}}
+        finally{if(sequence===prepareSequence.current)setPrepareBusy(false);}
+      },[kind,target,prompt,picked,sessionId,prepareBusy,submitBusy]);
+      const submit=React.useCallback(async()=>{
+        if(!prepared||submitBusy||prepared.revision!==inputRevision.current||prepared.requestSpec.sessionId!==sessionId)return;
+        const confirmed=prepared,revision=prepared.revision;setSubmitBusy(true);setError(null);
+        try{
+          const response=await fetch(`${BASE}/submit`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...confirmed.requestSpec,preparationId:confirmed.preparationId,confirm:true})}),value=await response.json();
+          if(!response.ok)throw new Error(value?.error||`HTTP ${response.status}`);
+          if(revision===inputRevision.current){setSubmitted(value);setPrepared(null);}
+        }catch(failure){if(revision===inputRevision.current)setError(String(failure?.message??failure));}
+        finally{setSubmitBusy(false);}
+      },[prepared,submitBusy,sessionId]);
 
       const nodes = submitted?.result?.canvasNodeIds ?? [];
       const poll = React.useCallback(async () => {
@@ -179,9 +144,9 @@ window.__ModuleLoader__.load({
       return h('div', { style: S.root },
         h('div', { style: S.bar },
           h('span', { style: { flex: 1, fontWeight: 600 } }, '模型竞技场'),
-          h('button', { type: 'button', style: kind === 'image' ? S.btnOn : S.btn, onClick: () => setKind('image') }, '图片'),
-          h('button', { type: 'button', style: kind === 'video' ? S.btnOn : S.btn, onClick: () => setKind('video') }, '视频'),
-          h('button', { type: 'button', style: S.btn, disabled: busy, onClick: () => void loadCatalog() }, '刷新目录'),
+          h('button', { type: 'button', style: kind === 'image' ? S.btnOn : S.btn, onClick: () => changeKind('image') }, '图片'),
+          h('button', { type: 'button', style: kind === 'video' ? S.btnOn : S.btn, onClick: () => changeKind('video') }, '视频'),
+          h('button', { type: 'button', style: S.btn, disabled: busy||targetsState==='loading', onClick: () => void (target?loadCatalog():loadTargets()) }, target?'刷新目录':'重新读取项目'),
         ),
         h('div', { style: S.body },
           error ? h('div', { style: { ...S.meta, color: 'var(--dsw-alias-state-error-primary)' } }, error) : null,
@@ -190,13 +155,14 @@ window.__ModuleLoader__.load({
             h('div', { style: S.head }, h('span', null, '目标')),
             target
               ? h('div', { style: S.meta }, `${targets.projects.find((p) => p.id === target.projectId)?.name ?? '—'} / ${target.name} · 画布 ${target.id}`)
-              : h('div', { style: S.meta }, '正在读取项目…'),
+              : h('div', { style: S.meta }, targetsState==='loading'?'正在读取项目…':targetsState==='error'?'项目读取失败，请点击“重新读取项目”。':'尚无可用画布项目，请先创建项目后重试。'),
+            !sessionId?h('div',{style:S.meta},'请从当前 DSH 对话打开竞技场后准备；未关联对话时不会提交。'):null,
             h('div', { style: S.meta }, `目录：${catalog?.total ?? '—'} 个${kind === 'image' ? '图片' : '视频'}模型 · ${catalog?.submitTool ?? ''}`),
           ),
 
           h('div', { style: S.card },
             h('div', { style: S.head }, h('span', null, '提示词')),
-            h('textarea', { style: S.area, value: prompt, placeholder: '所有被选模型共用这一条提示词（这是对比的前提：只变模型）', onChange: (event) => { setPrompt(event.target.value); setPrepared(null); } }),
+            h('textarea', { style: S.area, value: prompt, placeholder: '所有被选模型共用这一条提示词（这是对比的前提：只变模型）', onChange: (event) => { invalidate();setPrompt(event.target.value); } }),
           ),
 
           h('div', { style: S.card },
@@ -226,7 +192,7 @@ window.__ModuleLoader__.load({
               h('button', {
                 type: 'button',
                 style: S.btn,
-                disabled: busy || !prompt.trim() || picked.length === 0,
+                disabled: busy || !target || !sessionId || !prompt.trim() || picked.length === 0,
                 onClick: () => void prepare(),
               }, busy ? '处理中…' : `准备（${picked.length} 个模型，不扣费）`),
               prepared

@@ -102,7 +102,7 @@ window.__ModuleLoader__.load({
           h('div', { style: S.card },
             h('div', { style: S.row }, h('span', { style: S.name }, '检测口径')),
             ...Object.values(data?.semantics ?? {}).map((line, index) => h('div', { key: index, style: S.meta }, line)),
-            h('div', { style: S.meta }, `扫描范围：${(data?.scope ?? []).join(' · ')}`),
+            h('div', { style: S.meta }, `扫描范围：${(Array.isArray(data?.scope) ? data.scope.join(' · ') : data?.scope ?? '尚未运行本机检测')}`),
             (data?.warnings ?? []).length ? h('pre', { style: S.pre }, (data.warnings ?? []).join('\n')) : null,
           ),
         ),

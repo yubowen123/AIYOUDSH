@@ -1,0 +1,12 @@
+{
+  "schema": "aiyouplus.media-tools.v1",
+  "platform": "darwin",
+  "hostArchitecture": "arm64",
+  "verifiedArchitecture": "arm64",
+  "minimumDeclaredMacOS": "26.0",
+  "entryPoints": {
+    "ffmpeg": "bin/ffmpeg",
+    "ffprobe": "bin/ffprobe"
+  },
+  "sourceFilesUnchanged": true
+}

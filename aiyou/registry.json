@@ -54,5 +54,17 @@
   {
     "id": "aiyou-enhancer-session-transcript",
     "name": "@local/aiyou-enhancer-session-transcript"
+  },
+  {
+    "id": "aiyou-enhancer-canvas",
+    "name": "@local/aiyou-enhancer-canvas"
+  },
+  {
+    "id": "aiyou-enhancer-media-tools",
+    "name": "@local/aiyou-enhancer-media-tools"
+  },
+  {
+    "id": "aiyou-enhancer-media-models",
+    "name": "@local/aiyou-enhancer-media-models"
   }
 ]

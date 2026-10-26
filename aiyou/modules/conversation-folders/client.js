@@ -38,45 +38,59 @@ window.__ModuleLoader__.load({
       const [error, setError] = React.useState(null);
       const [note, setNote] = React.useState('');
       const [sessionId, setSessionId] = React.useState(props?.sessionId || props?.session || '');
+      const [loading, setLoading] = React.useState(false);
+      const lifetime = React.useRef({ active: true, read: 0 });
+      const identity = React.useRef(sessionId);identity.current = sessionId;
 
       const load = React.useCallback(async () => {
+        const owner = lifetime.current, request = ++owner.read;
+        const valid = () => owner.active && owner.read === request && identity.current === sessionId;
+        setData(null);setNote('');
+        if (!sessionId) { setLoading(false);setError('请明确指定对话 ID，或从目标对话顶部打开输出目录。');return; }
+        setLoading(true);
         try {
           setError(null);
           const suffix = sessionId ? `?session=${encodeURIComponent(sessionId)}` : '';
           const response = await fetch(`${BASE}${suffix}`, { cache: 'no-store' });
           const value = await response.json();
           if (!response.ok) throw new Error(value?.error || `HTTP ${response.status}`);
-          setData(value);
+          if (valid()) setData(value);
         } catch (failure) {
-          setError(String(failure?.message ?? failure));
+          if (valid()) setError(String(failure?.message ?? failure));
+        } finally {
+          if (valid()) setLoading(false);
         }
       }, [sessionId]);
 
       React.useEffect(() => {
         void load();
       }, [load]);
+      React.useEffect(() => { lifetime.current.active = true;return () => { lifetime.current.active = false; }; }, []);
 
       const reveal = React.useCallback(async (mode) => {
+        if (loading || !sessionId || data?.sessionId !== sessionId) return;
+        const owner = lifetime.current;
         try {
           const id = data?.sessionId ?? sessionId;
           const response = await fetch(`${BASE}/reveal?session=${encodeURIComponent(id)}&mode=${mode}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
           const value = await response.json();
           if (!response.ok) throw new Error(value?.error || `HTTP ${response.status}`);
-          setNote(`已在访达中${mode === 'open' ? '打开' : '定位'}：${value.path}`);
+          if (owner.active && identity.current === sessionId) setNote(`已在文件管理器中${mode === 'open' ? '打开' : '定位'}：${value.path}`);
         } catch (failure) {
-          setNote(`打开失败：${String(failure?.message ?? failure)}`);
+          if (owner.active && identity.current === sessionId) setNote(`打开失败：${String(failure?.message ?? failure)}`);
         }
-      }, [data, sessionId]);
+      }, [data, sessionId, loading]);
 
       const entry = data?.entry;
 
       return h('div', { style: S.root },
         h('div', { style: S.bar },
           h('span', { style: { flex: 1, fontWeight: 600 } }, '对话输出目录'),
-          h('button', { type: 'button', style: S.btn, onClick: () => void load() }, '刷新'),
+          h('button', { type: 'button', style: S.btn, disabled: loading, onClick: () => void load() }, '刷新'),
         ),
         h('div', { style: S.body },
-          error ? h('div', { style: S.bad }, error) : null,
+          error ? h('div', { role: 'alert', style: S.bad }, error) : null,
+          loading ? h('div', { role: 'status', style: S.meta }, '正在读取指定对话的输出目录…') : null,
 
           h('div', { style: S.card },
             h('div', { style: S.head },
@@ -94,8 +108,8 @@ window.__ModuleLoader__.load({
           h('div', { style: S.card },
             h('div', { style: S.head }, h('span', null, '操作')),
             h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
-              h('button', { type: 'button', style: S.btn, onClick: () => void reveal('reveal') }, '打开文件（在访达中定位）'),
-              h('button', { type: 'button', style: S.btn, onClick: () => void reveal('open') }, '直接打开目录'),
+              h('button', { type: 'button', style: S.btn, disabled: loading || !sessionId || data?.sessionId !== sessionId, onClick: () => void reveal('reveal') }, '定位输出目录'),
+              h('button', { type: 'button', style: S.btn, disabled: loading || !sessionId || data?.sessionId !== sessionId, onClick: () => void reveal('open') }, '直接打开目录'),
             ),
             note ? h('div', { style: S.meta }, note) : null,
           ),
@@ -114,7 +128,8 @@ window.__ModuleLoader__.load({
             h('div', { style: { display: 'flex', gap: '6px' } },
               h('input', {
                 style: { flex: 1, padding: '4px 7px', borderRadius: 'var(--dsw-radius-md)', border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-2)', color: 'var(--dsw-alias-label-primary)', fontSize: '12px' },
-                placeholder: '留空则用最近活动会话',
+                placeholder: '明确的对话 ID',
+                'aria-label': '输出目录对话 ID',
                 value: sessionId,
                 onChange: (event) => setSessionId(event.target.value),
               }),
@@ -126,6 +141,12 @@ window.__ModuleLoader__.load({
       );
     }
 
+    function FoldersTab(props) {
+      const tab = typeof props.useTabInfo === 'function' ? props.useTabInfo().tab : null;
+      const sessionId = tab?.navigation?.params?.sessionId ?? props.sessionId ?? props.session ?? '';
+      return h(ConversationFolders, { key: sessionId, sessionId });
+    }
+
     return {
       inject: ['slots', 'sidebarRightTabs', 'sidebarRight'],
       apply(ctx) {
@@ -135,7 +156,7 @@ window.__ModuleLoader__.load({
         }), 'conversation-folders:type');
         ctx.effect(() => ctx.slots.inject('sidebar.right.pane.tab', () =>
           ctx.slots.register({ name: 'sidebar.right.pane.tab', key: TYPE_ID },
-            (props) => h(ConversationFolders, { ...props, __sidebarRight: ctx.sidebarRight }))), 'conversation-folders:panel');
+            (props) => h(FoldersTab, props))), 'conversation-folders:panel');
       },
     };
   },

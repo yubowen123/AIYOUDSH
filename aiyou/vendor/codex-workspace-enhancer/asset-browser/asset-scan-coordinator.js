@@ -27,5 +27,17 @@ export function createAssetScanCoordinator({ timeoutMs = DEFAULT_TIMEOUT_MS } = 
       }).catch(() => {});
       return waitFor(pending);
     },
+    // A user-requested rescan must not silently join an older cached read.
+    // Reserving the queue slot immediately also makes later reads await it.
+    queue(projectId, scan) {
+      const key = String(projectId || "");
+      const previous = inFlight.get(key) || Promise.resolve();
+      const pending = previous.catch(() => {}).then(scan);
+      inFlight.set(key, pending);
+      pending.finally(() => {
+        if (inFlight.get(key) === pending) inFlight.delete(key);
+      }).catch(() => {});
+      return waitFor(pending);
+    },
   };
 }

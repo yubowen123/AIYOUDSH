@@ -13,9 +13,12 @@ import {defaultConfiguration,normalizeConfiguration,configureTheme} from '../aiy
 
 const source=await readFile(new URL('../aiyou/modules/theme/client.js',import.meta.url),'utf8');
 let definition;
-const sandbox={URL,console,window:{__ModuleLoader__:{load:value=>{definition=value;}}}};
+const intervals=new Map(),themeWarnings=[];let intervalSequence=0;
+const sandbox={URL,console:{...console,warn:(...args)=>themeWarnings.push(args)},AbortController,CustomEvent,
+ setInterval(fn,delay){const id=++intervalSequence;intervals.set(id,{fn,delay});return id;},clearInterval:id=>intervals.delete(id),
+ window:{__ModuleLoader__:{load:value=>{definition=value;}}}};
 vm.runInNewContext(source.replace('    // ---------- theme switcher panel ----------',
- '    globalThis.themeTest={buildTokens,buildThemeSurfaceCss,buildEmbeddedThemeCss,createThemeController,createThemeSession,createMotionBackground,defaultConfiguration,normalizeConfiguration,configureTheme,ThemePanel};\n    // ---------- theme switcher panel ----------'),sandbox);
+ '    globalThis.themeTest={buildTokens,buildThemeSurfaceCss,buildEmbeddedThemeCss,createThemeController,createThemeSession,createMotionBackground,defaultConfiguration,normalizeConfiguration,configureTheme,ThemePanel,createThemeRemoteSync,buildCanvasVariables};\n    // ---------- theme switcher panel ----------'),sandbox);
 definition.factory(name=>{assert.equal(name,'react');return {createElement:()=>null};});
 const api=sandbox.themeTest;
 const pink=THEMES['pink-candy'];
@@ -33,13 +36,28 @@ function documentFixture(url='dsh-app://app/'){
  doc.defaultView={MutationObserver:class{constructor(callback){this.callback=callback;this.connected=false;doc.observers.push(this);}observe(){this.connected=true;}disconnect(){this.connected=false;}}};
  return doc;
 }
-function frameFixture(src,doc){const listeners=new Map();return {src,contentDocument:doc,listeners,getAttribute:key=>key==='src'?src:null,addEventListener:(event,listener)=>listeners.set(event,listener),removeEventListener:(event,listener)=>{if(listeners.get(event)===listener)listeners.delete(event);}};}
-function controllerFixture(){
- const doc=documentFixture();const layers=new Map();let revision=0;
+function frameFixture(src,doc){const listeners=new Map(),attributes=new Map([['src',src]]);return {src,contentDocument:doc,listeners,getAttribute:key=>attributes.get(key)??null,setAttribute:(key,value)=>attributes.set(key,String(value)),removeAttribute:key=>attributes.delete(key),addEventListener:(event,listener)=>listeners.set(event,listener),removeEventListener:(event,listener)=>{if(listeners.get(event)===listener)listeners.delete(event);}};}
+function controllerFixture(doc=documentFixture()){
+ const layers=new Map();let revision=0;
  const ctx={theme:{overrideTokens(source,tokens){const layer={tokens,revision:revision++};layers.set(source,layer);return ()=>{if(layers.get(source)===layer)layers.delete(source);};}}};
  return {doc,layers,controller:api.createThemeController(ctx,doc)};
 }
 const attr='data-aiyou-harness-theme';
+
+function eventTarget(target){
+ const listeners=new Map(),events=[];
+ Object.assign(target,{listeners,events,addEventListener(type,listener){if(!listeners.has(type))listeners.set(type,new Set());listeners.get(type).add(listener);},removeEventListener(type,listener){const handlers=listeners.get(type);handlers?.delete(listener);if(!handlers?.size)listeners.delete(type);},dispatchEvent(event){events.push(event);for(const listener of [...listeners.get(event.type)||[]])listener(event);return true;}});
+ return target;
+}
+function remotePageFixture(){const doc=documentFixture();eventTarget(doc);eventTarget(doc.defaultView);return doc;}
+const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return {promise,resolve,reject};};
+const response=value=>({ok:true,json:async()=>value});
+const settle=()=>new Promise(resolve=>setImmediate(resolve));
+const normalizedSelection=(theme,hostRevision)=>({id:theme.id,detail:configureTheme(theme.base||theme,theme.configuration||{}),hostRevision});
+function savedThemeRemote(theme=pink,revision=0){
+ let value={active:theme.id,detail:configureTheme(theme,{}),revision};const calls=[];
+ return {calls,get value(){return value;},set(theme,nextRevision){value={active:theme.id,detail:theme,revision:nextRevision};},async request(url,init={}){calls.push({url,init});if(url.includes('/detail?')){const id=new URL(url,'http://fixture').searchParams.get('id');return response(id===value.active?value.detail:configureTheme(THEMES[id],{}));}return response(url.endsWith('/state')?{revision:value.revision}:value);}};
+}
 
 test('compiled materials cover native surfaces, with paired bubble geometry and independent composer alpha',()=>{
  for(const theme of Object.values(THEMES)){
@@ -164,9 +182,9 @@ test('same-origin embedded assets and taskboard follow switching, navigation, la
  doc.frames=doc.frames.filter(value=>value!==frame);doc.observers.find(observer=>observer.connected).callback();
  assert.equal(reloaded.head.children.length,0);assert.equal(frame.listeners.size,0);
  controller.commit({id:'system',detail:null});
- assert.equal(board.head.children.length,0);assert.equal(boardFrame.listeners.size,0);
- assert.equal(board.documentElement.getAttribute('data-theme'),'dark');assert.equal(board.documentElement.getAttribute(attr),null);
- assert.equal(crossOriginReads,0);controller.dispose();
+ assert.equal(board.head.children.length,1);assert.equal(boardFrame.listeners.size,1);
+ assert.equal(board.documentElement.getAttribute('data-theme'),'dark');assert.equal(board.documentElement.getAttribute(attr),'system');
+ assert.equal(crossOriginReads,0);controller.dispose();assert.equal(board.head.children.length,0);assert.equal(boardFrame.listeners.size,0);assert.equal(board.documentElement.getAttribute(attr),null);
 });
 
 function requestFixture(){let saved=pink;const calls=[];let rejectSave=false;return {calls,get saved(){return saved;},set rejectSave(value){rejectSave=value;},request:async(url,options={})=>{
@@ -301,7 +319,7 @@ test('host migrates saved selection, persists per-theme options atomically, and 
   const concurrent=await Promise.all([request('/aiyoucodex-dsh/theme/select',{id:pink.id,options:{background:{x:19}},ifRevision:1}),request('/aiyoucodex-dsh/theme/select',{id:dark.id,options:{background:{x:71}},ifRevision:1})]);assert.deepEqual(concurrent.map(result=>result.status).sort(),[200,409]);
   const state=JSON.parse(await readFile(join(fixture,'aiyou-enhancer/theme.json'),'utf8'));assert.equal(state.retained,'legacy-field');assert.equal(state.options[dark.id].alpha.composer,0.17);assert.equal(state.revision,2);
   result=await request('/aiyoucodex-dsh/theme/select',{id:dark.id,options:{alpha:{composer:2}},ifRevision:2});assert.equal(result.status,400);assert.equal(JSON.parse(await readFile(join(fixture,'aiyou-enhancer/theme.json'),'utf8')).revision,2);
-  result=await request('/aiyoucodex-dsh/theme/detail?id='+dark.id);assert.equal(result.value.configuration.background.x,28);assert.equal(result.value.base.configuration,undefined);assert.equal(result.value.defaultConfiguration.alpha.composer,dark.controls.alpha.composer);
+  result=await request('/aiyoucodex-dsh/theme/detail?id='+dark.id);assert.equal(result.value.configuration.background.x,concurrent[1].status===200?71:28);assert.equal(result.value.base.configuration,undefined);assert.equal(result.value.defaultConfiguration.alpha.composer,dark.controls.alpha.composer);
   result=await request('/aiyoucodex-dsh/theme/select',{id:'system',ifRevision:2});assert.equal(result.status,200);assert.equal(result.value.detail,null);assert.equal(JSON.parse(await readFile(join(fixture,'aiyou-enhancer/theme.json'),'utf8')).options[dark.id].alpha.composer,0.17);
  }finally{if(previous===undefined)delete process.env.DSH_HOME;else process.env.DSH_HOME=previous;await new Promise(resolve=>setTimeout(resolve,20));await rm(fixture,{recursive:true,force:true});}
 });
@@ -350,10 +368,173 @@ test('configuration page renders native interactive settings and wires controls 
  const render=()=>{hookIndex=0;refIndex=0;const tree=sandbox.themeTest.ThemePanel(),nodes=[];const walk=node=>{if(Array.isArray(node))return node.forEach(walk);if(node&&typeof node==='object'){nodes.push(node);node.children?.forEach(walk);}};walk(tree);return nodes;};
  let nodes=render();const byLabel=label=>nodes.find(node=>node.props['aria-label']===label);
  assert.ok(byLabel('界面主题'));assert.ok(byLabel('背景模式'));assert.equal(byLabel('播放动态背景').props.checked,true);assert.ok(byLabel('主要文字 HEX'));
- assert.equal(nodes.filter(node=>node.tag==='input'&&node.props.type==='range').length,17);
+ assert.equal(nodes.filter(node=>node.tag==='input'&&node.props.type==='range').length,26);
  byLabel('输入框内部透明度').props.onChange({target:{value:'71'}});assert.equal(current.dirty,true);assert.ok(Math.abs(current.previewDetail.configuration.alpha.composer-0.29)<1e-9);
  nodes=render();byLabel('主要文字 HEX').props.onBlur({target:{value:'#ffffff'}});assert.equal(layers.values().next().value.tokens['--dsw-alias-label-primary'].light,'rgba(255, 255, 255, 1)');
  nodes=render();byLabel('背景模式').props.onChange({target:{value:'image'}});assert.equal(current.previewDetail.configuration.background.type,'image');
+ nodes=render();assert.equal(byLabel('画布背景颜色').props.disabled,true);byLabel('画布配色跟随主题').props.onChange({target:{checked:false}});nodes=render();byLabel('画布节点颜色').props.onChange({target:{value:'#123456'}});byLabel('画布节点透明度').props.onChange({target:{value:'65'}});nodes=render();byLabel('画布背景模式').props.onChange({target:{value:'transparent'}});assert.equal(current.previewDetail.configuration.canvas.colors.node,'#123456');assert.ok(Math.abs(current.previewDetail.configuration.canvas.opacity.node-0.35)<1e-9);assert.equal(current.previewDetail.configuration.canvas.background.mode,'transparent');
  nodes.find(node=>node.tag==='button'&&node.children.includes('恢复本主题默认设置')).props.onClick();assert.equal(current.dirty,false);
  session.dispose();controller.dispose();
 });
+
+test('remote saved themes update idle windows, skip unchanged revisions, and preserve local previews until cancel',async()=>{
+ const doc=remotePageFixture(),{controller}=controllerFixture(doc),remote=savedThemeRemote(pink,4);
+ controller.commit(normalizedSelection(pink,4));const sync=api.createThemeRemoteSync(controller,remote.request,doc);
+ try{
+  await sync.ready;assert.equal(remote.calls.length,2);assert.equal(intervals.size,1);
+  assert.equal([...intervals.values()][0].delay,1500);assert.equal(doc.listeners.get('visibilitychange').size,1);assert.equal(doc.defaultView.listeners.get('focus').size,1);
+  assert.equal(doc.defaultView.events.filter(e=>e.type==='dsh-theme-saved').length,0);
+  await sync.refresh();assert.equal(remote.calls.length,3,'unchanged status must not fetch a full theme');
+  assert.ok(remote.calls.every(call=>call.init.cache==='no-store'&&call.init.signal instanceof AbortSignal));
+  remote.set(configureTheme(dark,{}),5);await sync.refresh();
+  assert.equal(controller.saved.id,dark.id);assert.equal(controller.hostRevision,5);assert.equal(doc.documentElement.getAttribute(attr),dark.id);
+  let event=doc.defaultView.events.filter(e=>e.type==='dsh-theme-saved').at(-1);assert.equal(event.detail.revision,5);assert.equal(event.detail.preservePreview,false);
+  const owner={};controller.preview(normalizedSelection(pink,5),owner);const previewCss=doc.head.children[0].textContent;
+  remote.set(configureTheme(dark,{background:{x:37},canvas:{followTheme:false,colors:{node:'#123456'}}}),6);await sync.refresh();
+  assert.equal(controller.saved.detail.configuration.background.x,37);assert.equal(controller.saved.detail.configuration.canvas.colors.node,'#123456');
+  assert.equal(doc.documentElement.getAttribute(attr),pink.id);assert.equal(doc.head.children[0].textContent,previewCss);assert.equal(controller.hasPreview,true);
+  event=doc.defaultView.events.filter(e=>e.type==='dsh-theme-saved').at(-1);assert.equal(event.detail.revision,6);assert.equal(event.detail.preservePreview,true);
+  controller.cancel(owner);assert.equal(doc.documentElement.getAttribute(attr),dark.id);assert.ok(doc.head.children[0].textContent.includes('background-position:37% 50%'));
+  assert.equal(controller.hasPreview,false);assert.ok(remote.calls.every(call=>!call.init.method),'remote synchronization must never persist a preview');
+ }finally{sync.dispose();controller.dispose();}
+ assert.equal(intervals.size,0);assert.equal(doc.listeners.size,0);assert.equal(doc.defaultView.listeners.size,0);assert.ok(doc.observers.every(o=>!o.connected));
+});
+
+test('remote focus, visibility and polling coalesce in-flight reads; stale revisions cannot roll back a newer host save',async()=>{
+ const doc=remotePageFixture(),{controller}=controllerFixture(doc),remote=savedThemeRemote(pink,10),gate=deferred();let pending=false;
+ const request=(url,init)=>{if(pending&&url.endsWith('/state')){remote.calls.push({url,init});return gate.promise;}return remote.request(url,init);};
+ controller.commit(normalizedSelection(pink,10));const sync=api.createThemeRemoteSync(controller,request,doc);
+ try{
+  await sync.ready;pending=true;const before=remote.calls.length,read=sync.refresh();
+  doc.defaultView.dispatchEvent(new Event('focus'));doc.dispatchEvent(new Event('visibilitychange'));[...intervals.values()][0].fn();await sync.refresh();
+  assert.equal(remote.calls.length,before+1,'one state read must own all concurrent triggers');
+  remote.set(configureTheme(dark,{}),11);gate.resolve(response({revision:11}));await read;assert.equal(controller.saved.id,dark.id);assert.equal(controller.hostRevision,11);
+  pending=false;controller.commit(normalizedSelection(configureTheme(pink,{background:{x:64}}),20));remote.set(configureTheme(dark,{}),12);
+  const calls=remote.calls.length;await sync.refresh();assert.equal(remote.calls.length,calls+1,'an older status must be rejected before fetching its document');assert.equal(controller.hostRevision,20);assert.equal(controller.saved.id,pink.id);assert.equal(controller.saved.detail.configuration.background.x,64);
+  remote.set(configureTheme(dark,{background:{x:9}}),21);doc.defaultView.dispatchEvent(new Event('focus'));await settle();assert.equal(controller.hostRevision,21);assert.equal(controller.saved.detail.configuration.background.x,9);
+ }finally{gate.resolve(response({revision:0}));sync.dispose();controller.dispose();}
+ assert.equal(intervals.size,0);assert.equal(doc.listeners.size,0);assert.equal(doc.defaultView.listeners.size,0);
+});
+
+test('remote disposal aborts the outstanding read, detaches triggers, and ignores a late successful response',async()=>{
+ const doc=remotePageFixture(),{controller}=controllerFixture(doc),remote=savedThemeRemote(pink,1),gate=deferred();let block=false;
+ const request=(url,init)=>{if(block&&url.endsWith('/state')){remote.calls.push({url,init});return gate.promise;}return remote.request(url,init);};
+ controller.commit(normalizedSelection(pink,1));const sync=api.createThemeRemoteSync(controller,request,doc);await sync.ready;block=true;
+ const pending=sync.refresh(),signal=remote.calls.at(-1).init.signal,css=doc.head.children[0].textContent,calls=remote.calls.length;
+ try{
+  sync.dispose();sync.dispose();assert.equal(signal.aborted,true);assert.equal(intervals.size,0);assert.equal(doc.listeners.size,0);assert.equal(doc.defaultView.listeners.size,0);
+  gate.resolve(response({revision:99}));await pending;await sync.refresh();doc.defaultView.dispatchEvent(new Event('focus'));doc.dispatchEvent(new Event('visibilitychange'));await settle();
+  assert.equal(remote.calls.length,calls);assert.equal(controller.saved.id,pink.id);assert.equal(controller.hostRevision,1);assert.equal(doc.head.children[0].textContent,css);
+ }finally{gate.resolve(response({revision:99}));sync.dispose();controller.dispose();}
+ assert.equal(intervals.size,0);
+});
+
+test('remote request failures are deduplicated and a later valid revision resumes saved-theme updates',async()=>{
+ const doc=remotePageFixture(),{controller}=controllerFixture(doc),remote=savedThemeRemote(pink,1);let fail=false;
+ const request=(url,init)=>fail?Promise.resolve({ok:false,json:async()=>({error:'受控离线'})}):remote.request(url,init);
+ controller.commit(normalizedSelection(pink,1));const sync=api.createThemeRemoteSync(controller,request,doc),before=themeWarnings.length;
+ try{
+  await sync.ready;fail=true;await sync.refresh();await sync.refresh();assert.equal(themeWarnings.length,before+1);assert.equal(controller.saved.id,pink.id);
+  fail=false;remote.set(configureTheme(dark,{}),2);await sync.refresh();assert.equal(controller.saved.id,dark.id);assert.equal(controller.hostRevision,2);
+ }finally{sync.dispose();controller.dispose();}
+ assert.equal(intervals.size,0);
+});
+
+test('remote system selection keeps native tokens and applies the saved canvas configuration',async()=>{
+ const doc=remotePageFixture(),{controller,layers}=controllerFixture(doc),remote=savedThemeRemote(dark,1);
+ controller.commit(normalizedSelection(dark,1));const sync=api.createThemeRemoteSync(controller,remote.request,doc);
+ try{
+  await sync.ready;Object.assign(remote.value,{active:'system',detail:null,revision:2,systemConfiguration:{canvas:{followTheme:false,colors:{node:'#234567'},background:{mode:'transparent',grid:'lines'}}}});await sync.refresh();
+  assert.equal(controller.saved.id,'system');assert.equal(controller.hostRevision,2);assert.equal(controller.saved.detail.configuration.canvas.colors.node,'#234567');assert.equal(controller.saved.detail.configuration.canvas.background.mode,'transparent');assert.equal(controller.saved.detail.configuration.canvas.background.grid,'lines');
+  assert.equal(layers.size,0,'system must release custom host token overrides');assert.equal(doc.head.children.length,0);assert.equal(doc.documentElement.getAttribute(attr),null);assert.equal(doc.defaultView.events.filter(e=>e.type==='dsh-theme-saved').at(-1).detail.preservePreview,false);
+ }finally{sync.dispose();controller.dispose();}
+ assert.equal(intervals.size,0);
+});
+
+test('clean theme selections and edits reverted to saved values release preview ownership and accept other-window saves',async()=>{
+ for(const action of ['select-current','edit-revert']){
+  const doc=remotePageFixture(),{controller}=controllerFixture(doc),remote=savedThemeRemote(dark,0),session=api.createThemeSession(controller,remote.request);let sync;
+  try{
+   let state=await session.load();const originalX=state.previewDetail.configuration.background.x;
+   if(action==='select-current')state=await session.preview(dark.id);
+   else{state=session.edit({background:{x:13}});assert.equal(state.dirty,true);assert.equal(controller.hasPreview,true);state=session.edit({background:{x:originalX}});}
+   assert.equal(state.dirty,false,action+' matches the persisted configuration');assert.equal(controller.hasPreview,false,action+' must not retain an invisible dirty-preview owner');
+   sync=api.createThemeRemoteSync(controller,remote.request,doc);await sync.ready;remote.set(configureTheme(dark,{background:{x:62}}),1);await sync.refresh();
+   assert.equal(controller.hasPreview,false);assert.equal(controller.saved.detail.configuration.background.x,62);assert.ok(doc.head.children[0].textContent.includes('background-position:62% 50%'),'clean settings must not suppress the remote presentation');assert.equal(doc.defaultView.events.filter(e=>e.type==='dsh-theme-saved').at(-1).detail.preservePreview,false);
+  }finally{sync?.dispose();session.dispose();controller.dispose();}
+  assert.equal(intervals.size,0);
+ }
+});
+
+test('a save that completes after its panel closes becomes the saved baseline when no newer view owns the theme',async()=>{
+ const {controller,doc}=controllerFixture(),remote=savedThemeRemote(pink,10),gate=deferred();let body;
+ const request=(url,init)=>init?.method==='POST'?(body=JSON.parse(init.body),gate.promise):remote.request(url,init);
+ const session=api.createThemeSession(controller,request);
+ try{
+  await session.load();session.edit({background:{x:43},canvas:{followTheme:false,colors:{node:'#225577'}}});const saving=session.save();assert.equal(body.ifRevision,10);
+  session.dispose();assert.equal(doc.documentElement.getAttribute(attr),pink.id);assert.equal(controller.saved.detail.configuration.background.x,75);
+  gate.resolve(response({active:body.id,detail:configureTheme(THEMES[body.id],body.options),revision:11}));assert.equal(await saving,null);
+  assert.equal(controller.hostRevision,11);assert.equal(controller.hasPreview,false);assert.equal(controller.saved.detail.configuration.background.x,43);assert.equal(controller.saved.detail.configuration.canvas.colors.node,'#225577');assert.ok(doc.head.children[0].textContent.includes('background-position:43% 50%'));
+ }finally{gate.resolve(response({active:pink.id,detail:configureTheme(pink,{}),revision:11}));session.dispose();controller.dispose();}
+ assert.equal(doc.head.children.length,0);assert.equal(intervals.size,0);
+});
+
+test('closed-panel save completion preserves a newer preview but its cancel restores that latest saved configuration',async()=>{
+ const {controller,doc}=controllerFixture(),remote=savedThemeRemote(dark,20),gate=deferred();let body;
+ const first=api.createThemeSession(controller,(url,init)=>init?.method==='POST'?(body=JSON.parse(init.body),gate.promise):remote.request(url,init));let second;
+ try{
+  await first.load();first.edit({background:{x:29},canvas:{followTheme:false,colors:{node:'#334455'}}});const saving=first.save();first.dispose();
+  second=api.createThemeSession(controller,remote.request);await second.load();await second.preview(pink.id);second.edit({background:{x:82}});const preview=doc.head.children[0].textContent;
+  gate.resolve(response({active:body.id,detail:configureTheme(THEMES[body.id],body.options),revision:21}));assert.equal(await saving,null);
+  assert.equal(controller.saved.detail.configuration.background.x,29);assert.equal(controller.saved.detail.configuration.canvas.colors.node,'#334455');assert.equal(controller.hostRevision,21);
+  assert.equal(controller.hasPreview,true);assert.equal(doc.documentElement.getAttribute(attr),pink.id);assert.equal(doc.head.children[0].textContent,preview);assert.equal(second.snapshot().dirty,true);
+  const state=second.cancel();assert.equal(state.dirty,false);assert.equal(state.savedId,dark.id);assert.equal(state.previewDetail.configuration.background.x,29);assert.equal(state.previewDetail.configuration.canvas.colors.node,'#334455');assert.ok(doc.head.children[0].textContent.includes('background-position:29% 50%'));
+ }finally{gate.resolve(response({active:dark.id,detail:configureTheme(dark,{}),revision:21}));first.dispose();second?.dispose();controller.dispose();}
+ assert.equal(intervals.size,0);
+});
+
+test('a closed panel cannot replace a newer server revision with its delayed save receipt',async()=>{
+ const {controller,doc}=controllerFixture(),remote=savedThemeRemote(pink,3),gate=deferred();let body;
+ const session=api.createThemeSession(controller,(url,init)=>init?.method==='POST'?(body=JSON.parse(init.body),gate.promise):remote.request(url,init));
+ try{
+  await session.load();session.edit({background:{x:31}});const saving=session.save();session.dispose();
+  controller.commit(normalizedSelection(configureTheme(dark,{background:{x:68}}),9));const latest=doc.head.children[0].textContent;
+  gate.resolve(response({active:body.id,detail:configureTheme(THEMES[body.id],body.options),revision:4}));assert.equal(await saving,null);
+  assert.equal(controller.hostRevision,9);assert.equal(controller.saved.id,dark.id);assert.equal(controller.saved.detail.configuration.background.x,68);assert.equal(doc.head.children[0].textContent,latest);
+ }finally{gate.resolve(response({active:pink.id,detail:configureTheme(pink,{}),revision:4}));session.dispose();controller.dispose();}
+ assert.equal(intervals.size,0);
+});
+
+test('owned nested documents support late mounting, navigation quarantine and complete branch removal',()=>{
+ const {doc,controller}=controllerFixture(),canvas=documentFixture('dsh-app://app/aiyoucodex-dsh/canvas/ui/'),assets=documentFixture('dsh-app://app/aiyoucodex-dsh/asset-console/ui/');
+ assets.documentElement.setAttribute(attr,'prior-theme');assets.documentElement.setAttribute('data-aiyou-harness-mode','prior-mode');
+ const outer=frameFixture('/aiyoucodex-dsh/canvas/ui/',canvas),inner=frameFixture('/aiyoucodex-dsh/asset-console/ui/',assets);doc.frames.push(outer);canvas.frames.push(inner);
+ try{
+  controller.commit(selection(dark));for(const child of [canvas,assets]){assert.equal(child.head.children.length,1);assert.equal(child.documentElement.getAttribute(attr),dark.id);assert.equal(child.documentElement.getAttribute('data-aiyou-harness-mode'),'dark');}
+  const model=documentFixture('dsh-app://app/aiyoucodex-dsh/canvas/model-settings/'),late=frameFixture('/aiyoucodex-dsh/canvas/model-settings/',model);assets.frames.push(late);assets.observers.find(o=>o.connected).callback([{type:'childList',target:assets.documentElement}]);
+  assert.equal(model.head.children.length,1);assert.equal(late.listeners.size,1);assert.equal(model.documentElement.getAttribute(attr),dark.id);
+  controller.commit(selection(pink));for(const child of [canvas,assets,model]){assert.equal(child.head.children.length,1);assert.equal(child.documentElement.getAttribute(attr),pink.id);assert.equal(child.documentElement.getAttribute('data-aiyou-harness-mode'),'light');}
+  const untrusted=documentFixture('dsh-app://app/private/same-origin-page');inner.contentDocument=untrusted;inner.listeners.get('load')();
+  assert.equal(untrusted.head.children.length,0);assert.equal(assets.head.children.length,0);assert.equal(assets.documentElement.getAttribute(attr),'prior-theme');assert.equal(assets.documentElement.getAttribute('data-aiyou-harness-mode'),'prior-mode');assert.equal(model.head.children.length,0);assert.equal(late.listeners.size,0);assert.ok(assets.observers.every(o=>!o.connected));assert.ok(model.observers.every(o=>!o.connected));
+  const replacement=documentFixture('dsh-app://app/aiyoucodex-dsh/taskboard/ui/');inner.contentDocument=replacement;inner.listeners.get('load')();assert.equal(replacement.head.children.length,1);
+  doc.frames=[];doc.observers.find(o=>o.connected).callback([{type:'childList',target:doc.documentElement}]);assert.equal(canvas.head.children.length,0);assert.equal(replacement.head.children.length,0);assert.equal(outer.listeners.size,0);assert.equal(inner.listeners.size,0);assert.ok(canvas.observers.every(o=>!o.connected));assert.ok(replacement.observers.every(o=>!o.connected));
+ }finally{controller.dispose();}
+ assert.ok(doc.observers.every(o=>!o.connected));assert.equal(intervals.size,0);
+});
+
+test('untrusted src, srcdoc and real document URLs never receive presentation injection or recursive access',()=>{
+ const {doc,controller}=controllerFixture(),frames=[];let forbiddenReads=0;
+ const forbidden=['https://outside.test/aiyoucodex-dsh/canvas/ui/','//outside.test/aiyoucodex-dsh/taskboard/ui/','about:blank','data:text/html,owned','blob:dsh-app://app/owned','file:///aiyoucodex-dsh/canvas/ui/','/aiyoucodex-dsh/canvas/ui-evil/','/aiyoucodex-dsh/canvas/ui/../private/','/not-owned/'];
+ for(const src of forbidden){const frame=frameFixture(src,null);Object.defineProperty(frame,'contentDocument',{get(){forbiddenReads++;throw Error('must not access untrusted window');}});frames.push(frame);}
+ const srcdoc=frameFixture('/aiyoucodex-dsh/canvas/ui/',null);srcdoc.setAttribute('srcdoc','');Object.defineProperty(srcdoc,'contentDocument',{get(){forbiddenReads++;throw Error('must not access srcdoc window');}});frames.push(srcdoc);
+ const otherOrigin=documentFixture('https://outside.test/aiyoucodex-dsh/canvas/ui/'),wrongPath=documentFixture('dsh-app://app/secret'),blank=documentFixture('about:blank');
+ for(const child of [otherOrigin,wrongPath,blank])frames.push(frameFixture('/aiyoucodex-dsh/canvas/ui/',child));doc.frames=frames;
+ try{
+  controller.commit(selection(pink));assert.equal(forbiddenReads,0);
+  for(const child of [otherOrigin,wrongPath,blank]){assert.equal(child.head.children.length,0);assert.equal(child.documentElement.getAttribute(attr),null);assert.equal(child.observers.length,0);}
+  for(const frame of frames.slice(0,forbidden.length+1))assert.equal(frame.listeners.size,0);
+ }finally{controller.dispose();}
+ for(const frame of frames)assert.equal(frame.listeners.size,0);assert.equal(intervals.size,0);
+});
+
+test.after(()=>{assert.equal(intervals.size,0,'all theme polling intervals must be disposed');});

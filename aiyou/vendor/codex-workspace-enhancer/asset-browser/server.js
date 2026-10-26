@@ -1,5 +1,6 @@
 import { createServer } from "node:http";
 import { createArenaHandler } from "../../../lib/model-arena/http.mjs";
+import { createCanvasAssetStore, canvasAssetRoute } from './canvas-asset-store.js';
 import { createReadStream, promises as fs, readFileSync, watch } from "node:fs";
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import { spawn } from "node:child_process";
@@ -20,6 +21,7 @@ import { createAssetScanCoordinator } from "./asset-scan-coordinator.js";
 import { filterLibraryResult } from "./asset-library-filter.js";
 import { AssetLibraryPager } from "./asset-library-pagination.js";
 import { AssetLibrarySearch } from './asset-library-search.js';
+import { resolveLibraryFolder, validateLinkedLibraryFolder, listLibraryFolderTree, filterLibraryFolderAssets } from './library-folders.js';
 import { normalizeCharacterMetadata, deriveCharacterRelations } from "./character-associations.js";
 import { PersistentAssetIndex, sameAssetIndexFolders } from "./persistent-asset-index.js";
 import { savePlainTextAsset, textContentRevision, textEditPolicy } from "./text-asset-safety.js";
@@ -82,6 +84,7 @@ const librarySearch = new AssetLibrarySearch({ search: async request => {
 } });
 const reconciledProjectContexts = new Map();
 const assetCalibrationWarnings = new Map();
+const assetScanWarnings = new Map();
 const assetServiceEpoch = randomUUID();
 const defaultAssetTaxonomy = {
   text: ["提示词", "Skills", "剧本", "文档"],
@@ -109,13 +112,32 @@ const codexProductionProjects = new CodexProductionProjectSync({
   globalStatePath: process.env.CODEX_GLOBAL_STATE || path.join(os.homedir(), ".codex", ".codex-global-state.json"),
   sessionIndexPath: process.env.CODEX_SESSION_INDEX || path.join(os.homedir(), ".codex", "session_index.jsonl"),
 });
-const duplicateCleaner = new ExactDuplicateCleaner({ ledgerPath: duplicateLedgerPath });
+const duplicateCleaner = new ExactDuplicateCleaner({
+  ledgerPath: duplicateLedgerPath,
+  guardMutation: (filePath,operation)=>canvasAssetStore.mutateLegacyFiles({paths:[filePath],mode:'quarantine'},operation),
+});
 const promptLibrary = new PromptLibrary({ root: promptLibraryRoot });
 const threeDWorkbench = new ThreeDWorkbench({ registryPath: threeDRegistryPath, skillRoot: img2threejsSkillRoot });
 let automationBusy = false;
 let promptAssociationSyncBusy = false;
 let codexProjectSyncStatus = { state: "idle", lastRunAt: "", candidates: 0, created: 0, updated: 0, error: "" };
 let configUpdateQueue = Promise.resolve();
+const canvasAssetStore=createCanvasAssetStore({
+  root:path.dirname(configPath),loadConfig,updateConfig,
+  listLegacy:async({projectId,kind,query}={})=>{
+    const config=await loadConfig(),rows=[];
+    for(const project of config.projects.filter(p=>!projectId||p.id===projectId)){
+      const view=await loadLibraryIndexView(project.id);
+      rows.push(...(view.entry?.assets||[]).filter(a=>(!kind||a.kind===kind)&&(!query||(a.name+' '+(a.tags||[]).join(' ')).toLocaleLowerCase().includes(String(query).toLocaleLowerCase()))));
+    }
+    return rows;
+  },
+  resolveLegacy:async id=>resolveManagedAssetLegacy(await loadConfig(),id),
+  renameLegacy:renameLibraryAssetLegacy,deleteLegacy:deleteLibraryAssetLegacy,recoverLegacyRename:relocateLibraryAssetMetadata,
+  syncPaths:async paths=>{reconciledProjectContexts.clear();await ensureWatchers();if(paths.length)await enqueueAssetIndexUpdate(paths);},
+  notify:notifyClients,
+});
+const handleCanvasAssets=canvasAssetRoute(canvasAssetStore);
 
 function sendJson(res, data, status = 200) {
   const body = JSON.stringify(data, null, 2);
@@ -669,7 +691,12 @@ function rewriteAutomationDirectory(holder, previousPath, nextPath) {
   return changed;
 }
 
-async function renameProjectDirectory({ projectId, path: folderPath, name }) {
+async function renameProjectDirectory(body) {
+  const project=await getProjectStrict(body.projectId),source=safeResolveProject(project,body.path);
+  return canvasAssetStore.mutateLegacyFiles({paths:[source],recursive:true,mode:'relocate',relocate:(result,file)=>path.join(project.path,result.path,path.relative(source,file))},async()=>renameProjectDirectoryLegacy(body));
+}
+
+async function renameProjectDirectoryLegacy({ projectId, path: folderPath, name }) {
   const project = await getProjectStrict(projectId);
   closeProjectWatchers(project.path);
   try {
@@ -730,11 +757,11 @@ async function renameProjectDirectory({ projectId, path: folderPath, name }) {
 
 async function addProject({ name, path: projectPath, scanRoots, folders }) {
   const requestedFolders = Array.isArray(folders) && folders.length
-    ? folders.map((folder) => path.resolve(String(folder || ""))).filter(Boolean)
+    ? folders
     : projectPath
       ? normalizeScanRoots(scanRoots).map((root) => path.resolve(projectPath, root))
       : [];
-  const absoluteFolders = [...new Set(requestedFolders)];
+  const absoluteFolders = [...new Set(await Promise.all(requestedFolders.map(folder => validateLinkedLibraryFolder(folder))))];
   if (!absoluteFolders.length) throw new Error("至少需要关联一个文件夹");
   for (const folder of absoluteFolders) {
     const stats = await fs.stat(folder).catch(() => null);
@@ -759,6 +786,47 @@ async function addProject({ name, path: projectPath, scanRoots, folders }) {
   await ensureWatchers();
   notifyClients("project-change");
   return project;
+}
+
+async function linkLibraryFolder({ projectId, path: folderPath } = {}) {
+  // Validate before writing anything. Re-read the latest config inside the
+  // existing atomic queue; simultaneous additions can never replace a root.
+  const absolute = await validateLinkedLibraryFolder(folderPath);
+  const { result } = await updateConfig(async config => {
+    const project = config.projects.find(item => item.id === projectId);
+    if (!project) throw Object.assign(new Error('素材库项目不存在，请重新选择'), { statusCode: 404 });
+    const existing = await Promise.all(project.folders.map(folder => fs.realpath(folder).catch(() => path.resolve(folder))));
+    const added = !existing.includes(absolute);
+    if (added) {
+      // A directory may have disappeared while waiting for another config save.
+      await validateLinkedLibraryFolder(absolute);
+      project.folders.push(absolute);
+      const codexSync = normalizeCodexSyncMetadata(project.codexSync);
+      if (codexSync) { codexSync.userCustomizedFolders = true; project.codexSync = codexSync; }
+    }
+    return { project, added };
+  });
+  await ensureWatchers();
+  notifyClients('project-change');
+  let view;
+  try { view = await libraryScanCoordinator.queue(projectId, () => loadLibraryIndexView(projectId, { force: true })); }
+  catch (error) { throw Object.assign(new Error(`文件夹已关联，但扫描尚未完成：${error.message}。可点击“重新扫描”继续，不需要重复关联。`), { statusCode: error.statusCode || 503 }); }
+  const library = listLibraryAssets(view);
+  notifyClients('asset-change');
+  return { ...result, scan: { mode: view.mode, counts: library.counts, index: library.index } };
+}
+
+async function libraryFolderListing(projectId) {
+  const view = await libraryScanCoordinator.run(projectId, () => loadLibraryIndexView(projectId));
+  if (!view.project) throw Object.assign(new Error('素材库项目不存在，请重新选择'), { statusCode: 404 });
+  const tree = await listLibraryFolderTree(view.project, view.entry?.assets || []);
+  return { project: { id: view.project.id, name: view.project.name, folders: view.project.folders }, ...tree, index: { revision: libraryRevision(view.project, view.entry, view.settings), updatedAt: view.entry?.updatedAt || '' } };
+}
+
+async function folderScopedLibraryView(view, folderId) {
+  if (!folderId) return view;
+  const folder = await resolveLibraryFolder(view.project, folderId);
+  return { ...view, entry: { ...view.entry, assets: filterLibraryFolderAssets(view.entry?.assets || [], folder) }, folder };
 }
 
 async function updateProject(projectId, body = {}) {
@@ -947,6 +1015,11 @@ async function updateMovedSidecars(destinationPath, sourceProject, sourcePath, t
 }
 
 async function moveAsset(body) {
+  const project=await getProjectStrict(body.sourceProjectId),source=safeResolveProject(project,body.sourcePath);
+  return canvasAssetStore.mutateLegacyFiles({paths:[source],mode:'relocate',projectId:body.targetProjectId,sourceProjectId:body.sourceProjectId,relocate:result=>result.destinationPath},()=>moveAssetLegacy(body));
+}
+
+async function moveAssetLegacy(body) {
   const config = await loadConfig();
   const sourceProject = await getProjectStrict(body.sourceProjectId);
   const targetProject = await getProjectStrict(body.targetProjectId);
@@ -1125,6 +1198,12 @@ function scheduleTrashPurge(tokenDirectory, delayMs = 15 * 60 * 1000) {
 }
 
 async function trashAssets(body) {
+  if(!Array.isArray(body.items)||!body.items.length)throw new Error('没有可删除的素材');
+  const paths=await Promise.all(body.items.slice(0,200).map(async item=>safeResolveProject(await getProjectStrict(item.projectId),item.sourcePath)));
+  return canvasAssetStore.mutateLegacyFiles({paths,mode:'trash'},()=>trashAssetsLegacy(body));
+}
+
+async function trashAssetsLegacy(body) {
   if (!Array.isArray(body.items) || !body.items.length) throw new Error("没有可删除的素材");
   const token = randomUUID();
   const tokenDirectory = safeResolve(actionTrashRoot, token);
@@ -1191,6 +1270,13 @@ async function trashAssets(body) {
 }
 
 async function restoreTrashedAssets(body) {
+  const token=String(body.token||'').trim();if(!token)throw new Error('缺少撤销记录');
+  const manifest=JSON.parse(await fs.readFile(path.join(safeResolve(actionTrashRoot,token),'manifest.json'),'utf8'));
+  const paths=(manifest.items||[]).flatMap(item=>(item.mappings||[]).filter(mapping=>mapping.role==='asset').map(mapping=>mapping.source));
+  return canvasAssetStore.mutateLegacyFiles({paths,mode:'restore'},()=>restoreTrashedAssetsLegacy(body));
+}
+
+async function restoreTrashedAssetsLegacy(body) {
   const token = String(body.token || "").trim();
   if (!token) throw new Error("缺少撤销记录");
   const tokenDirectory = safeResolve(actionTrashRoot, token);
@@ -1341,35 +1427,28 @@ function allManagedFolders(config) {
   return [...new Set(config.projects.flatMap((project) => project.folders || normalizeProjectFolders(project)))];
 }
 
-async function resolveManagedAsset(config, assetRef) {
+async function resolveManagedAssetLegacy(config, assetRef) {
   const filePath = decodeAssetRef(assetRef);
   const managed = allManagedFolders(config).some((folder) => isPathInside(folder, filePath))
     || Object.hasOwn(config.assetAssignments || {}, filePath);
   if (!managed) throw new Error("素材不属于任何本地项目");
   const stats = await fs.lstat(filePath).catch(() => null);
   if (!stats?.isFile() || stats.isSymbolicLink()) throw new Error("素材文件不存在或不是普通文件");
+  const real=await fs.realpath(filePath),roots=await Promise.all(allManagedFolders(config).map(folder=>fs.realpath(folder).catch(()=>'')));
+  if(!roots.some(folder=>folder&&isPathInside(folder,real))&&!(Object.hasOwn(config.assetAssignments||{},filePath)&&real===filePath))throw new Error('素材原件越过受管目录');
   return { filePath, stats };
+}
+
+async function resolveManagedAsset(config,assetRef){
+  const registered=await canvasAssetStore.resolveRegistered(assetRef);
+  if(registered)return {filePath:registered.path,stats:await fs.stat(registered.path)};
+  return resolveManagedAssetLegacy(config,assetRef);
 }
 
 async function walkLibrary(directory, files, limit = 30000) {
   if (files.length >= limit) return;
-  let entries = [];
-  try {
-    entries = await fs.readdir(directory, { withFileTypes: true });
-  } catch {
-    return;
-  }
-  for (const entry of entries) {
-    if (files.length >= limit) return;
-    if (entry.name.startsWith(".")) continue;
-    const filePath = path.join(directory, entry.name);
-    if (isIgnoredAssetPath(filePath, directory)) continue;
-    if (entry.isDirectory() && !entry.isSymbolicLink()) {
-      await walkLibrary(filePath, files, limit);
-    } else if (entry.isFile() && supportedAssetExts.has(path.extname(entry.name).toLowerCase())) {
-      files.push(filePath);
-    }
-  }
+  const collected = await collectAssetDirectory(directory, supportedAssetExts, { limit: limit - files.length });
+  files.push(...collected.files);
 }
 
 function libraryAssetKind(filePath) {
@@ -1502,6 +1581,7 @@ async function buildLibraryAsset(filePath, project, config, assignment, classifi
     : { available: false };
   const metadata = config.assetMetadata?.[filePath] || {};
   const assetRef = encodeAssetRef(filePath);
+  const canonical=canvasAssetStore.recordForPath(filePath),displayName=canonical?.name||path.basename(filePath);
   const classification = classifyLocalAsset({
     filePath,
     kind,
@@ -1512,11 +1592,12 @@ async function buildLibraryAsset(filePath, project, config, assignment, classifi
   }, classificationContext);
   return {
     id: assetRef,
+    canonicalAssetId:canonical?.id,
     sourcePath: filePath,
     projectId: project.id,
     projectName: project.name,
-    name: path.basename(filePath),
-    title: path.basename(filePath, path.extname(filePath)),
+    name: displayName,
+    title: path.basename(displayName, path.extname(displayName)),
     extension: path.extname(filePath).slice(1).toUpperCase(),
     kind,
     category: classification.category,
@@ -1555,12 +1636,16 @@ function indexedAssetPath(asset) {
 function projectContainsAsset(project, filePath, config) {
   const resolved = path.resolve(filePath);
   const assignment = config.assetAssignments?.[resolved] || "";
+  const memberships=canvasAssetStore.projectIdsForPath(resolved);
+  if(canvasAssetStore.isOwnedPath(resolved))return memberships.includes(project.id);
+  if(memberships?.includes(project.id))return true;
   if (assignment) return assignment === project.id;
   return project.folders.some((folder) => isPathInside(folder, resolved));
 }
 
 async function buildLibraryAssets(project, config, candidates, contextPaths = candidates, { failedPaths = [], missingPaths = [] } = {}) {
   const unique = [...new Set(candidates.map((item) => path.resolve(item)))];
+  const managedRoots = await Promise.all(allManagedFolders(config).map(async root => ({ root, real: await fs.realpath(root).catch(() => '') })));
   const classificationContext = {
     profiles: buildImageSequenceProfiles(
       [...new Set(contextPaths.map((item) => path.resolve(item)))]
@@ -1576,6 +1661,11 @@ async function buildLibraryAssets(project, config, candidates, contextPaths = ca
     try {
       const stats = await fs.lstat(filePath);
       if (!stats.isFile() || stats.isSymbolicLink()) { missingPaths.push(filePath); continue; }
+      const actual = await fs.realpath(filePath);
+      const canonicalRoot = managedRoots.some(({ root, real }) => real && isPathInside(root, filePath) && actual === path.resolve(real, path.relative(root, filePath)));
+      if (!canonicalRoot && !(actual === filePath && (canvasAssetStore.isOwnedPath(filePath) || Object.hasOwn(config.assetAssignments || {}, filePath)))) {
+        failedPaths.push(filePath); continue;
+      }
       const assignment = config.assetAssignments?.[filePath] || "";
       assets.push(await buildLibraryAsset(filePath, project, config, assignment, classificationContext));
     } catch (error) {
@@ -1586,6 +1676,8 @@ async function buildLibraryAssets(project, config, candidates, contextPaths = ca
 }
 
 function calibrationHealth(project) {
+  const failed = project ? assetScanWarnings.get(project.id) || [] : [];
+  if (failed.length) return { state: 'degraded', code: 'directory_unavailable', folders: failed.length, message: '部分关联目录无法读取；已保留这些目录的旧素材，请检查权限或挂载状态后重新扫描。' };
   const warnings = project ? [...assetCalibrationWarnings].filter(([root]) => project.folders.some((folder) => isPathInside(folder, root) || isPathInside(root, folder))) : [];
   return warnings.length ? { state: "degraded", code: "scan_budget_exceeded", roots: warnings.length, limit: warnings[0][1], message: "关联目录超过本轮 100000 项元数据预算；已保留旧条目，下一轮定时校准继续检查。建议拆分关联目录。" } : { state: "ready" };
 }
@@ -1631,6 +1723,7 @@ function createLibraryResult(project, entry, settings, mode) {
 
 async function rebuildLibraryIndex(project, config, mode = "initial-scan") {
   const candidates = [];
+  candidates.push(...canvasAssetStore.pathsForProject(project.id));
   const failedPaths = [];
   const deferredRoots = new Set();
   for (const folder of project.folders) {
@@ -1651,6 +1744,7 @@ async function rebuildLibraryIndex(project, config, mode = "initial-scan") {
     if (matchesFailure(indexedAssetPath(asset)) && !present.has(asset.id)) assets.push(asset);
   }
   const entry = await assetLibraryIndex.replaceProject(project, assets);
+  assetScanWarnings.set(project.id, [...new Set(failedPaths.filter(filePath => !deferredRoots.has(filePath)))]);
   failedPaths.filter((filePath) => !deferredRoots.has(filePath)).forEach(scheduleAssetIndexUpdate);
   invalidateLibraryResponseCache(project.id);
   return { project, entry, settings: config.assetManager, mode };
@@ -1667,6 +1761,7 @@ async function reconcileIndexedProject(project, config, entry) {
     .map((asset) => String(asset.id));
   const addedFolders = project.folders.filter((folder) => !entry.folders.includes(path.resolve(folder)));
   const candidates = [];
+  candidates.push(...canvasAssetStore.pathsForProject(project.id).filter(file=>!existingIds.has(encodeAssetRef(file))));
   for (const folder of addedFolders) await walkLibrary(folder, candidates);
   for (const [filePath, assignedProjectId] of Object.entries(config.assetAssignments || {})) {
     const id = encodeAssetRef(filePath);
@@ -1751,7 +1846,7 @@ async function assignAssetToProject(body = {}) {
   const { filePath } = await resolveManagedAsset(config, body.assetId);
   const target = config.projects.find((project) => project.id === body.targetProjectId);
   if (!target) throw new Error("目标项目不存在");
-  await updateConfig((draft) => { draft.assetAssignments[filePath] = target.id; });
+  await canvasAssetStore.assignProject(filePath,target.id,()=>updateConfig((draft) => { draft.assetAssignments[filePath] = target.id; }));
   await enqueueAssetIndexUpdate([filePath]);
   notifyClients("asset-change");
   return { assetId: encodeAssetRef(filePath), targetProjectId: target.id, movedFile: false };
@@ -1762,13 +1857,33 @@ async function clearAssetProjectAssignment(body = {}) {
   const { filePath } = await resolveManagedAsset(config, body.assetId);
   const previousProjectId = config.assetAssignments[filePath] || "";
   if (!previousProjectId) return { assetId: encodeAssetRef(filePath), removed: false };
-  await updateConfig((draft) => { delete draft.assetAssignments[filePath]; });
+  await canvasAssetStore.assignProject(filePath,'',()=>updateConfig((draft) => { delete draft.assetAssignments[filePath]; }));
   await enqueueAssetIndexUpdate([filePath]);
   notifyClients("asset-change");
   return { assetId: encodeAssetRef(filePath), removed: true, previousProjectId };
 }
 
-async function renameLibraryAsset(body = {}) {
+async function relocateLibraryAssetMetadata({previousPath,nextPath,retainedCharacter=null,assetId=encodeAssetRef(previousPath)}) {
+  await promptAssociations.relocate(previousPath, nextPath);
+  await updateConfig((draft) => {
+    if (draft.assetAssignments[previousPath]) {
+      draft.assetAssignments[nextPath] = draft.assetAssignments[previousPath];
+      delete draft.assetAssignments[previousPath];
+    }
+    if (draft.assetMetadata[previousPath]) {
+      draft.assetMetadata[nextPath] = draft.assetMetadata[previousPath];
+      delete draft.assetMetadata[previousPath];
+    }
+    if (retainedCharacter && !draft.assetMetadata[nextPath]?.character) {
+      draft.assetMetadata[nextPath] = { ...draft.assetMetadata[nextPath], character: retainedCharacter };
+    }
+    for (const metadata of Object.values(draft.assetMetadata)) {
+      if (metadata.character?.parentAssetId === assetId) metadata.character.parentAssetId = encodeAssetRef(nextPath);
+    }
+  });
+}
+
+async function renameLibraryAssetLegacy(body = {}) {
   const config = await loadConfig();
   const { filePath } = await resolveManagedAsset(config, body.assetId);
   let retainedCharacter = null;
@@ -1799,38 +1914,27 @@ async function renameLibraryAsset(body = {}) {
     renameMappings.push({ source, destination });
   }
   const renamed = [];
+  let metadataStarted = false;
   try {
     for (const mapping of renameMappings) {
       await fs.rename(mapping.source, mapping.destination);
       renamed.push(mapping);
     }
+    metadataStarted = true;
+    await relocateLibraryAssetMetadata({previousPath:filePath,nextPath,retainedCharacter,assetId:body.assetId});
+    await enqueueAssetIndexUpdate([filePath, nextPath]);
+    notifyClients("asset-change");
+    return { assetId: encodeAssetRef(nextPath), name: path.basename(nextPath), previousName: path.basename(filePath) };
   } catch (error) {
-    for (const mapping of renamed.reverse()) await fs.rename(mapping.destination, mapping.source).catch(() => {});
+    const rollbackErrors = [];
+    for (const mapping of renamed.reverse()) try { await fs.rename(mapping.destination, mapping.source); } catch (rollback) { rollbackErrors.push(rollback); }
+    if (metadataStarted && !rollbackErrors.length) try { await relocateLibraryAssetMetadata({previousPath:nextPath,nextPath:filePath,assetId:encodeAssetRef(nextPath)}); } catch (rollback) { rollbackErrors.push(rollback); }
+    if (rollbackErrors.length) error.recoveryCode = 'ASSET_RENAME_RECOVERY_REQUIRED';
     throw error;
   }
-  await promptAssociations.relocate(filePath, nextPath);
-  await updateConfig((draft) => {
-    if (draft.assetAssignments[filePath]) {
-      draft.assetAssignments[nextPath] = draft.assetAssignments[filePath];
-      delete draft.assetAssignments[filePath];
-    }
-    if (draft.assetMetadata[filePath]) {
-      draft.assetMetadata[nextPath] = draft.assetMetadata[filePath];
-      delete draft.assetMetadata[filePath];
-    }
-    if (retainedCharacter && !draft.assetMetadata[nextPath]?.character) {
-      draft.assetMetadata[nextPath] = { ...draft.assetMetadata[nextPath], character: retainedCharacter };
-    }
-    for (const metadata of Object.values(draft.assetMetadata)) {
-      if (metadata.character?.parentAssetId === body.assetId) metadata.character.parentAssetId = encodeAssetRef(nextPath);
-    }
-  });
-  await enqueueAssetIndexUpdate([filePath, nextPath]);
-  notifyClients("asset-change");
-  return { assetId: encodeAssetRef(nextPath), name: path.basename(nextPath), previousName: path.basename(filePath) };
 }
 
-async function deleteLibraryAsset(body = {}) {
+async function deleteLibraryAssetLegacy(body = {}) {
   const config = await loadConfig();
   const { filePath } = await resolveManagedAsset(config, body.assetId);
   if (String(body.confirmName || "") !== path.basename(filePath)) throw new Error("永久删除需要输入完整文件名确认");
@@ -1851,6 +1955,17 @@ async function deleteLibraryAsset(body = {}) {
   return { deleted: true, name: path.basename(filePath), recoverable: false };
 }
 
+async function renameLibraryAsset(body={}){
+  const before=await canvasAssetStore.get(body.assetId);if(!before)throw new Error('资产不存在');
+  const asset=await canvasAssetStore.rename(before.id,body.name);
+  return {assetId:encodeAssetRef(asset.path),canonicalAssetId:asset.id,name:asset.name,previousName:before.name};
+}
+async function deleteLibraryAsset(body={}){
+  const asset=await canvasAssetStore.get(body.assetId);if(!asset)throw new Error('资产不存在');
+  if(body.confirmName!==asset.name)throw new Error('永久删除需要输入完整文件名确认');
+  await canvasAssetStore.remove(asset.id);return {deleted:true,name:asset.name,recoverable:false};
+}
+
 async function readTextAsset(assetId) {
   const config = await loadConfig();
   const { filePath, stats } = await resolveManagedAsset(config, assetId);
@@ -1867,6 +1982,7 @@ async function saveTextAsset(body = {}) {
   const config = await loadConfig();
   const { filePath } = await resolveManagedAsset(config, body.assetId);
   const result = await savePlainTextAsset(filePath, body);
+  await canvasAssetStore.refreshPath(filePath);
   await enqueueAssetIndexUpdate([filePath]);
   notifyClients("asset-change");
   return { saved: true, assetId: encodeAssetRef(filePath), ...result };
@@ -2376,7 +2492,14 @@ async function syncAssetIndexPaths(changedPaths = []) {
     const entry = await assetLibraryIndex.getProject(project.id);
     if (!entry) continue;
     const existingPaths = entry.assets.map(indexedAssetPath).filter(Boolean);
-    const relevantChanges = expanded.filter((change) => changeAffectsProject(project, change, config.assetAssignments));
+    const relevantChanges = expanded.filter((change) => changeAffectsProject(project, change, config.assetAssignments)||canvasAssetStore.pathsForProject(project.id).some(file=>file===change.changedPath||isPathInside(change.changedPath,file)));
+    const refreshScanWarnings = extraFailures => {
+      const retained = (assetScanWarnings.get(project.id) || []).filter(failed =>
+        project.folders.some(root => isPathInside(root, failed)) && !relevantChanges.some(change => isPathInside(change.changedPath, failed)));
+      const failures = [...retryPaths, ...extraFailures].filter(failed => project.folders.some(root => isPathInside(root, failed)));
+      assetScanWarnings.set(project.id, [...new Set([...retained, ...failures])]);
+    };
+    refreshScanWarnings(relevantChanges.flatMap(change => change.failedPaths || []));
     if (!relevantChanges.length) continue;
 
     const allCandidates = [...new Set(relevantChanges.flatMap((change) => change.candidates))]
@@ -2399,6 +2522,7 @@ async function syncAssetIndexPaths(changedPaths = []) {
     const retainedContext = existingPaths.filter((filePath) =>
       candidateDirectories.has(path.dirname(filePath)) && !matchesDeleted(filePath));
     const upserts = await buildLibraryAssets(project, config, candidates, [...retainedContext, ...allCandidates], { failedPaths, missingPaths });
+    refreshScanWarnings([...relevantChanges.flatMap(change => change.failedPaths || []), ...failedPaths]);
     retryPaths.push(...failedPaths);
     removeIds.push(...missingPaths.map(encodeAssetRef));
     if (upserts.length || removeIds.length || !sameAssetIndexFolders(entry.folders, project.folders)) {
@@ -2526,6 +2650,9 @@ const server = createServer(async (req, res) => {
       sendJson(res, { error: "Local API authentication failed" }, 403);
       return;
     }
+
+    await canvasAssetStore.ready();
+    if(await handleCanvasAssets(req,res,url))return;
 
     if (await arenaHandler(req, res, url)) return;
 
@@ -2710,6 +2837,16 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    if (url.pathname === '/api/library/folders' && req.method === 'GET') {
+      sendJson(res, await libraryFolderListing(url.searchParams.get('project') || ''));
+      return;
+    }
+
+    if (url.pathname === '/api/library/folders' && req.method === 'POST') {
+      sendJson(res, { ok: true, ...await linkLibraryFolder(await readRequestBody(req)) });
+      return;
+    }
+
     if (url.pathname === "/api/library/revision" && req.method === "GET") {
       const config = await loadConfig();
       const projectId = url.searchParams.get("project") || "";
@@ -2723,8 +2860,11 @@ const server = createServer(async (req, res) => {
     if (url.pathname === "/api/library" && req.method === "GET") {
       const projectId = url.searchParams.get("project") || "";
       const force = url.searchParams.get("rescan") === "1";
-      const view = await libraryScanCoordinator.run(projectId, () => loadLibraryIndexView(projectId, { force }));
+      const rawView = await libraryScanCoordinator[force ? 'queue' : 'run'](projectId, () => loadLibraryIndexView(projectId, { force }));
+      const folderId = url.searchParams.get('folderId') || '';
+      const view = await folderScopedLibraryView(rawView, folderId);
       const filters = {
+        folderId,
         related: url.searchParams.get("related") || "1",
         characterId: url.searchParams.get("characterId") || "",
         kind: url.searchParams.get("kind") || "",

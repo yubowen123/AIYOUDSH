@@ -1,0 +1,24 @@
+import test from 'node:test';import assert from 'node:assert/strict';import http from 'node:http';import {createArenaPreparations,callTool} from '../aiyou/modules/model-arena/index.js';
+const spec={sessionId:'session-a',panelId:'panel-a',kind:'image',projectId:1,canvasId:2,prompt:'prepared fixture prompt',models:[{model:'fixture-image'}]};
+const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return{promise,resolve};};
+async function fixture(t,handler){const requests=[],old=process.env.AIYOU_ARENA_MCP_URL;const server=http.createServer(async(req,res)=>{const chunks=[];for await(const c of req)chunks.push(c);const body=JSON.parse(Buffer.concat(chunks));requests.push(body);if(handler)return handler(req,res,body);res.writeHead(200,{'content-type':'application/json'});res.end(JSON.stringify({result:{structuredContent:{canvasNodeIds:['local-fixture-node']}}}));});await new Promise(r=>server.listen(0,'127.0.0.1',r));const endpoint='http://127.0.0.1:'+server.address().port;process.env.AIYOU_ARENA_MCP_URL=endpoint;const store=createArenaPreparations({submit:callTool,configuration:()=>process.env.AIYOU_ARENA_MCP_URL,isSession:id=>['session-a','session-b'].includes(id)});t.after(async()=>{store.dispose();server.closeAllConnections();await new Promise(r=>server.close(r));if(old===undefined)delete process.env.AIYOU_ARENA_MCP_URL;else process.env.AIYOU_ARENA_MCP_URL=old;});return{requests,store};}
+test('real local MCP receives exactly the immutable preview prefix once under concurrent submit and completed replay',async t=>{
+ const seen=deferred(),release=deferred();const f=await fixture(t,async(_req,res)=>{seen.resolve();await release.promise;res.writeHead(200,{'content-type':'application/json'});res.end(JSON.stringify({result:{structuredContent:{canvasNodeIds:['local-fixture-node']}}}));});
+ const p=await f.store.prepare(spec);assert.equal(f.requests.length,0);const confirmed={...spec,preparationId:p.preparationId,confirm:true};const a=f.store.submit(confirmed),b=f.store.submit(confirmed);await seen.promise;assert.equal(f.requests.length,1);assert.deepEqual(f.requests[0].params.arguments,p.args);assert.equal(f.requests[0].params.name,p.tool);release.resolve();assert.deepEqual(await a,await b);assert.deepEqual(await f.store.submit(confirmed),await a);assert.equal(f.requests.length,1);
+});
+test('missing confirmation, foreign session/panel and changed input cannot reach the local MCP',async t=>{
+ const f=await fixture(t),p=await f.store.prepare(spec),base={...spec,preparationId:p.preparationId,confirm:true};
+ for(const change of [{confirm:false},{sessionId:'session-b'},{panelId:'panel-b'},{prompt:'changed'},{canvasId:3},{models:[{model:'other'}]},{preparationId:'missing'}])await assert.rejects(f.store.submit({...base,...change}),e=>[400,409,428].includes(e.status));assert.equal(f.requests.length,0);
+ const next=await f.store.prepare({...spec,prompt:'new preview'});await assert.rejects(f.store.submit(base),/回执不存在/);assert.notEqual(next.preparationId,p.preparationId);
+});
+test('configuration changes, expiry and disposal reject before transport',async t=>{
+ const f=await fixture(t),p=await f.store.prepare(spec);process.env.AIYOU_ARENA_MCP_URL+='/?different-configuration';await assert.rejects(f.store.submit({...spec,preparationId:p.preparationId,confirm:true}),/配置已改变/);assert.equal(f.requests.length,0);
+ let now=0;const store=createArenaPreparations({now:()=>now,ttlMs:10,configuration:()=>'',submit:()=>{throw Error('must not submit');}});const q=await store.prepare(spec);now=11;await assert.rejects(store.submit({...spec,preparationId:q.preparationId,confirm:true}),e=>e.status===410);store.dispose();await assert.rejects(store.prepare(spec),/面板已关闭/);
+});
+test('concurrent preparation is bounded and expiry releases capacity without transport',async()=>{
+ let now=0;const gate=deferred();const store=createArenaPreparations({maxEntries:2,ttlMs:10,now:()=>now,configuration:async()=>{await gate.promise;return'';},submit:()=>{throw Error('must not submit');}});
+ const pending=[0,1,2].map(i=>store.prepare({...spec,panelId:'panel-'+i}));gate.resolve();const rows=await Promise.allSettled(pending);assert.equal(rows.filter(r=>r.status==='fulfilled').length,2);assert.equal(rows.find(r=>r.status==='rejected').reason.status,429);now=11;assert.ok((await store.prepare({...spec,panelId:'new'})).preparationId);store.dispose();
+});
+test('uncertain local MCP response is never automatically resubmitted with the same ticket',async t=>{
+ const f=await fixture(t,(_req,res)=>{res.writeHead(503,{'content-type':'application/json'});res.end(JSON.stringify({error:{message:'fixture failure'}}));});const p=await f.store.prepare(spec),confirmed={...spec,confirm:true,preparationId:p.preparationId};await assert.rejects(f.store.submit(confirmed),/结果未确认/);await assert.rejects(f.store.submit(confirmed),/不会重新生成/);assert.equal(f.requests.length,1);
+});

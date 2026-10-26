@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "version": "0.5.0",
+  "version": "0.8.3",
   "applicationBaseline": "installed-app 0.2.1-rc.2",
   "storage": "${DSH_HOME}/aiyou-enhancer",
   "transport": "native connection.requestRejection + relative /aiyoucodex-dsh routes",
@@ -129,6 +129,33 @@
       "client": true,
       "tabKind": "aiyoucodex-session-transcript",
       "source": "modules/session-transcript",
+      "status": "builtin-source"
+    },
+    {
+      "id": "canvas",
+      "name": "@local/aiyou-enhancer-canvas",
+      "title": "画布",
+      "client": true,
+      "tabKind": "aiyoucodex-canvas",
+      "source": "modules/canvas",
+      "status": "builtin-source"
+    },
+    {
+      "id": "media-tools",
+      "name": "@local/aiyou-enhancer-media-tools",
+      "title": "创作工具",
+      "client": true,
+      "tabKind": "aiyoucodex-media-tools",
+      "source": "modules/media-tools",
+      "status": "builtin-source"
+    },
+    {
+      "id": "media-models",
+      "name": "@local/aiyou-enhancer-media-models",
+      "title": "媒体模型",
+      "client": true,
+      "tabKind": "aiyoucodex-media-models",
+      "source": "modules/media-models",
       "status": "builtin-source"
     }
   ],

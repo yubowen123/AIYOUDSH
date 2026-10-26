@@ -23,6 +23,7 @@ export function normalizeLibraryPage(filters = {}) {
     sort: ["relevance", "oldest", "name", "size", "largest"].includes(filters.sort) ? filters.sort : "newest",
     related: filters.related !== false && filters.related !== "0",
     characterId: String(filters.characterId || ""),
+    folderId: String(filters.folderId || ""),
   };
 }
 

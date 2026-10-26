@@ -24,7 +24,8 @@ import { guardContext } from '../../runtime.mjs';
  *   GET  /aiyoucodex-dsh/session-context?session=<id>   build a draft
  *   POST /aiyoucodex-dsh/session-context/save           persist a confirmed draft
  */
-import { mkdir, readdir, readFile, stat, writeFile, rename } from 'node:fs/promises';
+import { mkdir, readdir, readFile, stat, writeFile, rename, rm } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
@@ -181,14 +182,29 @@ function historyFromProjection(rows) {
 async function readSaved(sessionId) {
   try {
     return JSON.parse(await readFile(join(SAVED_DIR, `${sessionId}.json`), 'utf8'));
-  } catch {
-    return {};
+  } catch (error) {
+    if (error.code === 'ENOENT') return {};
+    throw error;
   }
 }
 
+const savedWrites = new Map();
+function serializeSaved(sessionId, operation) {
+  const next = (savedWrites.get(sessionId) || Promise.resolve()).then(operation);
+  const settled = next.then(() => {}, () => {});
+  savedWrites.set(sessionId, settled);
+  void settled.then(() => { if (savedWrites.get(sessionId) === settled) savedWrites.delete(sessionId); });
+  return next;
+}
 async function writeSaved(sessionId, payload) {
   await mkdir(SAVED_DIR, { recursive: true });
-  await writeFile(join(SAVED_DIR, `${sessionId}.json`), `${JSON.stringify(payload, null, 2)}\n`);
+  const file = join(SAVED_DIR, `${sessionId}.json`), temporary = `${file}.${randomUUID()}.tmp`;
+  try {
+    await writeFile(temporary, `${JSON.stringify(payload, null, 2)}\n`, { mode: 0o600, flag: 'wx' });
+    await rename(temporary, file);
+  } finally {
+    await rm(temporary, { force: true }).catch(() => {});
+  }
 }
 
 /**
@@ -258,7 +274,7 @@ export function apply(ctx) {
             threadId: sessionId,
             title: facts.title,
             history: history.map(({ role, text }) => ({ role, text })),
-            savedContext: saved?.context
+            savedContext: url.searchParams.get('fresh') === '1' ? {} : saved?.context
               ? { ...saved.context, version: saved.version ?? 0 }
               : {},
           });
@@ -279,6 +295,7 @@ export function apply(ctx) {
             historySources: history.slice(-8).map((message) => ({ role: message.role, source: message.source })),
             draft,
             saved: saved?.context ?? null,
+            savedVersion: saved?.version ?? 0,
             savedAt: saved?.at ?? null,
           });
         } catch (error) {
@@ -303,7 +320,7 @@ export function apply(ctx) {
         }
         if (req.method !== 'POST') return json(res, 405, { error: 'POST only' });
         try {
-          const payload = await readBody(req);
+          const payload = await readBody(req).catch(error => { error.status = 400; throw error; });
           const sessionId = String(payload?.session ?? '');
           if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/u.test(sessionId)) {
             return json(res, 400, { error: 'valid session id required' });
@@ -319,11 +336,22 @@ export function apply(ctx) {
             agreements: Array.isArray(context.agreements) ? context.agreements.slice(0, 12) : [],
             references: Array.isArray(context.references) ? context.references.slice(0, 12) : [],
           });
-          const version = Number.isSafeInteger(payload?.version) ? payload.version : 0;
-          await writeSaved(sessionId, { context: normalized, version: version + 1, at: new Date().toISOString() });
-          json(res, 200, { ok: true, context: normalized, version: version + 1 });
+          // Older panels already send `version`; keep it as the CAS precondition.
+          // A versionless writer cannot safely replace another window's record.
+          const expectedVersion = payload?.expectedVersion ?? payload?.version;
+          if (expectedVersion === undefined) return json(res, 428, { error: '保存需要读取版本，请刷新任务上下文后重试。', code: 'CONTEXT_VERSION_REQUIRED' });
+          if (!Number.isSafeInteger(expectedVersion) || expectedVersion < 0 || (payload.expectedVersion !== undefined && payload.version !== undefined && payload.expectedVersion !== payload.version)) return json(res, 400, { error: '任务上下文版本无效，请刷新后重试。', code: 'CONTEXT_VERSION_INVALID' });
+          const result = await serializeSaved(sessionId, async () => {
+            const saved = await readSaved(sessionId), currentVersion = saved.version ?? 0;
+            if (!Number.isSafeInteger(currentVersion) || currentVersion < 0 || currentVersion === Number.MAX_SAFE_INTEGER) throw Object.assign(new Error('已保存的任务上下文版本无效，原记录已保留。'), { status: 500, code: 'CONTEXT_SAVED_VERSION_INVALID' });
+            if (expectedVersion !== currentVersion) throw Object.assign(new Error('此会话已在其他窗口更新；本地草稿未保存，请刷新核对最新记录。'), { status: 409, code: 'CONTEXT_VERSION_CONFLICT', currentVersion });
+            const version = currentVersion + 1;
+            await writeSaved(sessionId, { context: normalized, version, at: new Date().toISOString() });
+            return { ok: true, context: normalized, version };
+          });
+          json(res, 200, result);
         } catch (error) {
-          json(res, 400, { error: String(error?.message ?? error) });
+          json(res, error.status || 500, { error: String(error?.message ?? error), ...(error.code ? { code: error.code } : {}), ...(Number.isSafeInteger(error.currentVersion) ? { currentVersion: error.currentVersion } : {}) });
         }
       },
     }), 'aiyoucodex-session-context:save');

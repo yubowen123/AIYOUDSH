@@ -641,6 +641,41 @@
         }
       ],
       "scope": "pinned-offline-host-test-runtime"
+    },
+    {
+      "name": "@deepseek-ai/dsh-authorization",
+      "version": "0.2.1-rc.2",
+      "license": "MIT",
+      "directory": "test/runtime/node_modules/@deepseek-ai/dsh-authorization",
+      "upstream": {
+        "type": "git",
+        "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+        "directory": "packages/credentials/authorization"
+      },
+      "notices": [
+        {
+          "file": "test/runtime/node_modules/@deepseek-ai/dsh-authorization/LICENSE",
+          "sha256": "ebb4f09972aee8608be255debaf78451a68e95c290f55c240dec2ecfa16ea6be"
+        }
+      ],
+      "scope": "pinned-offline-host-test-runtime"
+    },
+    {
+      "name": "@deepseek-ai/dsh-tools/json-schema",
+      "version": "0.2.1-rc.2",
+      "license": "MIT",
+      "directory": "test/runtime",
+      "upstream": {
+        "url": "https://github.com/deepseek-ai/deepseek-harness",
+        "path": "packages/tools/tools/lib/types/json-schema.js"
+      },
+      "notices": [
+        {
+          "file": "test/runtime/native-json-schema.LICENSE",
+          "sha256": "ebb4f09972aee8608be255debaf78451a68e95c290f55c240dec2ecfa16ea6be"
+        }
+      ],
+      "scope": "pinned-offline-host-schema-test-reference"
     }
   ],
   "taskboardWebInventory": "aiyou/vendor/codex-taskboard/third-party-licenses/inventory.json",

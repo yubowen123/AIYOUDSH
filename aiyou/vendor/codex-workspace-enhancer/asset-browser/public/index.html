@@ -9,7 +9,7 @@
 </head>
 <body>
   <div class="app-shell">
-    <aside class="library-sidebar" aria-label="项目管理">
+    <aside class="library-sidebar" aria-label="素材库文件夹">
       <header class="sidebar-brand">
         <div class="brand-icon" aria-hidden="true">◫</div>
         <div>
@@ -24,15 +24,15 @@
         <small id="projectCount">0</small>
       </div>
       <nav id="localProjectList" class="project-list" aria-label="本地项目"></nav>
-      <div class="sidebar-section-heading"><span>素材分类</span></div>
-      <nav id="categoryChips" class="category-chips" aria-label="子分类"></nav>
 
       <section id="projectFoldersPanel" class="project-folders-panel" hidden>
         <div class="sidebar-section-heading">
-          <span>关联文件夹</span>
+          <span>文件夹</span>
           <button id="editProjectButton" class="text-button" type="button">管理</button>
         </div>
-        <div id="projectFolderList" class="folder-list"></div>
+        <button id="sidebarAddFolderButton" type="button" class="secondary-button folder-add-button">＋ 添加现有文件夹</button>
+        <div id="folderNavigationStatus" class="folder-navigation-status" role="status" aria-live="polite"></div>
+        <nav id="projectFolderList" class="folder-list" aria-label="文件夹"></nav>
         <p class="privacy-note"><span aria-hidden="true">●</span> 文件只在本机读取，不会上传。</p>
       </section>
     </aside>
@@ -48,15 +48,19 @@
           <p id="workspaceSubtitle">关联本地文件夹后，系统会自动识别并分类资产。</p>
         </div>
         <div class="header-actions">
+          <button id="addFolderButton" type="button" class="primary-button">＋ 添加文件夹</button>
           <button id="refreshLibraryButton" type="button" class="secondary-button">↻ 重新扫描</button>
           <button id="settingsButton" type="button" class="secondary-button">⚙ 设置</button>
         </div>
       </header>
 
+      <p id="libraryHealth" class="library-health" role="alert" hidden></p>
+
       <section class="asset-toolbar" aria-label="资产筛选">
         <div class="smart-group-row">
           <nav id="smartGroupTabs" class="smart-group-tabs" role="tablist" aria-label="智能分组">
-            <button type="button" role="tab" data-smart-group="asset" aria-selected="true" class="active"><span>正式资产</span><small data-smart-count="asset">0</small></button>
+            <button type="button" role="tab" data-smart-group="" aria-selected="true" class="active"><span>所有素材</span><small data-smart-count="all">0</small></button>
+            <button type="button" role="tab" data-smart-group="asset" aria-selected="false"><span>正式资产</span><small data-smart-count="asset">0</small></button>
             <button type="button" role="tab" data-smart-group="review" aria-selected="false"><span>待确认</span><small data-smart-count="review">0</small></button>
             <button type="button" role="tab" data-smart-group="noise" aria-selected="false"><span>干扰项</span><small data-smart-count="noise">0</small></button>
           </nav>
@@ -69,6 +73,7 @@
           <button type="button" data-asset-kind="audio"><span>音频</span><small data-kind-count="audio">0</small></button>
           <button type="button" data-asset-kind="video"><span>视频</span><small data-kind-count="video">0</small></button>
         </nav>
+        <nav id="categoryChips" class="category-chips" aria-label="子分类"></nav>
         <div class="toolbar-row">
           <label class="search-box">
             <span aria-hidden="true">⌕</span>
@@ -99,7 +104,8 @@
         </div>
       </section>
 
-      <section class="asset-content">
+      <section class="asset-content" aria-label="素材列表">
+        <div class="folder-content-heading"><strong id="selectedFolderTitle">所有文件夹</strong><span id="selectedFolderPath"></span></div>
         <div id="libraryLoadingState" class="aiyou-module-loading" role="status" aria-live="polite" aria-busy="true">
           <div class="aiyou-loading-art" aria-hidden="true"><span class="aiyou-loading-fill"></span><span class="aiyou-loading-glyph">◇</span></div>
           <div class="aiyou-loading-copy"><strong>正在连接资产管理</strong><p>正在读取配置与项目列表，请稍候。</p><span class="aiyou-loading-track" aria-hidden="true"><i></i></span></div>
@@ -114,11 +120,24 @@
           <div class="empty-icon" aria-hidden="true">◇</div>
           <h2>这里还没有资产</h2>
           <p>创建项目并关联一个或多个文件夹，扫描结果会按文本、图片、音频和视频自动归类。</p>
-          <button id="emptyCreateProjectButton" type="button" class="primary-button">创建第一个项目</button>
+          <div class="empty-actions"><button id="emptyAddFolderButton" type="button" class="primary-button">添加现有文件夹</button><button id="emptyResetFiltersButton" type="button" class="secondary-button" hidden>清除筛选</button><button id="emptyCreateProjectButton" type="button" class="text-button">新建项目</button></div>
         </div>
       </section>
     </main>
   </div>
+
+  <dialog id="folderDialog" class="modal folder-modal" aria-labelledby="folderDialogTitle">
+    <form id="folderForm">
+      <header class="modal-header"><div><span class="eyebrow">LOCAL FOLDER</span><h2 id="folderDialogTitle">添加现有文件夹</h2></div><button type="button" class="icon-button" data-close-dialog="folderDialog" aria-label="关闭添加文件夹">×</button></header>
+      <p id="folderTargetProject" class="field-hint"></p>
+      <label id="folderProjectNameLabel">项目名称<input id="folderProjectName" maxlength="80" placeholder="例如：本地素材"></label>
+      <label>本机文件夹绝对路径<input id="folderPathInput" required placeholder="/Users/your-name/Projects/assets" autocomplete="off" spellcheck="false"></label>
+      <button id="pickFolderButton" type="button" class="secondary-button">选择本机文件夹…</button>
+      <p class="field-hint">选择后点击“保存并扫描”才会读取文件。文件保留在原位置，不会上传。</p>
+      <div id="folderFormError" class="form-error" role="alert"></div>
+      <footer class="modal-actions"><button type="button" class="secondary-button" data-close-dialog="folderDialog">取消</button><button id="saveFolderButton" type="submit" class="primary-button">保存并扫描</button></footer>
+    </form>
+  </dialog>
 
   <dialog id="projectDialog" class="modal project-modal">
     <form id="projectForm" method="dialog">

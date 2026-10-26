@@ -40,40 +40,50 @@ window.__ModuleLoader__.load({
       const [error, setError] = React.useState(null);
       const [busy, setBusy] = React.useState(false);
       const [note, setNote] = React.useState('');
+      const lifetime = React.useRef({ active: true, read: 0, exporting: false });
 
       const load = React.useCallback(async () => {
+        const owner = lifetime.current, request = ++owner.read;
+        const valid = () => owner.active && owner.read === request;
+        setData(null);
+        if (!sessionId) { setBusy(false);setError('请从目标对话打开副本；未指定对话时不会读取最近活动对话。');return; }
         setBusy(true);
         setError(null);
         try {
           const response = await fetch(`${BASE}?preview=6&session=${encodeURIComponent(sessionId)}`, { cache: 'no-store' });
           const value = await response.json();
           if (!response.ok) throw new Error(value?.error || `HTTP ${response.status}`);
-          setData(value);
+          if (valid()) setData(value);
         } catch (failure) {
-          setError(String(failure?.message ?? failure));
+          if (valid()) setError(String(failure?.message ?? failure));
         } finally {
-          setBusy(false);
+          if (valid()) setBusy(false);
         }
       }, [sessionId]);
 
       React.useEffect(() => {
+        const owner = lifetime.current;owner.active = true;
         void load();
+        return () => { owner.active = false; };
       }, [load]);
 
       const exportFiles = React.useCallback(async () => {
+        const owner = lifetime.current;
+        if (!sessionId || owner.exporting || !data || busy) return;
+        owner.exporting = true;
         setBusy(true);
         setNote('');
         try {
           const response = await fetch(`${BASE}/export`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({session:sessionId}) });
           const value = await response.json();
           if (!response.ok) throw new Error(value?.error || `HTTP ${response.status}`);
-          setNote(`已写入 ${value.dir}：${value.files.join('、')}（${value.kept} 条可读消息）`);
+          if (owner.active) setNote(`已写入 ${value.dir}：${value.files.join('、')}（${value.kept} 条可读消息）`);
         } catch (failure) {
-          setNote(`导出失败：${String(failure?.message ?? failure)}`);
+          if (owner.active) setNote(`导出失败：${String(failure?.message ?? failure)}`);
         } finally {
-          setBusy(false);
+          owner.exporting = false;if (owner.active) setBusy(false);
         }
-      }, [sessionId]);
+      }, [sessionId, data, busy]);
 
       const rows = (object) => Object.entries(object ?? {}).slice(0, 8)
         .map(([key, value]) => h('div', { key, style: S.kv }, h('span', null, key), h('span', null, String(value))));
@@ -82,10 +92,10 @@ window.__ModuleLoader__.load({
         h('div', { style: S.bar },
           h('span', { style: { flex: 1, fontWeight: 600 } }, '对话副本'),
           h('button', { type: 'button', style: S.btn, disabled: busy, onClick: () => void load() }, busy ? '读取中…' : '刷新'),
-          h('button', { type: 'button', style: S.btn, disabled: busy, onClick: () => void exportFiles() }, '导出 md + json'),
+          h('button', { type: 'button', style: S.btn, disabled: busy || !sessionId || !data, onClick: () => void exportFiles() }, '导出 md + json'),
         ),
         h('div', { style: S.body },
-          error ? h('div', { style: { ...S.meta, color: 'var(--dsw-alias-state-error-primary)' } }, error) : null,
+          error ? h('div', { role: 'alert', style: { ...S.meta, color: 'var(--dsw-alias-state-error-primary)' } }, error) : null,
 
           h('div', { style: S.note }, data?.note ?? '这是可读副本，不是历史恢复。'),
 
@@ -121,10 +131,16 @@ window.__ModuleLoader__.load({
             ))),
           ),
 
-          note ? h('div', { style: S.meta }, note) : null,
+          note ? h('div', { role: 'status', style: S.meta }, note) : null,
           h('div', { style: S.meta }, '导出只写用户与助手文字：不含思考过程、工具调用、附件或可续跑状态。'),
         ),
       );
+    }
+
+    function TranscriptTab(props) {
+      const tab = typeof props.useTabInfo === 'function' ? props.useTabInfo().tab : null;
+      const sessionId = tab?.navigation?.params?.sessionId ?? props.sessionId ?? props.session ?? '';
+      return h(SessionTranscript, { key: sessionId, sessionId });
     }
 
     return {
@@ -136,7 +152,7 @@ window.__ModuleLoader__.load({
         }), 'session-transcript:type');
         ctx.effect(() => ctx.slots.inject('sidebar.right.pane.tab', () =>
           ctx.slots.register({ name: 'sidebar.right.pane.tab', key: TYPE_ID },
-            (props) => h(SessionTranscript, { ...props, __sidebarRight: ctx.sidebarRight }))), 'session-transcript:panel');
+            (props) => h(TranscriptTab, props))), 'session-transcript:panel');
       },
     };
   },

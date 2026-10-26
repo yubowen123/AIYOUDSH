@@ -2,14 +2,18 @@ import { defaultManualSmartGroup, mergeManualTags } from "./asset-metadata-ui.js
 import { assetMediaRevision, createAssetCardReconciler, createLatestRequestGate, createRevisionPoller } from "./asset-library-state.js";
 import { createMediaPlaybackManager } from "./asset-media-lifecycle.js";
 import { descriptorFromImage, visualSimilarity } from "./character-visual.js";
+import { createCanvasAssetPicker } from "./canvas-asset-picker.js";
+import { pickLocalFolder } from "./folder-picker.js";
 
 const libraryRequests = createLatestRequestGate();
 const bootstrapRequests = createLatestRequestGate();
+const folderRequests = createLatestRequestGate();
 const textRequests = createLatestRequestGate();
 const mediaRequests = createLatestRequestGate();
 const characterRequests = createLatestRequestGate();
 const mediaPlayback = createMediaPlaybackManager();
 const pendingMediaHover = new WeakMap();
+const canvasInsertRequests = new Map();
 const ASSET_PAGE_SIZE = 120;
 const MAX_ASSET_WINDOW = 240;
 
@@ -17,6 +21,16 @@ const state = {
   system: { platform: "", name: "", pathSeparator: "/" },
   projects: [],
   selectedProject: localStorage.getItem("asset-library:selected-project") || "",
+  selectedFolder: "",
+  folders: [],
+  folderProjectId: "",
+  folderLoading: false,
+  folderError: "",
+  folderTruncated: false,
+  libraryHealth: null,
+  folderDialogProjectId: null,
+  folderDialogEpoch: 0,
+  folderPickController: null,
   assets: [],
   assetsProjectId: "",
   libraryRevision: "",
@@ -29,7 +43,7 @@ const state = {
   counts: { all: 0, text: 0, image: 0, audio: 0, video: 0 },
   smartCounts: { asset: 0, review: 0, noise: 0 },
   settings: { columns: 4, tags: [], taxonomy: {} },
-  smartGroup: "asset",
+  smartGroup: "",
   kind: "all",
   category: "",
   query: "",
@@ -37,7 +51,7 @@ const state = {
   searchMeta: null,
   sort: "relevance",
   view: localStorage.getItem("asset-library:view") || "thumbnail",
-  thumbnailDensity: Math.max(1, Math.min(8, Number(localStorage.getItem("asset-library:thumbnail-density")) || 7)),
+  thumbnailDensity: Math.max(1, Math.min(8, Number(localStorage.getItem("asset-library:thumbnail-density")) || 4)),
   related: localStorage.getItem("asset-library:related") !== "0",
   characterId: "",
   characterContext: null,
@@ -53,6 +67,8 @@ const state = {
 };
 
 const els = Object.fromEntries([
+  "libraryHealth", "addFolderButton", "sidebarAddFolderButton", "folderNavigationStatus", "selectedFolderTitle", "selectedFolderPath",
+  "folderDialog", "folderForm", "folderDialogTitle", "folderTargetProject", "folderProjectNameLabel", "folderProjectName", "folderPathInput", "pickFolderButton", "folderFormError", "saveFolderButton", "emptyAddFolderButton", "emptyResetFiltersButton",
   "localProjectList", "projectCount", "projectFoldersPanel", "projectFolderList", "newProjectButton",
   "editProjectButton", "workspaceTitle", "workspaceSubtitle", "scanState", "refreshLibraryButton", "settingsButton",
   "smartGroupTabs", "assetKindTabs", "librarySearchInput", "librarySearchMode", "librarySearchStatus", "librarySortSelect", "assetColumnRange", "assetColumnOutput",
@@ -68,6 +84,15 @@ const els = Object.fromEntries([
   "thumbnailViewButton", "detailViewButton", "relatedAssetsToggle", "clearCharacterFilter",
   "characterDialog", "characterForm", "characterDialogTitle", "characterPreviewImage", "characterName", "characterState", "characterStyle", "characterParent", "characterEvidence", "characterFamilyTitle", "characterFamilyList", "characterCandidateList", "characterError", "saveCharacterButton", "findSimilarCharacters", "viewCharacterFamily", "excludeCharacterImage",
 ].map((id) => [id, document.getElementById(id)]));
+
+const canvasPicker = createCanvasAssetPicker({ assetGrid: els.assetGrid, getAssetById: assetById });
+if (canvasPicker.defaultKind) state.kind = canvasPicker.defaultKind;
+if (canvasPicker.requested) {
+  state.searchMode = "keyword";
+  els.librarySearchMode.value = "keyword";
+  els.librarySearchMode.disabled = true;
+  els.librarySearchInput.placeholder = "搜索名称、分类、标签或正文";
+}
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -216,20 +241,162 @@ function renderProjects() {
     button.addEventListener("click", () => selectProject(project.id));
     els.localProjectList.append(button);
   }
+  renderFolders();
+}
+
+function folderName(folder) { return folder?.name || folder?.path?.split(/[\\/]/).filter(Boolean).at(-1) || "文件夹"; }
+
+function updateFolderHeading() {
+  const folder = state.folderProjectId === state.selectedProject ? state.folders.find(value => value.id === state.selectedFolder) : null;
+  els.selectedFolderTitle.textContent = folder ? folderName(folder) : "所有文件夹";
+  els.selectedFolderPath.textContent = folder?.path || "";
+  els.selectedFolderPath.title = folder?.path || "";
+}
+
+function renderFolders() {
   const project = selectedProject();
   els.projectFoldersPanel.hidden = !project;
+  els.refreshLibraryButton.disabled = !project || state.busy;
   els.projectFolderList.replaceChildren();
-  for (const folder of project?.folders || []) {
-    const row = document.createElement("div");
-    row.className = "folder-row";
-    row.innerHTML = `<span aria-hidden="true">⌑</span><span title="${escapeHtml(folder)}">${escapeHtml(folder)}</span>`;
-    els.projectFolderList.append(row);
+  updateFolderHeading();
+  if (!project) return;
+  const current = state.folderProjectId === project.id;
+  els.folderNavigationStatus.replaceChildren();
+  if (!current || state.folderLoading) els.folderNavigationStatus.textContent = "正在读取文件夹…";
+  else if (state.folderError) {
+    els.folderNavigationStatus.textContent = state.folderError;
+    const retry = document.createElement("button"); retry.type = "button"; retry.className = "text-button"; retry.textContent = "重试";
+    retry.addEventListener("click", () => loadFolders()); els.folderNavigationStatus.append(retry);
+  } else if (state.folderTruncated) els.folderNavigationStatus.textContent = "文件夹较多，仅展示部分目录。所有素材仍可搜索。";
+  else if (state.folderWarnings?.length) els.folderNavigationStatus.textContent = state.folderWarnings.map(value => typeof value === "string" ? value : value.message || "部分目录暂不可读取").join("；");
+  else if (!state.folders.length) els.folderNavigationStatus.textContent = "尚未关联文件夹，请添加已有目录。";
+  if (!current) return;
+  const all = document.createElement("button"); all.type = "button"; all.className = "folder-row folder-all";
+  all.dataset.folderId = ""; all.classList.toggle("active", !state.selectedFolder); all.setAttribute("aria-pressed", String(!state.selectedFolder));
+  all.innerHTML = `<span aria-hidden="true">▦</span><span>所有文件夹</span>`;
+  all.addEventListener("click", () => selectFolder("")); els.projectFolderList.append(all);
+  const collapsed = renderFolders.collapsed ||= new Set();
+  const rows = new Map(state.folders.map(folder => [folder.id, folder]));
+  const parents = new Set(state.folders.map(folder => folder.parentId).filter(Boolean));
+  const hiddenByParent = folder => {
+    let parent = folder.parentId, limit = 0;
+    while (parent && limit++ <= state.folders.length) { if (collapsed.has(parent)) return true; parent = rows.get(parent)?.parentId; }
+    return false;
+  };
+  for (const folder of state.folders) {
+    if (!folder.id || hiddenByParent(folder)) continue;
+    const item = document.createElement("div"); item.className = "folder-tree-item"; item.style.setProperty("--folder-depth", String(Math.min(8, Number(folder.depth) || 0)));
+    if (parents.has(folder.id)) {
+      const toggle = document.createElement("button"); toggle.type = "button"; toggle.className = "folder-expand";
+      toggle.textContent = collapsed.has(folder.id) ? "›" : "⌄"; toggle.setAttribute("aria-expanded", String(!collapsed.has(folder.id)));
+      toggle.setAttribute("aria-label", (collapsed.has(folder.id) ? "展开" : "收起") + folderName(folder));
+      toggle.addEventListener("click", () => { collapsed.has(folder.id) ? collapsed.delete(folder.id) : collapsed.add(folder.id); renderFolders(); }); item.append(toggle);
+    } else { const spacer = document.createElement("span"); spacer.className = "folder-expand-spacer"; item.append(spacer); }
+    const button = document.createElement("button"); button.type = "button"; button.className = "folder-row";
+    button.dataset.folderId = folder.id; button.classList.toggle("active", folder.id === state.selectedFolder);
+    button.setAttribute("aria-pressed", String(folder.id === state.selectedFolder)); button.title = folder.path;
+    button.innerHTML = `<span aria-hidden="true">${folder.readable === false ? "⚠" : "▱"}</span><span>${escapeHtml(folderName(folder))}</span><small>${Number(folder.count) || 0}</small>`;
+    button.addEventListener("click", () => selectFolder(folder.id)); item.append(button); els.projectFolderList.append(item);
   }
+}
+
+async function loadFolders() {
+  const project = selectedProject();
+  if (!project) { folderRequests.cancel(); state.folders = []; state.folderProjectId = ""; renderFolders(); return; }
+  const request = folderRequests.begin(project.id);
+  state.folderLoading = true; state.folderError = ""; renderFolders();
+  try {
+    const data = await api(`/aiyoucodex-dsh/asset-console/ui/api/library/folders?project=${encodeURIComponent(project.id)}`, { signal: request.signal });
+    if (!request.isCurrent() || state.selectedProject !== project.id) return;
+    state.folders = Array.isArray(data.folders) ? data.folders : [];
+    state.folderProjectId = project.id; state.folderTruncated = Boolean(data.truncated); state.folderWarnings = data.warnings || [];
+    if (state.selectedFolder && !state.folders.some(folder => folder.id === state.selectedFolder)) {
+      state.selectedFolder = ""; await loadLibrary({ quiet: true, reset: true });
+    }
+  } catch (error) {
+    if (!request.isCurrent() || state.selectedProject !== project.id || error.name === "AbortError") return;
+    state.folderProjectId = project.id; state.folderError = `文件夹读取失败：${error.message}`;
+  } finally {
+    if (request.isCurrent() && state.selectedProject === project.id) { state.folderLoading = false; renderFolders(); renderAssets(); }
+  }
+}
+
+async function selectFolder(id) {
+  if (id && !state.folders.some(folder => folder.id === id)) return;
+  if (state.selectedFolder === id && !state.libraryLoading) return;
+  state.selectedFolder = id; state.category = ""; renderFolders();
+  await loadLibrary({ quiet: true, reset: true });
+}
+
+async function rescanLibrary() {
+  if (!selectedProject() || state.busy) return;
+  await loadLibrary({ force: true, reset: true });
+  await loadFolders();
+}
+
+function clearLibraryFilters() {
+  state.selectedFolder = ""; state.smartGroup = ""; state.kind = canvasPicker.defaultKind || "all";
+  state.category = ""; state.query = ""; state.characterId = ""; els.librarySearchInput.value = "";
+  els.assetKindTabs.querySelectorAll("[data-asset-kind]").forEach(button => button.classList.toggle("active", button.dataset.assetKind === state.kind));
+  renderFolders(); renderSmartGroupTabs(); resetAssetWindow();
+}
+
+function openFolderDialog() {
+  const project = selectedProject(); state.folderPickController?.abort();
+  state.folderDialogEpoch += 1;
+  state.folderDialogProjectId = project?.id || "";
+  els.pickFolderButton.disabled = false;
+  els.folderProjectNameLabel.hidden = Boolean(project);
+  els.folderProjectName.value = "本地素材";
+  els.folderTargetProject.textContent = project ? `将目录关联到“${project.name}”` : "创建本地项目并关联文件夹";
+  els.folderPathInput.value = ""; els.folderFormError.textContent = "";
+  els.folderPathInput.placeholder = state.system.platform === "win32" ? "D:\\Media\\Assets" : "/Users/your-name/Projects/assets";
+  els.folderDialog.showModal(); els.folderPathInput.focus();
+}
+
+async function selectNativeFolder() {
+  if (!els.folderDialog.open || state.folderPickController) return;
+  const context = state.folderDialogProjectId, epoch = state.folderDialogEpoch, controller = new AbortController(); state.folderPickController = controller;
+  els.pickFolderButton.disabled = true; els.folderFormError.textContent = "";
+  const isCurrent = () => els.folderDialog.open && state.folderDialogEpoch === epoch && state.folderDialogProjectId === context && state.selectedProject === context;
+  try {
+    const path = await pickLocalFolder({ signal: controller.signal, isCurrent });
+    if (!isCurrent()) return;
+    if (path === null) { els.folderFormError.textContent = "已取消选择，可手工填写绝对路径。"; return; }
+    if (!isAbsoluteProjectPath(path)) throw new Error("目录选择器未返回有效的绝对路径，请手工填写。");
+    els.folderPathInput.value = path; els.folderPathInput.focus();
+  } catch (error) { if (isCurrent() && error.name !== "AbortError") els.folderFormError.textContent = error.message; }
+  finally { if (state.folderPickController === controller) { state.folderPickController = null; els.pickFolderButton.disabled = false; } }
+}
+
+async function saveFolder(event) {
+  event.preventDefault();
+  if (els.saveFolderButton.disabled) return;
+  const context = state.folderDialogProjectId, epoch = state.folderDialogEpoch, folder = els.folderPathInput.value.trim(), name = els.folderProjectName.value.trim();
+  if (!isAbsoluteProjectPath(folder)) { els.folderFormError.textContent = "请填写有效的本机文件夹绝对路径。"; return; }
+  if (!context && !name) { els.folderFormError.textContent = "请填写项目名称。"; return; }
+  if (state.selectedProject !== context) { els.folderFormError.textContent = "项目已切换，请关闭后重新添加。"; return; }
+  state.folderPickController?.abort(); els.saveFolderButton.disabled = true; els.folderFormError.textContent = "";
+  els.saveFolderButton.textContent = "正在保存并扫描…";
+  try {
+    const data = await api(context ? "/aiyoucodex-dsh/asset-console/ui/api/library/folders" : "/aiyoucodex-dsh/asset-console/ui/api/projects", {
+      method: "POST", body: JSON.stringify(context ? { projectId: context, path: folder } : { name, folders: [folder] }),
+    });
+    const projects = await api("/aiyoucodex-dsh/asset-console/ui/api/projects"); state.projects = projects.projects || [];
+    if (state.selectedProject !== context || !els.folderDialog.open || state.folderDialogProjectId !== context || state.folderDialogEpoch !== epoch) return;
+    if (!context) { state.selectedProject = data.project.id; localStorage.setItem("asset-library:selected-project", state.selectedProject); }
+    state.selectedFolder = ""; state.smartGroup = ""; state.kind = canvasPicker.defaultKind || "all"; state.category = ""; state.query = ""; state.characterId = ""; els.librarySearchInput.value = "";
+    els.assetKindTabs.querySelectorAll("[data-asset-kind]").forEach(button => button.classList.toggle("active", button.dataset.assetKind === state.kind));
+    els.folderDialog.close(); renderProjects();
+    await Promise.all([loadLibrary({ quiet: true, reset: true }), loadFolders()]);
+    showToast(data.scan?.index?.health?.state === "degraded" ? data.scan.index.health.message : data.added === false ? "文件夹已关联，扫描完成" : "文件夹已关联并扫描完成");
+  } catch (error) { if (els.folderDialog.open && state.folderDialogProjectId === context && state.folderDialogEpoch === epoch) els.folderFormError.textContent = `添加未完成：${error.message}`; }
+  finally { els.saveFolderButton.disabled = false; els.saveFolderButton.textContent = "保存并扫描"; }
 }
 
 function updateKindCounts() {
   const counts = state.serverPaging ? state.counts : { all: 0, text: 0, image: 0, audio: 0, video: 0 };
-  if (!state.serverPaging) state.assets.filter((asset) => asset.smartGroup === state.smartGroup).forEach((asset) => {
+  if (!state.serverPaging) state.assets.filter((asset) => !state.smartGroup || asset.smartGroup === state.smartGroup).forEach((asset) => {
       counts.all += 1;
       counts[asset.kind] = (counts[asset.kind] || 0) + 1;
     });
@@ -245,13 +412,13 @@ function renderSmartGroupTabs() {
     button.setAttribute("aria-selected", String(active));
   });
   document.querySelectorAll("[data-smart-count]").forEach((item) => {
-    item.textContent = String(state.smartCounts[item.dataset.smartCount] || 0);
+    item.textContent = String(item.dataset.smartCount === "all" ? Object.values(state.smartCounts).reduce((sum, value) => sum + (Number(value) || 0), 0) : state.smartCounts[item.dataset.smartCount] || 0);
   });
 }
 
 function renderCategoryChips() {
   const kind = state.kind === "all" ? "" : state.kind;
-  const groupedAssets = state.assets.filter((asset) => asset.smartGroup === state.smartGroup);
+  const groupedAssets = state.assets.filter((asset) => !state.smartGroup || asset.smartGroup === state.smartGroup);
   const categories = kind
     ? state.settings.taxonomy?.[kind] || []
     : state.serverPaging ? Object.keys(state.categoryCounts || {}) : [...new Set(groupedAssets.map((asset) => asset.category).filter(Boolean))];
@@ -595,7 +762,7 @@ function resetAssetWindow() {
 }
 
 function libraryQueryKey() {
-  return JSON.stringify([state.selectedProject, state.smartGroup, state.kind, state.category, state.query, state.searchMode, state.sort, state.related, state.characterId]);
+  return JSON.stringify([state.selectedProject, state.selectedFolder, state.smartGroup, state.kind, state.category, state.query, state.searchMode, state.sort, state.related, state.characterId]);
 }
 
 function renderLibrarySearchStatus() {
@@ -615,7 +782,17 @@ function renderLibrarySearchStatus() {
 
 function createAssetCard(asset) {
   const renderer = { text: renderTextCard, image: renderImageCard, audio: renderAudioCard, video: renderVideoCard }[asset.kind];
-  return renderer?.(asset);
+  const card=renderer?.(asset);
+  if(card){
+    card.draggable=true;
+    card.addEventListener('dragstart',event=>{
+      const current=assetById(card.dataset.assetId)||asset;
+      if(!event.dataTransfer)return;
+      event.dataTransfer.effectAllowed='copy';
+      event.dataTransfer.setData('application/x-aiyou-dsh-asset',JSON.stringify({assetId:current.canonicalAssetId||current.id}));
+    });
+  }
+  return card;
 }
 
 function disposeAssetCard(card) {
@@ -661,7 +838,7 @@ const reconcileAssetCards = createAssetCardReconciler({
 });
 
 function renderAssets() {
-  const matchingAssets = visibleAssets();
+  const matchingAssets = visibleAssets().filter(asset => canvasPicker.acceptsKind(asset.kind));
   const assets = matchingAssets.slice(0, state.visibleLimit);
   const filteredTotal = state.serverPaging ? state.filteredTotal : matchingAssets.length;
   const hasMore = state.serverPaging ? state.pageStart + assets.length < filteredTotal : matchingAssets.length > assets.length;
@@ -674,6 +851,16 @@ function renderAssets() {
   els.clearCharacterFilter.hidden = !state.characterId;
   els.assetGrid.className = `asset-grid ${state.view === "detail" && !state.related && ["image", "video"].includes(state.kind) ? "masonry" : ""}`;
   reconcileAssetCards(assets, state.assetsProjectId);
+  if (!canvasPicker.requested && window.parent !== window) {
+    for (const card of els.assetGrid.querySelectorAll(".asset-card")) {
+      if (card.querySelector(".asset-quick-insert")) continue;
+      const button = document.createElement("button"); button.type = "button"; button.className = "asset-quick-insert";
+      button.dataset.action = "use-in-canvas"; button.textContent = "加入画布";
+      button.setAttribute("aria-label", "加入画布：" + (assetById(card.dataset.assetId)?.name || "素材")); card.append(button);
+    }
+  }
+  syncCanvasInsertButtons();
+  canvasPicker.decorate();
   let more = els.assetGrid.querySelector(".load-more-card");
   if (hasMore && (!state.serverPaging || assets.length < MAX_ASSET_WINDOW)) {
     if (!more) {
@@ -698,15 +885,21 @@ function renderAssets() {
     els.assetWindowLabel.textContent = `${filteredTotal ? state.pageStart + 1 : 0}–${state.pageStart + assets.length} / ${filteredTotal} · 每组最多 ${MAX_ASSET_WINDOW} 张`;
   }
   const hasProject = Boolean(selectedProject());
+  const degraded = state.libraryHealth?.state === "degraded" || Boolean(state.folderWarnings?.length);
+  els.libraryHealth.hidden = !state.libraryHealth?.message;
+  els.libraryHealth.textContent = state.libraryHealth?.message || "";
+  const hasFilters = Boolean(state.selectedFolder || state.smartGroup || state.kind !== (canvasPicker.defaultKind || "all") || state.category || state.query || state.characterId);
   els.emptyLibraryState.hidden = Boolean(matchingAssets.length) || Boolean(state.libraryLoading);
-  els.emptyLibraryState.querySelector("h2").textContent = hasProject ? "没有符合条件的资产" : "这里还没有资产";
-  els.emptyLibraryState.querySelector("p").textContent = hasProject
-    ? "换一个智能分组、类型、分类或搜索词，也可以重新扫描关联文件夹。"
-    : "创建项目并关联一个或多个文件夹，扫描结果会自动分类。";
+  els.emptyLibraryState.querySelector("h2").textContent = !hasProject ? "添加文件夹，开始整理素材" : degraded ? "部分文件夹暂不可读取" : hasFilters ? "当前条件下没有素材" : "这个项目还没有素材";
+  els.emptyLibraryState.querySelector("p").textContent = !hasProject
+    ? "选择本机已有文件夹，保存并扫描后，即可浏览图片、视频、音频和文本。"
+    : degraded ? "请检查左侧目录提示与磁盘挂载状态，修复后重新扫描。已有索引会保留。" : hasFilters ? "可以选择其他文件夹、清除筛选，或重新扫描关联目录。" : "添加现有文件夹，或重新扫描已关联的目录。文件会保留在原位置。";
   els.emptyCreateProjectButton.hidden = hasProject;
+  els.emptyResetFiltersButton.hidden = !hasFilters;
   els.workspaceSubtitle.textContent = hasProject
     ? `${state.serverPaging ? state.totalAssets : state.assets.length} 个本地文件 · 正式资产 ${state.smartCounts.asset || 0} · 待确认 ${state.smartCounts.review || 0} · 干扰项 ${state.smartCounts.noise || 0}`
     : "关联本地文件夹后，系统会自动识别并分类资产。";
+  updateFolderHeading();
   if (document.scrollingElement) document.scrollingElement.scrollTop = scrollTop;
 }
 
@@ -720,13 +913,14 @@ async function loadLibrary({ quiet = false, force = false, reset = false, append
   const previousSearchRevision = !queryChanged ? state.searchMeta?.revision : '';
   if (projectChanged || queryChanged || reset) {
     state.assetsProjectId = project?.id || "";
-    if (projectChanged) state.assets = [];
+    if (projectChanged || queryChanged) { state.assets = []; state.serverPaging = false; }
     state.libraryRevision = "";
     state.searchMeta = null;
     state.assetsQueryKey = queryKey;
     state.pageStart = Number.isFinite(offset) ? Math.max(0, offset) : 0;
     state.filteredTotal = 0;
     if (projectChanged) {
+      state.libraryHealth = null; state.folderWarnings = [];
       state.totalAssets = 0;
       state.categoryCounts = {};
       state.counts = { all: 0, text: 0, image: 0, audio: 0, video: 0 };
@@ -734,7 +928,10 @@ async function loadLibrary({ quiet = false, force = false, reset = false, append
     }
     state.visibleLimit = ASSET_PAGE_SIZE;
     // Never leave project A's actionable cards under project B's selection.
-    if (projectChanged) { renderSmartGroupTabs(); renderCategoryChips(); updateKindCounts(); renderAssets(); }
+    if (projectChanged || queryChanged) {
+      setLibraryLoading("index", "正在读取素材", "正在更新当前文件夹与筛选条件，请稍候。");
+      renderSmartGroupTabs(); renderCategoryChips(); updateKindCounts(); renderAssets();
+    }
     if (document.scrollingElement) document.scrollingElement.scrollTop = 0;
   }
   if (!project) {
@@ -751,6 +948,7 @@ async function loadLibrary({ quiet = false, force = false, reset = false, append
     return;
   }
   state.busy = true;
+  els.refreshLibraryButton.disabled = true;
   const phase = force ? "scan" : append || (Number.isFinite(offset) && offset > 0) ? "page" : String(state.query || "").trim() ? "search" : "index";
   setLibraryLoading(phase, { scan: "正在扫描关联文件夹", page: "正在读取分页资产", search: "正在检索资产资料", index: "正在读取资产索引" }[phase],
     state.assets.length ? "当前资产仍可浏览，完成后会更新列表。" : phase === "scan" ? "正在整理本机文件和已有分类信息，请稍候。" : "正在载入本机资产资料，请稍候。");
@@ -760,7 +958,8 @@ async function loadLibrary({ quiet = false, force = false, reset = false, append
   els.scanState.classList.add("busy");
   try {
     const query = new URLSearchParams({ project: project.id, limit: String(ASSET_PAGE_SIZE),
-      smartGroup: state.characterId ? "" : state.smartGroup || "asset", kind: state.kind || "all", category: state.category || "", query: state.query || "", searchMode: state.searchMode || 'laya', sort: state.sort || "relevance", related: state.related ? "1" : "0", characterId: state.characterId });
+      smartGroup: state.characterId ? "" : state.smartGroup || "", kind: state.kind || "all", category: state.category || "", query: state.query || "", searchMode: state.searchMode || 'laya', sort: state.sort || "relevance", related: state.related ? "1" : "0", characterId: state.characterId });
+    if (state.selectedFolder) query.set("folderId", state.selectedFolder);
     if (force) query.set("rescan", "1");
     const previousAssets = state.assets;
     const pageStart = state.pageStart || 0;
@@ -804,6 +1003,7 @@ async function loadLibrary({ quiet = false, force = false, reset = false, append
     state.counts = data.counts || state.counts;
     state.smartCounts = data.smartCounts || state.smartCounts;
     state.settings = data.settings || state.settings;
+    state.libraryHealth = data.index?.health || null;
     setColumns(state.settings.columns);
     els.workspaceTitle.textContent = project.name;
     els.scanState.textContent = data.index?.mode === "initial-scan"
@@ -811,10 +1011,11 @@ async function loadLibrary({ quiet = false, force = false, reset = false, append
       : data.index?.mode === "manual-rescan"
         ? "重新扫描完成"
         : `增量同步 ${formatDate(data.index?.updatedAt || Date.now())}`;
+    if (state.libraryHealth?.state === "degraded") els.scanState.textContent = "扫描部分完成 · 请检查目录";
     setLibraryLoading(null);
     renderSmartGroupTabs(); updateKindCounts(); renderCategoryChips(); renderAssets();
-    if (!quiet) showToast(force
-      ? `已重新扫描 ${state.assets.length} 个资产`
+    if (!quiet) showToast(state.libraryHealth?.state === "degraded" ? state.libraryHealth.message : force
+      ? `已重新扫描 ${state.totalAssets} 个资产`
       : `已从持久索引加载 ${state.assets.length} 个资产`);
   } catch (error) {
     if (!isCurrent() || error.name === "AbortError") return;
@@ -825,6 +1026,7 @@ async function loadLibrary({ quiet = false, force = false, reset = false, append
   } finally {
     if (isCurrent()) {
       state.busy = false;
+      els.refreshLibraryButton.disabled = !selectedProject();
       if (els.librarySearchStatus) renderLibrarySearchStatus();
       els.scanState.classList.remove("busy");
       if (els.assetPagingControls) {
@@ -848,7 +1050,16 @@ async function loadBootstrap() {
     applyPlatformProjectUi(config);
     setColumns(state.settings.columns);
     renderProjects();
-    await loadLibrary({ quiet: true });
+    await Promise.all([loadLibrary({ quiet: true }), loadFolders()]);
+    await canvasPicker.focus({ projects: state.projects, currentProjectId: state.selectedProject,
+      readPage: (projectId, offset, signal) => api(`/aiyoucodex-dsh/asset-console/ui/api/library?${new URLSearchParams({ project: projectId, limit: String(ASSET_PAGE_SIZE), offset: String(offset), kind: "all", smartGroup: "", searchMode: "keyword", sort: "newest", related: "0" })}`, { signal }),
+      openRow: async (row, projectId) => {
+        state.selectedProject = projectId; state.selectedFolder = ""; state.smartGroup = ""; state.kind = row.kind; state.category = "";
+        state.query = row.name; state.searchMode = "keyword"; els.librarySearchInput.value = row.name; els.librarySearchMode.value = "keyword";
+        els.assetKindTabs.querySelectorAll("[data-asset-kind]").forEach(button => button.classList.toggle("active", button.dataset.assetKind === row.kind));
+        renderProjects(); await Promise.all([loadLibrary({ quiet: true, reset: true }), loadFolders()]);
+      },
+    });
     return true;
   } catch (error) {
     if (!request.isCurrent() || error.name === "AbortError") return;
@@ -863,10 +1074,13 @@ async function selectProject(projectId) {
   state.characterId = "";
   if (state.selectedProject === projectId && state.assets.length) return;
   state.selectedProject = projectId;
+  state.selectedFolder = "";
   state.category = "";
+  state.folderPickController?.abort();
+  els.folderDialog.close();
   localStorage.setItem("asset-library:selected-project", projectId);
   renderProjects();
-  await loadLibrary({ quiet: true });
+  await Promise.all([loadLibrary({ quiet: true }), loadFolders()]);
 }
 
 function openProjectDialog(project = null) {
@@ -896,10 +1110,11 @@ async function saveProject(event) {
     const projectData = await api("/aiyoucodex-dsh/asset-console/ui/api/projects");
     state.projects = projectData.projects || [];
     state.selectedProject = project.id;
+    state.selectedFolder = "";
     localStorage.setItem("asset-library:selected-project", project.id);
     els.projectDialog.close();
     renderProjects();
-    await loadLibrary();
+    await Promise.all([loadLibrary(), loadFolders()]);
   } catch (error) {
     els.projectFormError.textContent = error.message;
   } finally {
@@ -1033,6 +1248,43 @@ function openAssetAction(action, asset) {
   requestAnimationFrame(() => els.assetActionFields.querySelector(action === "manual-tags" ? "[name=customTags]" : action === "manual-category" ? "[name=category]" : "select, input")?.focus());
 }
 
+function syncCanvasInsertButtons() {
+  for (const card of els.assetGrid.querySelectorAll(".asset-card")) {
+    const button = card.querySelector(".asset-quick-insert");
+    if (!button) continue;
+    const pending = [...canvasInsertRequests.values()].some(value => value.assetId === card.dataset.assetId && value.projectId === state.selectedProject);
+    button.disabled = pending;
+    button.textContent = pending ? "等待加入画布…" : "加入画布";
+  }
+}
+
+function useAssetInCanvas(asset) {
+  if (!asset?.id || window.parent === window || [...canvasInsertRequests.values()].some(value => value.assetId === asset.id && value.projectId === state.selectedProject)) return false;
+  try { if (location.origin === "null" || window.parent.location.origin !== location.origin) throw new Error("请从 DSH 素材库打开后加入画布。"); }
+  catch { showToast("请从 DSH 素材库打开后加入画布。", "error"); return false; }
+  const requestId = crypto.randomUUID();
+  canvasInsertRequests.set(requestId, { assetId: asset.id, projectId: state.selectedProject });
+  syncCanvasInsertButtons();
+  try {
+    window.parent.postMessage({ source: "asset-console", action: "use-in-canvas", assetId: asset.id, requestId }, location.origin);
+    showToast("请选择目标画布，确认后将加入素材…");
+    return true;
+  } catch {
+    canvasInsertRequests.delete(requestId); syncCanvasInsertButtons();
+    showToast("未能联系画布，请重新打开素材库后重试。", "error"); return false;
+  }
+}
+
+function handleCanvasInsertReceipt(event) {
+  const message = event.data;
+  if (event.source !== window.parent || event.origin !== location.origin || message?.source !== "codex-sidebar-enhancer" || !["asset-added", "asset-add-failed"].includes(message.action) || typeof message.requestId !== "string") return false;
+  const request = canvasInsertRequests.get(message.requestId);
+  if (!request) return false;
+  canvasInsertRequests.delete(message.requestId); syncCanvasInsertButtons();
+  if (request.projectId === state.selectedProject) showToast(message.action === "asset-added" ? "素材已加入画布" : String(message.error || "加入画布未完成，请重试。").slice(0, 400), message.action === "asset-added" ? "" : "error");
+  return true;
+}
+
 function useAssetInCodex(asset) {
   if (!asset?.sourcePath || window.parent === window) return false;
   window.parent.postMessage({
@@ -1134,7 +1386,12 @@ function bindEvents() {
   els.emptyCreateProjectButton.addEventListener("click", () => openProjectDialog());
   els.editProjectButton.addEventListener("click", () => openProjectDialog(selectedProject()));
   els.projectForm.addEventListener("submit", saveProject);
-  els.refreshLibraryButton.addEventListener("click", () => loadLibrary({ force: true }));
+  els.refreshLibraryButton.addEventListener("click", () => rescanLibrary());
+  for (const button of [els.addFolderButton, els.sidebarAddFolderButton, els.emptyAddFolderButton]) button.addEventListener("click", openFolderDialog);
+  els.folderForm.addEventListener("submit", saveFolder);
+  els.pickFolderButton.addEventListener("click", selectNativeFolder);
+  els.folderDialog.addEventListener("close", () => { state.folderDialogEpoch += 1; state.folderPickController?.abort(); state.folderPickController = null; els.pickFolderButton.disabled = false; });
+  els.emptyResetFiltersButton.addEventListener("click", clearLibraryFilters);
   els.settingsButton.addEventListener("click", () => { renderSettings(); els.settingsDialog.showModal(); });
   els.smartGroupTabs.addEventListener("click", (event) => {
     const button = event.target.closest("[data-smart-group]");
@@ -1159,7 +1416,7 @@ function bindEvents() {
     state.searchTimer = setTimeout(resetAssetWindow, 180);
   });
   els.librarySearchMode.addEventListener('change', () => {
-    state.searchMode = els.librarySearchMode.value === 'keyword' ? 'keyword' : 'laya';
+    state.searchMode = canvasPicker.requested || els.librarySearchMode.value === 'keyword' ? 'keyword' : 'laya';
     libraryRequests.cancel(); clearTimeout(state.searchTimer); resetAssetWindow();
   });
   els.librarySortSelect.addEventListener("change", () => { state.sort = els.librarySortSelect.value; resetAssetWindow(); });
@@ -1177,7 +1434,8 @@ function bindEvents() {
     event.preventDefault(); event.stopPropagation();
     if (["manual-category", "manual-tags"].includes(actionButton.dataset.action) && event.detail !== 0) return;
     const asset = assetById(actionButton.closest("[data-asset-id]")?.dataset.assetId);
-    if (asset && actionButton.dataset.action === "use-in-codex") useAssetInCodex(asset);
+    if (asset && actionButton.dataset.action === "use-in-canvas") useAssetInCanvas(asset);
+    else if (asset && actionButton.dataset.action === "use-in-codex") useAssetInCodex(asset);
     else if (asset && actionButton.dataset.action === "character") openCharacterDialog(asset);
     else if (asset && actionButton.dataset.action === "preview") previewAsset(asset);
     else if (asset) openAssetAction(actionButton.dataset.action, asset);
@@ -1211,7 +1469,8 @@ function bindEvents() {
   });
   window.addEventListener("message", (event) => {
     const message = event.data;
-    if (event.source !== window.parent || message?.source !== "codex-sidebar-enhancer") return;
+    if (handleCanvasInsertReceipt(event)) return;
+    if (event.source !== window.parent || event.origin !== location.origin || message?.source !== "codex-sidebar-enhancer" || message.requestId) return;
     if (message.action === "search") {
       const query = String(message.query || "").trim();
       state.query = query;

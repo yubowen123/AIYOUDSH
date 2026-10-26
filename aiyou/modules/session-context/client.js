@@ -57,47 +57,110 @@ window.__ModuleLoader__.load({
       const [draft, setDraft] = React.useState({ goal: '', progress: '', nextStep: '' });
       const [dirty, setDirty] = React.useState(false);
       const [savedNote, setSavedNote] = React.useState('');
+      const [loading, setLoading] = React.useState(false);
+      const [saving, setSaving] = React.useState(false);
+      const [conflict, setConflict] = React.useState(null);
+      const scope = React.useRef({ sessionId, active: true, read: 0, edit: 0, saving: false });
+      const currentDraft = React.useRef(draft);
+      currentDraft.current = draft;
+      if (scope.current.sessionId !== sessionId) {
+        scope.current.active = false;
+        scope.current = { sessionId, active: true, read: 0, edit: 0, saving: false };
+      }
 
-      const load = React.useCallback(async () => {
+      const load = React.useCallback(async (fresh = false) => {
+        const owner = scope.current;
+        const request = ++owner.read;
+        const edit = owner.edit;
+        const valid = () => owner.active && scope.current === owner && owner.read === request;
         if (!sessionId) {
+          setLoading(false);
           setError('这个面板需要知道当前会话 id（由侧栏行菜单或会话打开时提供）');
           return;
         }
+        setLoading(true);
         try {
           setError(null);
-          const response = await fetch(`${API}?session=${encodeURIComponent(sessionId)}`, { cache: 'no-store' });
+          const query = new URLSearchParams({ session: sessionId, ...(fresh ? { fresh: '1' } : {}) });
+          const response = await fetch(`${API}?${query}`, { cache: 'no-store' });
           const value = await response.json();
           if (!response.ok) throw new Error(value?.error || `HTTP ${response.status}`);
+          if (!valid()) return;
           setData(value);
-          setDraft({
-            goal: value?.saved?.goal ?? value?.draft?.context?.goal ?? '',
-            progress: value?.saved?.progress ?? value?.draft?.context?.progress ?? '',
-            nextStep: value?.saved?.nextStep ?? value?.draft?.context?.nextStep ?? '',
-          });
-          setDirty(false);
-          setSavedNote(value?.savedAt ? `已保存的记录：${String(value.savedAt).slice(0, 16).replace('T', ' ')}` : '');
+          if (owner.conflict) {
+            owner.conflict = 'review';
+            setConflict('review');
+            setSavedNote('已读取最新记录；本地草稿已保留，请对照后确认保存。');
+            return;
+          }
+          if (owner.edit !== edit) {
+            setSavedNote('读取已完成；保留当前尚未保存的修改。');
+            return;
+          }
+          const selected = fresh ? value?.draft?.context : value?.saved ?? value?.draft?.context;
+          const next = Object.fromEntries(FIELDS.map(({ key }) => [key, selected?.[key] ?? '']));
+          currentDraft.current = next;
+          setDraft(next);
+          const differs = fresh && JSON.stringify(value?.draft?.context ?? {}) !== JSON.stringify(value?.saved ?? {});
+          setDirty(differs);
+          setSavedNote(fresh ? (differs ? '已重新提取，尚未保存。' : '提取结果与已保存记录一致。') : value?.savedAt ? `已保存的记录：${String(value.savedAt).slice(0, 16).replace('T', ' ')}` : '');
         } catch (failure) {
-          setError(String(failure?.message ?? failure));
+          if (valid()) setError(String(failure?.message ?? failure));
+        } finally {
+          if (valid()) setLoading(false);
         }
       }, [sessionId]);
 
       React.useEffect(() => {
+        const owner = scope.current;
+        owner.active = true;
+        setData(null);
+        setDraft({ goal: '', progress: '', nextStep: '' });
+        setDirty(false);
+        setSavedNote('');
+        setSaving(false);
+        setConflict(null);
         void load();
+        return () => { owner.active = false; };
       }, [load]);
 
       const save = React.useCallback(async () => {
+        const owner = scope.current;
+        if (!owner.active || owner.saving || owner.conflict === 'stale' || !sessionId || !data) return;
+        owner.saving = true;
+        const edit = owner.edit;
+        const submitted = { ...data.draft?.context, ...currentDraft.current };
+        const valid = () => owner.active && scope.current === owner;
+        setSaving(true);
+        setError(null);
         try {
           const response = await fetch(`${API}/save`, {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ session: sessionId, context: draft, version: data?.savedVersion ?? 0 }),
+            body: JSON.stringify({ session: sessionId, context: submitted, expectedVersion: data?.savedVersion ?? 0 }),
           });
           const value = await response.json();
-          if (!response.ok) throw new Error(value?.error || `HTTP ${response.status}`);
-          setDirty(false);
-          setSavedNote(`已保存 v${value.version}`);
+          if (!response.ok) {
+            if (response.status === 409 && value?.code === 'CONTEXT_VERSION_CONFLICT' && valid()) {
+              owner.conflict = 'stale';
+              setConflict('stale');
+              setDirty(true);
+              setSavedNote('其他窗口已保存新版本；本地草稿已保留。请先刷新核对，不会自动覆盖。');
+            }
+            throw new Error(value?.error || `HTTP ${response.status}`);
+          }
+          if (!valid()) return;
+          owner.conflict = null;
+          setConflict(null);
+          setData(previous => ({ ...previous, saved: value.context ?? submitted, savedVersion: value.version }));
+          const unchanged = owner.edit === edit;
+          setDirty(!unchanged);
+          setSavedNote(unchanged ? `已保存 v${value.version}` : '上一版已保存；当前修改尚未保存。');
         } catch (failure) {
-          setError(String(failure?.message ?? failure));
+          if (valid()) setError(String(failure?.message ?? failure));
+        } finally {
+          owner.saving = false;
+          if (valid()) setSaving(false);
         }
       }, [sessionId, draft, data]);
 
@@ -109,10 +172,15 @@ window.__ModuleLoader__.load({
         h('div', { style: S.bar },
           h('span', { style: { flex: 1, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
             data?.facts?.title || '任务上下文'),
-          h('button', { type: 'button', style: S.btn, onClick: () => void load() }, '刷新'),
+          h('button', { type: 'button', style: S.btn, disabled: loading || saving, onClick: () => void load() }, '刷新'),
         ),
         h('div', { style: S.body },
-          error ? h('div', { style: S.warn }, error) : null,
+          error ? h('div', { role: 'alert', style: S.warn }, error) : null,
+          loading ? h('div', { role: 'status', style: S.meta }, '正在读取任务上下文…') : null,
+          conflict ? h('div', { role: 'status', style: S.warn },
+            conflict === 'stale' ? '此会话已由其他窗口更新。本地草稿已保留，请刷新读取最新记录后核对。' :
+              h('div', null, h('strong', null, `最新保存记录 v${data?.savedVersion ?? 0}（下方草稿尚未保存）`),
+                ...FIELDS.map(field => h('div', { key: field.key, style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, `${field.label}：${data?.saved?.[field.key] || '（空）'}`)))) : null,
 
           // ---- recorded facts (authoritative) ----
           h('div', { style: S.section },
@@ -148,16 +216,20 @@ window.__ModuleLoader__.load({
                 style: S.area,
                 value: fields[field.key] ?? '',
                 maxLength: field.max,
+                'aria-label': field.label,
+                disabled: loading || saving || !sessionId || data === null,
                 onChange: (event) => {
+                  scope.current.edit++;
+                  currentDraft.current = { ...currentDraft.current, [field.key]: event.target.value };
                   setDirty(true);
-                  setDraft((current) => ({ ...current, [field.key]: event.target.value }));
+                  setDraft(currentDraft.current);
                 },
               }),
             )),
             h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
-              h('button', { type: 'button', style: S.btn, disabled: !dirty || !sessionId, onClick: () => void save() }, dirty ? '保存草稿' : '已保存'),
-              h('button', { type: 'button', style: S.btn, onClick: () => void load() }, '恢复自动提取'),
-              savedNote ? h('span', { style: S.meta }, savedNote) : null,
+              h('button', { type: 'button', style: S.btn, disabled: loading || saving || conflict === 'stale' || !dirty || !sessionId || !data, onClick: () => void save() }, saving ? '正在保存…' : conflict === 'stale' ? '请先刷新核对' : conflict === 'review' ? '确认用本地草稿保存' : dirty ? '保存草稿' : '已保存'),
+              h('button', { type: 'button', style: S.btn, disabled: loading || saving || Boolean(conflict) || !sessionId, onClick: () => void load(true) }, '恢复自动提取'),
+              savedNote ? h('span', { role: 'status', style: S.meta }, savedNote) : null,
             ),
             ...(data?.draft?.warnings ?? []).map((warning, index) => h('div', { key: index, style: S.warn }, warning)),
           ),
@@ -181,6 +253,11 @@ window.__ModuleLoader__.load({
       );
     }
 
+    function SessionContextTab(props) {
+      const tab = typeof props.useTabInfo === 'function' ? props.useTabInfo().tab : null;
+      return h(SessionContext, { sessionId: tab?.navigation?.params?.sessionId ?? props.sessionId ?? props.session ?? '' });
+    }
+
     return {
       inject: ['slots', 'sidebarRightTabs', 'sidebarRight'],
       apply(ctx) {
@@ -190,7 +267,7 @@ window.__ModuleLoader__.load({
         }), 'session-context:type');
         ctx.effect(() => ctx.slots.inject('sidebar.right.pane.tab', () =>
           ctx.slots.register({ name: 'sidebar.right.pane.tab', key: TYPE_ID },
-            (props) => h(SessionContext, { ...props, __sidebarRight: ctx.sidebarRight }))), 'session-context:panel');
+            (props) => h(SessionContextTab, props))), 'session-context:panel');
       },
     };
   },

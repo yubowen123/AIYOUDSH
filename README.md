@@ -6,33 +6,36 @@
 
 **让官方 DeepSeek Harness 拥有更完整的工作台、主题和创作入口。**
 
-AIYOUDSH 是可安装、可卸载的桌面增强包：基于官方安装包的原生扩展接口，重新整理导航和对话侧栏，加入主题配置、动态背景、本地资产与项目管理。v0.5.0 提供 **Windows x64 与 macOS Apple Silicon** 两套独立适配的安装包。
+AIYOUDSH 是可安装、可卸载的桌面增强包：基于官方安装包的原生扩展接口，重新整理导航和对话侧栏，加入主题配置、动态背景、本地资产与项目管理。v0.8.3 延续 AIYOUPLUS 画布与创作工具的本地融合，文字使用宿主模型，素材使用 DSH 统一素材库；新增全插件主题同步和独立的画布外观配置；素材库采用左目录右素材，支持目录关联与扫描，媒体 API 支持文档、模型目录与调用合同自动关联配置。本轮主题检查在 macOS Apple Silicon 与隔离浏览器中分层验证；v0.5.0 的 Windows x64 支持保留，新增主题及画布能力尚未完成 Windows 桌面实测。
 
-[下载 v0.5.0](https://github.com/yubowen123/AIYOUDSH/releases/tag/v0.5.0) · [安装与卸载](docs/installation.md) · [功能说明](docs/features.md) · [主题与动效](docs/themes.md) · [构建源码](docs/development.md) · [问题反馈](https://github.com/yubowen123/AIYOUDSH/issues)
+[下载 v0.8.3](https://github.com/yubowen123/AIYOUDSH/releases/tag/v0.8.3) · [安装与卸载](docs/installation.md) · [功能说明](docs/features.md) · [主题与动效](docs/themes.md) · [构建源码](docs/development.md) · [问题反馈](https://github.com/yubowen123/AIYOUDSH/issues)
 
 ![AIYOUDSH 工作台：左侧功能栏与对话列表、中间聊天和主题背景；macOS 实机](docs/screenshots/overview.jpg)
+
+本轮变更与验证边界见 [v0.8.3 说明](docs/releases/v0.8.3.md)。v0.8.3 发布 macOS arm64 与完整源码；Windows v0.5.0 下载明确保留为历史版本，不代表新增画布能力已完成 Windows 桌面验收。
 
 ## 下载与兼容
 
 | 平台 | 安装包 | 条件 |
 | --- | --- | --- |
-| Windows 10 / 11 x64 | [AIYOUDSH-v0.5.0-windows-x64.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.5.0/AIYOUDSH-v0.5.0-windows-x64.zip) | 官方 x64 应用、.NET Framework 4.8；当前用户安装，无需管理员权限 |
-| macOS Apple Silicon arm64 | [AIYOUDSH-v0.5.0-macos-arm64.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.5.0/AIYOUDSH-v0.5.0-macos-arm64.zip) | 官方 arm64 应用；原生 AppKit 安装器 |
-| 可构建源码 | [AIYOUDSH-v0.5.0-source.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.5.0/AIYOUDSH-v0.5.0-source.zip) | Node.js 24 或更新版本；按平台构建 |
+| Windows 10 / 11 x64（历史 v0.5.0） | [AIYOUDSH-v0.5.0-windows-x64.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.5.0/AIYOUDSH-v0.5.0-windows-x64.zip) | 历史稳定包；官方 x64 应用、.NET Framework 4.8。v0.8.3 新能力尚未完成 Windows 桌面验收 |
+| macOS Apple Silicon arm64 | [AIYOUDSH-v0.8.3-macos-arm64.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.3/AIYOUDSH-v0.8.3-macos-arm64.zip) | 官方 arm64 应用；原生 AppKit 安装器 |
+| 可构建源码 | [AIYOUDSH-v0.8.3-source.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.3/AIYOUDSH-v0.8.3-source.zip) | Node.js 24 或更新版本；按平台构建 |
 
-[SHA-256 校验文件](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.5.0/AIYOUDSH-v0.5.0-SHA256SUMS.txt) · [v0.5.0 说明](docs/releases/v0.5.0.md) · [上一版 macOS v0.4.0](https://github.com/yubowen123/AIYOUDSH/releases/tag/v0.4.0)
+[SHA-256 校验文件](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.3/AIYOUDSH-v0.8.3-SHA256SUMS.txt) · [v0.5.0 说明](docs/releases/v0.5.0.md) · [上一版 macOS v0.4.0](https://github.com/yubowen123/AIYOUDSH/releases/tag/v0.4.0)
 
 两平台均精确适配官方 **`0.2.1-rc.2` / `332895e0f7c9d4dbfb29729f5eb367fa263ff986`**，各自校验对应平台的应用归档和组件哈希。不匹配时停止安装；Mac Intel 与 Windows ARM 不在当前支持范围。
 
 ## 工作台与功能
 
+- **画布与创作。** 左侧画布、创作工具和媒体模型菜单；支持对话控制原画布、同库素材插入、图片/视频/音频自定义接口及文档智能配置。说明与验证边界见[融合说明](docs/integration/aiyouplus.md)。
 - **统一工作台。** 独立竖向功能栏与会话列表，置顶、项目、最近、中断四类视图；搜索、摘要、标签和三色标注。工具在右侧打开，中间聊天保留。
-- **完整主题配置。** 七套内置配色，背景位置与强度、14 项分层透明度、13 项颜色；支持实时预览、取消、保存和恢复系统默认。
+- **统一主题与画布外观。** 七套内置主题加系统默认，资产库、项目看板、媒体模型、原生信息面板及本机画布页面跟随主题。全局保留 14 项透明度与 13 项颜色；画布另有 9 项颜色、4 项底色透明度、背景与网格配置。保存同步到其他宿主窗口，本地未保存预览受到保护。
 - **真实动态背景。** 机甲使用原视频静音循环；关闭动态、系统减少动态或媒体失败时回退静态背景。
 - **创作入口。** MOKE AIGC 使用官方内置浏览器；资产控制台和项目看板使用随包本地服务。
 - **对话工具归位。** 用量与上下文、输出目录位于有消息对话的顶部右侧，绑定当前对话。
 
-界面与窗口名称统一为 **AIYOUDSH**，Claude Code 功能模块、菜单及本增强拥有的遗留标签页已移除。官方应用包与系统应用入口保留原名。最终运行库为 **15 个安装模块：2 个原生界面模块 + 13 个功能模块**。
+界面与窗口名称统一为 **AIYOUDSH**，Claude Code 功能模块、菜单及本增强拥有的遗留标签页已移除。官方应用包与系统应用入口保留原名。功能以原生插件和随包本地服务装配，保留参考源码的模块不等于默认启用。
 
 Windows 版本使用独立官方基线和语义 CSS 映射适配原生界面与主题，并非将 Mac 包改名分发。功能范围、待连接的模型通道和验证边界见[功能说明](docs/features.md)。
 
@@ -53,9 +56,9 @@ Windows 图为实际编译安装器在 GitHub Windows runner 中的准备界面�
 
 ## 项目知识卡片
 
-![AIYOUDSH GitHub 项目知识卡片](docs/knowledge-card.png)
+![AIYOUDSH v0.8.3：共享画布、DSH 素材库、媒体 API 与本地 Codex CLI](docs/knowledge-card-v0.8.3.png)
 
-基于本仓库功能与安装文档生成的项目图解；应用实机效果以上方截图为准。
+基于 v0.8.3 源码与验证记录生成的项目图解（2026-10-26）。本地测试 374 项通过、1 项平台检查跳过；配置保存不等于真实模型生成通过，Windows 新能力未完成桌面实测。[审查与剩余事项](docs/releases/v0.8.3-audit.md)。应用实机效果以上方截图为准。
 
 ## 安装
 
@@ -84,7 +87,7 @@ Node.js 24 起，默认按当前平台构建 `dist/addon/runtime/`；也可显�
 
 AIYOUDSH 是官方应用的外挂增强，不是可独立启动的官方 fork。源码包含可编辑 JavaScript 恢复分区、新增扩展与本地服务，不宣称还原官方原始 TypeScript 工程或与 AIYOUcodex 全功能等价。
 
-机甲为 **4 秒背景视频循环**，其他主题使用静态背景或明确标注的中性纹理回退；原版事件动效、声音、轮播与媒体上传页尚未接入。MOKE 的登录和跨重启页面状态由官方 Browser 与站点管理。[主题清单](docs/themes.md) · [验证范围](docs/releases/v0.5.0.md#验证范围)
+机甲为 **4 秒背景视频循环**，其他主题使用静态背景或明确标注的中性纹理回退；原版事件动效、声音、轮播与媒体上传页尚未接入。MOKE 的登录和跨重启页面状态由官方 Browser 与站点管理，主题仅作用于原生容器，不注入外站内部。[主题清单](docs/themes.md) · [本轮验证边界](docs/releases/v0.8.0.md#验证与边界)
 
 ## 来源与许可
 
@@ -92,4 +95,4 @@ AIYOUDSH 是官方应用的外挂增强，不是可独立启动的官方 fork。
 
 ---
 
-**English:** AIYOUDSH is a removable workbench and theme add-on for official DeepSeek Harness. v0.5.0 targets Windows 10/11 x64 and macOS Apple Silicon with platform-specific compatibility checks. It requires one exact `0.2.1-rc.2` build. Sources include editable JavaScript reconstruction partitions and extensions, not a standalone app or a restoration of the original TypeScript project. The gallery above shows macOS captures; see the release notes for validation scope.
+**English:** AIYOUDSH is a removable workbench and theme add-on for official DeepSeek Harness. v0.8.3 adds a shared canvas, DSH asset workflows, configurable media APIs and local Codex CLI integration. The current release ships macOS Apple Silicon and source archives; the historical Windows v0.5.0 download remains available. New canvas/theme features have not completed Windows desktop validation. It requires one exact `0.2.1-rc.2` build. Sources include editable JavaScript reconstruction partitions and extensions, not a standalone app or a restoration of the original TypeScript project. The gallery above shows macOS captures; see the release notes for validation scope.
