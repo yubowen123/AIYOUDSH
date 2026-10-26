@@ -54,11 +54,11 @@ Windows 版本使用独立官方基线和语义 CSS 映射适配原生界面与�
 
 Windows 图为实际编译安装器在 GitHub Windows runner 中的准备界面，不是 Windows 宿主聊天截图。
 
-## 项目知识卡片
+## 产品能力与主题图解
 
-![AIYOUDSH v0.8.3：共享画布、DSH 素材库、媒体 API 与本地 Codex CLI](docs/knowledge-card-v0.8.3.png)
+![AIYOUDSH 完整能力与主题图解：共享画布、统一素材、创作工具、媒体模型、Codex CLI 与项目管理](docs/knowledge-card-v0.8.3-expanded.png)
 
-基于 v0.8.3 源码与验证记录生成的项目图解（2026-10-26）。本地测试 374 项通过、1 项平台检查跳过；配置保存不等于真实模型生成通过，Windows 新能力未完成桌面实测。[审查与剩余事项](docs/releases/v0.8.3-audit.md)。应用实机效果以上方截图为准。
+详细展示共享画布、统一素材库、22 个创作工具、媒体 API 智能配置、本地 Codex CLI、项目与对话管理，以及多主题配色、透明度、背景和画布外观联动。图中工作台与主题界面为能力示意，实际界面见上方截图。功能范围见[功能说明](docs/features.md)，使用边界见[审查与剩余事项](docs/releases/v0.8.3-audit.md)。
 
 ## 安装
 
@@ -88,6 +88,14 @@ Node.js 24 起，默认按当前平台构建 `dist/addon/runtime/`；也可显�
 AIYOUDSH 是官方应用的外挂增强，不是可独立启动的官方 fork。源码包含可编辑 JavaScript 恢复分区、新增扩展与本地服务，不宣称还原官方原始 TypeScript 工程或与 AIYOUcodex 全功能等价。
 
 机甲为 **4 秒背景视频循环**，其他主题使用静态背景或明确标注的中性纹理回退；原版事件动效、声音、轮播与媒体上传页尚未接入。MOKE 的登录和跨重启页面状态由官方 Browser 与站点管理，主题仅作用于原生容器，不注入外站内部。[主题清单](docs/themes.md) · [本轮验证边界](docs/releases/v0.8.0.md#验证与边界)
+
+<!-- aiyou-contact:start -->
+## 联系作者 / Contact
+
+扫码添加作者微信，交流使用体验与项目合作。
+
+<p><img src="docs/assets/wechat-contact.jpg" alt="Glimmer · 光波的个人微信二维码" width="280" /></p>
+<!-- aiyou-contact:end -->
 
 ## 来源与许可
 
