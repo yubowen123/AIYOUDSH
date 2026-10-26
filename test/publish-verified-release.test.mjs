@@ -88,7 +88,8 @@ test('real ZIP metadata verifies source and runtime versions without extracting 
   t.after(() => rm(temporary, { recursive: true, force: true }));
   const source = join(temporary, 'source.zip'), mac = join(temporary, 'mac.zip');
   const createZip = (file, entries) => execFileSync('python3', ['-c', 'import json,sys\nfrom zipfile import ZipFile\nwith ZipFile(sys.argv[1], "w") as archive:\n for name, value in json.load(sys.stdin).items(): archive.writestr(name,json.dumps(value))', file], { input: JSON.stringify(entries) });
-  createZip(source, { 'AIYOUDSH-source/package.json': { version } });
+  createZip(source, { 'AIYOUDSH-source/package.json': { version }, 'AIYOUDSH-source/installer-win/安装.cmd': '@echo off' });
+  assert.equal(execFileSync('python3', ['-c', 'import sys\nfrom zipfile import ZipFile\nwith ZipFile(sys.argv[1]) as bundle: print(bool(bundle.getinfo("AIYOUDSH-source/installer-win/安装.cmd").flag_bits & 0x800))', source], { encoding: 'utf8' }).trim(), 'True');
   assert.equal((await verifyArchive(source, { version })).platform, 'source');
   await assert.rejects(verifyArchive(source, { version: '0.8.5' }), /version mismatch/);
   const manifest = { version, upstream: { platform: 'darwin-x64' } };
@@ -96,8 +97,31 @@ test('real ZIP metadata verifies source and runtime versions without extracting 
   assert.equal((await verifyArchive(mac, { version, platform: 'darwin-x64' })).platform, 'darwin-x64');
   // Reproduce ditto's unflagged UTF-8 filenames without extracting them.
   execFileSync('python3', ['-c', 'import sys,struct\nfrom pathlib import Path\np=Path(sys.argv[1]); data=bytearray(p.read_bytes())\nfor signature,offset in [(b"PK\\x03\\x04",6),(b"PK\\x01\\x02",8)]:\n start=0\n while True:\n  start=data.find(signature,start)\n  if start<0: break\n  flags=struct.unpack_from("<H",data,start+offset)[0];struct.pack_into("<H",data,start+offset,flags & ~0x800);start+=4\np.write_bytes(data)', mac]);
+  const metadata = JSON.parse(execFileSync('python3', ['-c', 'import json,sys\nfrom zipfile import ZipFile\nexpected="AIYOUDSH/AIYOUDSH 增强安装器.app/Contents/Resources/runtime/manifest.json"\nwith ZipFile(sys.argv[1]) as bundle: default_found=expected in bundle.namelist()\nwith ZipFile(sys.argv[1],metadata_encoding="utf-8") as bundle: print(json.dumps({"defaultFound":default_found,"utf8Found":expected in bundle.namelist(),"flag":bool(bundle.getinfo(expected).flag_bits & 0x800)}))', mac], { encoding: 'utf8' }));
+  assert.deepEqual(metadata, { defaultFound: false, utf8Found: true, flag: false });
   assert.equal((await verifyArchive(mac, { version, platform: 'darwin-x64' })).platform, 'darwin-x64');
   await assert.rejects(verifyArchive(mac, { version, platform: 'darwin-arm64' }), /platform mismatch/);
+  createZip(mac, { 'AIYOUDSH/runtime/manifest.json': manifest, 'AIYOUDSH/AIYOUDSH 增强安装器.app/Contents/Resources/runtime/manifest.json': { ...manifest, version: '0.8.3' } });
+  await assert.rejects(verifyArchive(mac, { version, platform: 'darwin-x64' }), /version mismatch/);
+});
+
+test('native ditto archives retain both outer and Chinese app runtime manifest checks', { skip: process.platform !== 'darwin' }, async t => {
+  const temporary = await mkdtemp(join(tmpdir(), 'aiyoudsh-release-ditto-'));
+  t.after(() => rm(temporary, { recursive: true, force: true }));
+  const source = join(temporary, 'AIYOUDSH'), archive = join(temporary, 'native-ditto.zip');
+  const outer = join(source, 'runtime'), inner = join(source, 'AIYOUDSH 增强安装器.app/Contents/Resources/runtime');
+  for (const directory of [outer, inner]) {
+    await mkdir(directory, { recursive: true });
+    await writeFile(join(directory, 'manifest.json'), JSON.stringify({ version, upstream: { platform: 'darwin-x64' } }));
+  }
+  execFileSync('/usr/bin/ditto', ['-c', '-k', '--sequesterRsrc', '--keepParent', source, archive]);
+  const before = digest(await readFile(archive));
+  assert.equal((await verifyArchive(archive, { version, platform: 'darwin-x64' })).platform, 'darwin-x64');
+  assert.equal(digest(await readFile(archive)), before);
+  await writeFile(join(outer, 'manifest.json'), JSON.stringify({ version, upstream: { platform: 'darwin-arm64' } }));
+  await rm(archive);
+  execFileSync('/usr/bin/ditto', ['-c', '-k', '--sequesterRsrc', '--keepParent', source, archive]);
+  await assert.rejects(verifyArchive(archive, { version, platform: 'darwin-x64' }), /platform mismatch/);
 });
 
 async function fixture(t, overrides = {}) {

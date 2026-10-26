@@ -138,7 +138,9 @@ const archiveVerifier = `
 import json, sys
 from zipfile import ZipFile
 archive, version, platform = sys.argv[1:]
-with ZipFile(archive) as bundle:
+# Native ditto stores UTF-8 filename bytes without consistently setting bit 11.
+# Python 3.11+ supports decoding those unflagged names without changing the ZIP.
+with ZipFile(archive, metadata_encoding='utf-8') as bundle:
     if bundle.testzip() is not None:
         raise ValueError('Archive CRC verification failed')
     names = bundle.namelist()
@@ -146,11 +148,11 @@ with ZipFile(archive) as bundle:
         raise ValueError('Duplicate archive entry')
     paths = ['AIYOUDSH-source/package.json']
     if platform:
-        # ditto may omit the UTF-8 flag on the Chinese app-directory name.
+        expected = 'AIYOUDSH/AIYOUDSH 增强安装器.app/Contents/Resources/runtime/manifest.json'
         embedded = [name for name in names if name.startswith('AIYOUDSH/') and name.endswith('.app/Contents/Resources/runtime/manifest.json')]
-        if len(embedded) != 1:
-            raise ValueError('Archive must contain one embedded application runtime')
-        paths = ['AIYOUDSH/runtime/manifest.json', embedded[0]]
+        if embedded != [expected]:
+            raise ValueError('Archive must contain the named embedded application runtime')
+        paths = ['AIYOUDSH/runtime/manifest.json', expected]
     for path in paths:
         if bundle.getinfo(path).file_size > 1024 * 1024:
             raise ValueError('Oversized package metadata')
