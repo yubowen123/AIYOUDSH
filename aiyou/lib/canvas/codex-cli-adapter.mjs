@@ -12,7 +12,7 @@ const plain=value=>JSON.parse(JSON.stringify(value));
  * messages answer the outstanding JSON-RPC request. This adapter executes no tool.
  */
 export function createCodexCliAdapter({ctx,executablePath,models,spawnImpl,onStatus=()=>{}}){
- const catalog=new Map(models.map(m=>[m.id,plain(m)])),sessions=new Map();let disposed=false;
+ const catalog=new Map(models.map(m=>[m.id,plain(m)])),sessions=new Map(),closing=new Set();let disposed=false;
  async function image(part,signal){
   const ref=part.attachment;
   if(!ref||!ctx.attachments?.readImageRequest)throw cliError('UNSUPPORTED_CONTENT','宿主图片原件服务不可用');
@@ -55,10 +55,13 @@ export function createCodexCliAdapter({ctx,executablePath,models,spawnImpl,onSta
   }
   return {specs,byAlias,aliases};
  }
- async function close(s){
+ function close(s){
   if(s.closing)return s.closing;
-  s.closed=true;s.removeAbort?.();clearTimeout(s.timer);sessions.delete(s.key);
-  s.closing=(async()=>{try{if(s.threadId&&s.turnId)await s.rpc.request('turn/interrupt',{threadId:s.threadId,turnId:s.turnId},1500);}catch{}await s.rpc.dispose();})();return s.closing;
+  s.closed=true;s.removeAbort?.();clearTimeout(s.timer);if(sessions.get(s.key)===s)sessions.delete(s.key);
+  const pending=s.closing=(async()=>{try{if(s.threadId&&s.turnId)await s.rpc.request('turn/interrupt',{threadId:s.threadId,turnId:s.turnId},1500);}catch{}await s.rpc.dispose();})();
+  // An aborted/expired session leaves the reusable session map immediately,
+  // but the adapter still owns its subprocess until RPC observes child close.
+  closing.add(pending);const finished=()=>closing.delete(pending);pending.then(finished,finished);return pending;
  }
  async function* stream(options){
   if(disposed)throw cliError('DISPOSED','本地 CLI 模型通道已关闭');
@@ -72,6 +75,7 @@ export function createCodexCliAdapter({ctx,executablePath,models,spawnImpl,onSta
   if(s?.busy)throw cliError('CLI_BUSY','此 DSH 对话已有本地 CLI 请求正在执行');
   if(s&&(s.model!==options.model||s.cwd!==cwd||s.toolSignature!==toolSignature)){await close(s);s=null;}
   if(!s){
+   if(disposed)throw cliError('DISPOSED','本地 CLI 模型通道已关闭');
    if(sessions.size>=32)throw cliError('CLI_BUSY','本地 CLI 等待中的对话过多，请先取消已有请求');
    s={key:sessionId,model:options.model,cwd,toolSignature,tools:mappedTools.byAlias,pending:new Map(),rpc:createCodexRpc({executablePath,cwd,spawnImpl}),busy:false,closed:false};sessions.set(sessionId,s);
   }
@@ -141,7 +145,7 @@ export function createCodexCliAdapter({ctx,executablePath,models,spawnImpl,onSta
   listModels:async provider=>[...catalog.values()].map(m=>({provider,id:m.id,name:m.name,description:m.description,inputModalities:[...m.inputModalities]})),
   async resolveModel(provider,id,signal){signal?.throwIfAborted();const m=catalog.get(id);if(!m)throw cliError('UNKNOWN_MODEL','本地 CLI 模型目录没有该模型');return{provider,id,name:m.name,description:m.description,inputModalities:m.inputModalities,...(m.reasoningEfforts.length?{reasoning:{efforts:plain(m.reasoningEfforts),...(m.reasoningEfforts.some(r=>r.id===m.defaultReasoningEffort)?{defaultEffort:m.defaultReasoningEffort}:{})}}:{})};},
   async prepareCall(provider,model,signal){const info=await this.resolveModel(provider,model,signal);return{model:info,stream:options=>stream(options)};},stream,
-  async dispose(){disposed=true;await Promise.allSettled([...sessions.values()].map(close));}
+  async dispose(){disposed=true;const current=[...sessions.values()].map(close);await Promise.allSettled([...current,...closing]);}
  };
  return adapter;
 }

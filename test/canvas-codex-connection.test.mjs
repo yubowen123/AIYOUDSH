@@ -19,6 +19,7 @@ let toolName='canvas_snapshot';
 if(process.argv.includes('--version')){if(mode==='metadata-wait'){log({kind:'metadata-wait'});setInterval(()=>{},1000);}else{console.log('codex-cli 0.162.1');process.exit(0);}}
 else {
 if(process.argv[2]==='login'){log({kind:'login-status',args:process.argv.slice(2)});if(mode==='unlogged'){console.error('Not logged in');process.exit(1);}console.error('Logged in using ChatGPT');process.exit(0);}
+if(process.env.CLI_FIXTURE_CONTROLLED_CLOSE==='1')process.on('message',value=>{if(value?.fixture==='finish-close')process.exit(0);});
 log({kind:'spawn',args:process.argv.slice(2),hasInjectedKey:Boolean(process.env.OPENAI_API_KEY)});
 const output=value=>process.stdout.write(JSON.stringify(value)+'\n');
 const note=(method,params)=>output({method,params});
@@ -57,9 +58,9 @@ async function waitFor(check,{timeoutMs=15000,label='fixture condition'}={}){
  while(performance.now()<deadline){if(await check())return;await tick();}
  assert.fail(label+' did not settle within '+timeoutMs+'ms');
 }
-async function fixture(t,mode='normal'){
+async function fixture(t,mode='normal',{controlledClose=false}={}){
  const root=await mkdtemp(join(tmpdir(),'dsh-local-cli-')),bin=join(root,'codex-fixture.cjs'),log=join(root,'wire.jsonl');await writeFile(bin,fixtureScript,{mode:0o755});await writeFile(log,'');
- const children=[],spawnImpl=(exe,args,options)=>{const child=spawn(exe===bin?process.execPath:exe,exe===bin?[bin,...args]:args,{...options,env:{...options.env,CLI_FIXTURE_MODE:mode,CLI_FIXTURE_LOG:log}});children.push(child);return child;};
+ const children=[],spawnImpl=(exe,args,options)=>{const child=spawn(exe===bin?process.execPath:exe,exe===bin?[bin,...args]:args,{...options,...(controlledClose?{stdio:[...options.stdio,'ipc']} :{}),env:{...options.env,CLI_FIXTURE_MODE:mode,CLI_FIXTURE_LOG:log,...(controlledClose?{CLI_FIXTURE_CONTROLLED_CLOSE:'1'}:{})}});children.push(child);return child;};
  const effects=[],ctx={events:{dispatch:()=>[]},logger:{warn(){}},effect(fn){const it=fn();if(it?.next){const yielded=it.next().value,dispose=()=>yielded?.();effects.push(dispose);return dispose;}effects.push(it);return it;},waterfall(_self,_event,_options,run){return run();},get(name){return this[name];}};
  const llm=Object.assign(Object.create(LlmRuntime.prototype),{ctx,adapters:new Map(),directory:new Map(),discoveries:new Map()});
  ctx.llm=llm;ctx.agents={get:id=>['session-a','session-b'].includes(id)?{session:{id,header:{cwd:root},requestHeader:()=>null}}:undefined};ctx.agentDefaultModel={currentSelection:()=>({provider:'codex-cli',model:'fixture-model'})};ctx.sessionProjections={stateOf:()=>({pending:null})};
@@ -107,6 +108,25 @@ test('abort interrupts native turn and all owned subprocesses exit, including wh
  const f=await fixture(t,'cancel');await f.connect();const controller=new AbortController(),a=f.llm.registration('codex-cli').adapter;
  const running=(async()=>{for await(const chunk of a.stream({sessionId:'session-a',provider:'codex-cli',model:'fixture-model',messages:[{role:'user',content:[{type:'text',text:'wait'}]}],signal:controller.signal})){if(chunk.type==='text-delta')controller.abort();}})();await assert.rejects(running);await a.dispose();assert.equal(f.children.every(c=>c.exitCode!==null||c.signalCode!==null),true);
  const g=await fixture(t,'tool');await g.connect();const signal=new AbortController(),b=g.llm.registration('codex-cli').adapter;await collect(b.stream({sessionId:'session-a',provider:'codex-cli',model:'fixture-model',messages:[{role:'user',content:[{type:'text',text:'tool'}]}],tools:[{name:'canvas_snapshot',parameters:{type:'object'}}],signal:signal.signal}));signal.abort();await tick();await b.dispose();assert.equal(g.children.every(c=>c.exitCode!==null||c.signalCode!==null),true);
+});
+test('adapter disposal waits for an abort-started close until the actual subprocess closes',async t=>{
+ const f=await fixture(t,'tool',{controlledClose:true});await f.connect();const controller=new AbortController(),adapter=f.llm.registration('codex-cli').adapter;
+ await collect(adapter.stream({sessionId:'session-a',model:'fixture-model',messages:[{role:'user',content:[{type:'text',text:'tool'}]}],tools:[{name:'canvas_snapshot',parameters:{type:'object'}}],signal:controller.signal}));
+ const child=f.children.at(-1),kill=child.kill.bind(child);let terminate;const terminating=new Promise(resolve=>{terminate=resolve;});
+ // Hold the real child open after RPC asks to terminate it. IPC releases its
+ // exit explicitly, so this ordering is independent of OS scheduling/timeouts.
+ child.kill=signal=>{terminate(signal);return true;};
+ try{
+  controller.abort();assert.equal(await terminating,'SIGTERM');assert.equal(child.exitCode,null);assert.equal(child.signalCode,null);
+  let settled=0;const first=adapter.dispose().then(()=>settled++),second=adapter.dispose().then(()=>settled++);
+  // Give already-resolved disposal promises their queued continuations; this
+  // is a microtask checkpoint, with no sleep or elapsed-time assumption.
+  await Promise.resolve();await Promise.resolve();assert.equal(settled,0,'disposal must retain ownership of a close already started by abort');
+  child.send({fixture:'finish-close'});await Promise.all([first,second]);assert.equal(settled,2);
+  assert.equal(f.children.every(c=>c.exitCode!==null||c.signalCode!==null),true);
+ }finally{
+  child.kill=kill;if(child.connected)child.send({fixture:'finish-close'},()=>{});await adapter.dispose();
+ }
 });
 test('native model errors, malformed protocol, foreign tools and built-in command attempts fail without retry or secret echo',async t=>{
  for(const mode of ['error','malformed','badtool','builtin']){const f=await fixture(t,mode);await f.connect();const host=createHostLlm({ctx:f.ctx});let error;try{await host(request,context);}catch(e){error=e;}assert.ok(error,mode);assert.equal(error.message.includes('FIXTURE_PRIVATE_TOKEN'),false,mode);assert.equal((await f.frames()).filter(x=>x.frame?.method==='turn/start').length,1,mode);await host.dispose();}
