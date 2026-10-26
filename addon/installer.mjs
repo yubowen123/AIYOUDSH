@@ -56,7 +56,7 @@ function sameLink(left, right, platform = process.platform) {
 }
 function validatePlatform(manifest, options = {}) {
   const expected = manifest.upstream.platform ?? 'darwin-arm64';
-  if (!['darwin-arm64', 'win32-x64'].includes(expected)) throw fail('MANIFEST', 'Unsupported runtime target platform');
+  if (!['darwin-arm64', 'darwin-x64', 'win32-x64'].includes(expected)) throw fail('MANIFEST', 'Unsupported runtime target platform');
   if (hostPlatform(options) !== expected) throw fail('APP_PLATFORM', `This runtime requires ${expected}; this computer is ${hostPlatform(options)}. Nothing was installed`);
   return expected;
 }

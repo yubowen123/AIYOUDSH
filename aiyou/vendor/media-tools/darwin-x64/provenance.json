@@ -1,0 +1,182 @@
+{
+  "schema": "aiyoudsh.media-tools.v1",
+  "platform": "darwin",
+  "hostArchitecture": "x64",
+  "verifiedArchitecture": "x86_64",
+  "upstreamVersion": "6.1.1-tessus",
+  "upstreamReadmeVersion": "8.0",
+  "minimumDeclaredMacOS": "10.13",
+  "entryPoints": {
+    "ffmpeg": "bin/ffmpeg",
+    "ffprobe": "bin/ffprobe"
+  },
+  "sourceFilesUnchanged": true,
+  "recordedAt": "2026-10-26T17:59:37.710863+00:00",
+  "sourceUrl": "https://github.com/FFmpeg/FFmpeg/tree/n6.1.1",
+  "sourceTag": "n6.1.1",
+  "officialDownloadPage": "https://ffmpeg.org/download.html",
+  "binaryBuilder": "Helmut K. C. Tessarek (evermeet.cx)",
+  "binaryBuilderUrl": "https://evermeet.cx/ffmpeg/",
+  "redistributor": "eugeneware/ffmpeg-static",
+  "releaseUrl": "https://github.com/eugeneware/ffmpeg-static/releases/tag/b6.1.1",
+  "releaseTag": "b6.1.1",
+  "releaseDownloadScriptUrl": "https://raw.githubusercontent.com/eugeneware/ffmpeg-static/b6.1.1/download-binaries/index.sh",
+  "releaseMetadataCaveat": "The pinned release script downloads Intel 6.1.1 binaries explicitly, but fetches the current release info API and FFmpeg HEAD license summary. The attached darwin-x64.README says 8.0 and its LICENSE summary is from a different source revision. These originals are retained as labeled upstream metadata; actual version output, original executable digests, exact 6.1.1 metadata and n6.1.1 license texts are authoritative here.",
+  "license": {
+    "spdx": "GPL-3.0-or-later",
+    "configuredGpl": true,
+    "configuredVersion3": true,
+    "configuredNonfree": false,
+    "sourceUrl": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/n6.1.1/LICENSE.md",
+    "textFiles": [
+      "licenses/COPYING.GPLv3",
+      "licenses/COPYING.GPLv2",
+      "licenses/COPYING.LGPLv2.1",
+      "licenses/COPYING.LGPLv3",
+      "licenses/LICENSE.md"
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "bin/ffmpeg",
+      "bytes": 78862176,
+      "sha256": "ebdddc936f61e14049a2d4b549a412b8a40deeff6540e58a9f2a2da9e6b18894",
+      "publishedSha256": "ebdddc936f61e14049a2d4b549a412b8a40deeff6540e58a9f2a2da9e6b18894",
+      "releaseAssetUrl": "https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/ffmpeg-darwin-x64",
+      "releaseAssetId": 316528324,
+      "downloadArchiveUrl": "https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/ffmpeg-darwin-x64.gz",
+      "downloadArchiveBytes": 25296431,
+      "downloadArchiveSha256": "929b375c1182d956c51f7ac25e0b2b0411fb01f6f407aa15c9758efeb4242106",
+      "builderMetadataUrl": "https://evermeet.cx/ffmpeg/info/ffmpeg/6.1.1",
+      "minimumDeclaredMacOS": "10.13",
+      "fileDescription": "Mach-O 64-bit executable x86_64",
+      "architectures": "x86_64",
+      "dependencies": [
+        "/usr/lib/libc++.1.dylib",
+        "/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation",
+        "/System/Library/Frameworks/AudioToolbox.framework/Versions/A/AudioToolbox",
+        "/System/Library/Frameworks/CoreAudio.framework/Versions/A/CoreAudio",
+        "/usr/lib/libSystem.B.dylib",
+        "/System/Library/Frameworks/AVFoundation.framework/Versions/A/AVFoundation",
+        "/System/Library/Frameworks/CoreVideo.framework/Versions/A/CoreVideo",
+        "/System/Library/Frameworks/CoreMedia.framework/Versions/A/CoreMedia",
+        "/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics",
+        "/System/Library/Frameworks/OpenGL.framework/Versions/A/OpenGL",
+        "/System/Library/Frameworks/Accelerate.framework/Versions/A/Accelerate",
+        "/System/Library/Frameworks/ApplicationServices.framework/Versions/A/ApplicationServices",
+        "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation",
+        "/System/Library/Frameworks/Metal.framework/Versions/A/Metal",
+        "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/VideoToolbox",
+        "/System/Library/Frameworks/CoreImage.framework/Versions/A/CoreImage",
+        "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit",
+        "/System/Library/Frameworks/CoreServices.framework/Versions/A/CoreServices",
+        "/System/Library/Frameworks/DiskArbitration.framework/Versions/A/DiskArbitration",
+        "/System/Library/Frameworks/Security.framework/Versions/A/Security",
+        "/System/Library/Frameworks/CoreText.framework/Versions/A/CoreText",
+        "/usr/lib/libobjc.A.dylib"
+      ]
+    },
+    {
+      "path": "bin/ffprobe",
+      "bytes": 78780408,
+      "sha256": "fa3add0ce901f7241abe0dfc0155d958fc834aca3f8ce61f87cc712ae669c1e0",
+      "publishedSha256": "fa3add0ce901f7241abe0dfc0155d958fc834aca3f8ce61f87cc712ae669c1e0",
+      "releaseAssetUrl": "https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/ffprobe-darwin-x64",
+      "releaseAssetId": 316528953,
+      "downloadArchiveUrl": "https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/ffprobe-darwin-x64.gz",
+      "downloadArchiveBytes": 25239438,
+      "downloadArchiveSha256": "d4da574d6e2e197bd259b47d69cf262df9e312af24ad960444f6d806d3d4c186",
+      "builderMetadataUrl": "https://evermeet.cx/ffmpeg/info/ffprobe/6.1.1",
+      "minimumDeclaredMacOS": "10.13",
+      "fileDescription": "Mach-O 64-bit executable x86_64",
+      "architectures": "x86_64",
+      "dependencies": [
+        "/usr/lib/libc++.1.dylib",
+        "/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation",
+        "/System/Library/Frameworks/AudioToolbox.framework/Versions/A/AudioToolbox",
+        "/System/Library/Frameworks/CoreAudio.framework/Versions/A/CoreAudio",
+        "/usr/lib/libSystem.B.dylib",
+        "/System/Library/Frameworks/AVFoundation.framework/Versions/A/AVFoundation",
+        "/System/Library/Frameworks/CoreVideo.framework/Versions/A/CoreVideo",
+        "/System/Library/Frameworks/CoreMedia.framework/Versions/A/CoreMedia",
+        "/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics",
+        "/System/Library/Frameworks/OpenGL.framework/Versions/A/OpenGL",
+        "/System/Library/Frameworks/Accelerate.framework/Versions/A/Accelerate",
+        "/System/Library/Frameworks/ApplicationServices.framework/Versions/A/ApplicationServices",
+        "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation",
+        "/System/Library/Frameworks/Metal.framework/Versions/A/Metal",
+        "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/VideoToolbox",
+        "/System/Library/Frameworks/CoreImage.framework/Versions/A/CoreImage",
+        "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit",
+        "/System/Library/Frameworks/CoreServices.framework/Versions/A/CoreServices",
+        "/System/Library/Frameworks/DiskArbitration.framework/Versions/A/DiskArbitration",
+        "/System/Library/Frameworks/Security.framework/Versions/A/Security",
+        "/System/Library/Frameworks/CoreText.framework/Versions/A/CoreText",
+        "/usr/lib/libobjc.A.dylib"
+      ]
+    }
+  ],
+  "metadata": [
+    {
+      "path": "licenses/COPYING.GPLv2",
+      "url": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/n6.1.1/COPYING.GPLv2",
+      "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643"
+    },
+    {
+      "path": "licenses/COPYING.GPLv3",
+      "url": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/n6.1.1/COPYING.GPLv3",
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+    },
+    {
+      "path": "licenses/COPYING.LGPLv2.1",
+      "url": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/n6.1.1/COPYING.LGPLv2.1",
+      "sha256": "b634ab5640e258563c536e658cad87080553df6f34f62269a21d554844e58bfe"
+    },
+    {
+      "path": "licenses/COPYING.LGPLv3",
+      "url": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/n6.1.1/COPYING.LGPLv3",
+      "sha256": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768"
+    },
+    {
+      "path": "licenses/LICENSE.md",
+      "url": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/n6.1.1/LICENSE.md",
+      "sha256": "cb48bf09a11f5fb576cddb0431c8f5ed0a60157a9ec942adffc13907cbe083f2"
+    },
+    {
+      "path": "licenses/upstream-release-LICENSE.txt",
+      "url": "https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/darwin-x64.LICENSE",
+      "sha256": "2e1d16c72fd74e12063776371da757322f8b77589386532f4fd8634bde7de1af",
+      "publishedSha256": "2e1d16c72fd74e12063776371da757322f8b77589386532f4fd8634bde7de1af"
+    },
+    {
+      "path": "licenses/upstream-release-README.json",
+      "url": "https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/darwin-x64.README",
+      "sha256": "e88a0325f8e5b75210355e37341824f074d3cd82def2125be54c914b62848a36",
+      "publishedSha256": "e88a0325f8e5b75210355e37341824f074d3cd82def2125be54c914b62848a36"
+    },
+    {
+      "path": "licenses/evermeet-ffmpeg-6.1.1.json",
+      "url": "https://evermeet.cx/ffmpeg/info/ffmpeg/6.1.1",
+      "sha256": "4ea8c9f39640bb2ad29e10d5ca5e0053804440b1dfacd08478be4298a18ffd37"
+    },
+    {
+      "path": "licenses/evermeet-ffprobe-6.1.1.json",
+      "url": "https://evermeet.cx/ffmpeg/info/ffprobe/6.1.1",
+      "sha256": "25a9340cdef75f4ebabe5c045a63b56b3aff7b5748598259fd328ea36d4eb7d0"
+    }
+  ],
+  "verification": {
+    "hostArchitecture": "arm64",
+    "execution": "Rosetta arch -x86_64 on Apple Silicon; not a physical Intel Mac acceptance test",
+    "passedChecks": [
+      "fixture_synthesis",
+      "canvas_video_trim",
+      "ffmpeg_spatial_crop",
+      "canvas_audio_extract",
+      "canvas_image_montage"
+    ],
+    "modelRequests": 0,
+    "supplierVideoRequests": 0,
+    "systemLibrariesOnly": true
+  }
+}

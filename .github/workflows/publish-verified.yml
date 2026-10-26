@@ -1,0 +1,47 @@
+name: Publish verified release
+
+on:
+  workflow_dispatch:
+    inputs:
+      verify_run_id:
+        description: Successful main push run of the Verify workflow
+        required: true
+        type: string
+      tag:
+        description: Stable version tag matching package.json, such as v0.8.4
+        required: true
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: publish-verified-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'yubowen123/AIYOUDSH' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test publication gates without network or release changes
+        run: node --test test/publish-verified-release.test.mjs
+      - name: Publish the exact verified main commit
+        run: node scripts/publish-verified-release.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERIFY_RUN_ID: ${{ inputs.verify_run_id }}
+          RELEASE_TAG: ${{ inputs.tag }}

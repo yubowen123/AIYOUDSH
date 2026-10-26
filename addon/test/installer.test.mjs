@@ -36,7 +36,7 @@ async function fixture(fn, patch = original) {
   const options = { dshHome: join(location, 'dsh'), profile: join(location, 'dsh/profiles/desktop'), enhancerHome: join(location, 'enhancer'), runtime: join(location, 'runtime'), app: join(location, 'Official Harness.app') };
   const expected = Buffer.from('current native client baseline\n');
   const componentMetadata = Buffer.from(JSON.stringify({ name: '@deepseek-ai/dsh-client-ui-sidebar', version: '0.2.1-rc.2' }));
-  const upstream = { ...(process.platform === 'win32' ? { platform: 'win32-x64' } : {}), appVersion: '0.2.1-rc.2', buildCommit: 'fixture-build', compatibility: [{ package: '@deepseek-ai/dsh-client-ui-sidebar', file: 'lib/client.js', sha256: hash(expected) }] };
+  const upstream = { platform: `${process.platform}-${process.arch}`, appVersion: '0.2.1-rc.2', buildCommit: 'fixture-build', compatibility: [{ package: '@deepseek-ai/dsh-client-ui-sidebar', file: 'lib/client.js', sha256: hash(expected) }] };
   const bytes = archive([
     ['package.json', Buffer.from(JSON.stringify({ version: upstream.appVersion, dshBuildCommit: upstream.buildCommit }))],
     ['dsh/node_modules/@deepseek-ai/dsh-client-ui-sidebar/lib/client.js', expected],
@@ -438,6 +438,29 @@ test('legacy platform-less schema 1 runtime is Mac arm64 only', async () => fixt
   await assert.rejects(install({ ...options, _testHost: { platform: 'win32', arch: 'x64' } }), { code: 'APP_PLATFORM' });
   await assert.rejects(install({ ...options, _testHost: { platform: 'darwin', arch: 'x64' } }), { code: 'APP_PLATFORM' });
   await assert.rejects(access(options.enhancerHome));
+}));
+
+test('Intel Mac target accepts its own archive and rejects ARM before changing the profile', async () => fixture(async ({ options, manifest, appHash }) => {
+  const macArchive = join(options.app, 'Contents/Resources/app.asar');
+  if (archivePath(options.app) !== macArchive) {
+    await mkdir(dirname(macArchive), { recursive: true });
+    await cp(archivePath(options.app), macArchive);
+  }
+  manifest.upstream.platform = 'darwin-x64';
+  await writeFile(join(options.runtime, 'manifest.json'), JSON.stringify(manifest));
+  const before = await readFile(join(options.profile, 'cordis.patch.yml'));
+  const intelOptions = { ...options, _testHost: { platform: 'darwin', arch: 'x64' } };
+  const probe = await probeApplication(options.app, manifest, intelOptions);
+  assert.equal(probe.platform, 'darwin-x64');assert.equal(probe.appAsarSha256, appHash);
+  await assert.rejects(install({ ...intelOptions, _testHost: { platform: 'darwin', arch: 'arm64' } }), { code: 'APP_PLATFORM' });
+  assert.deepEqual(await readFile(join(options.profile, 'cordis.patch.yml')), before);
+  await assert.rejects(access(options.enhancerHome));
+  if (process.platform === 'darwin') {
+    assert.equal((await install(intelOptions)).platform, 'darwin-x64');
+    assert.equal((await status(intelOptions)).installed, true);
+    assert.equal((await uninstall(intelOptions)).installed, false);
+    assert.deepEqual(await readFile(join(options.profile, 'cordis.patch.yml')), before);
+  }
 }));
 
 test('Windows target normalization covers NT, UNC, separators and case without merging owners', () => {

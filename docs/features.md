@@ -4,7 +4,7 @@
 
 AIYOUDSH 的基础结构是左侧功能栏、可独立折叠的会话列表、中间聊天和右侧工具区。打开工具保留当前聊天；再次点击当前工具可收起右栏。
 
-本轮 v0.8.0 主题增强的范围见 [发布说明](releases/v0.8.0.md)。v0.5.0 提供 Windows 10/11 x64 与 macOS Apple Silicon arm64 目标。功能逻辑共用，官方应用基线、原生 CSS 和安装器按平台适配；Windows 验证情况与宿主界面范围见 [v0.5.0 发布说明](releases/v0.5.0.md#验证范围)。
+本轮 v0.8.0 主题增强的范围见 [发布说明](releases/v0.8.0.md)。v0.5.0 提供 Windows 10/11 x64 与 macOS Apple Silicon arm64 目标。v0.8.4 新增 macOS Intel x64，兼容要求见 [Intel 说明](releases/v0.8.4.md)。功能逻辑共用，官方应用基线、原生 CSS 和安装器按平台适配；Windows 验证情况与宿主界面范围见 [v0.5.0 发布说明](releases/v0.5.0.md#验证范围)。
 
 ## 导航与对话
 

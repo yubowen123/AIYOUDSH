@@ -13,10 +13,18 @@ const manifest = JSON.parse(await readFile(join(runtime, 'manifest.json'), 'utf8
 const baseline = await platformBaseline(root, manifest.upstream.platform);
 for (const field of ['appVersion','buildCommit','appAsarSha256']) if (manifest.upstream[field] !== baseline[field]) throw new Error('Runtime platform baseline mismatch: ' + field);
 if (JSON.stringify(manifest.upstream.compatibility) !== JSON.stringify(baseline.compatibility)) throw new Error('Runtime compatibility evidence was changed');
-if (manifest.upstream.platform === 'win32-x64') {
-  const descriptor = JSON.parse(await readFile(join(root,'platforms/win32-x64-selectors.json'),'utf8'));
+if (baseline.selectorMapping) {
+  const descriptor = JSON.parse(await readFile(join(root,baseline.selectorMapping),'utf8'));
   const expected = rewriteThemeSelectors(await readFile(join(root,'aiyou/modules/theme/client.js'),'utf8'), descriptor);
-  if (await readFile(join(runtime,'modules/aiyou-enhancer-theme/client.js'),'utf8') !== expected.source) throw new Error('Windows theme native selectors differ from the checked official export map');
+  if (await readFile(join(runtime,'modules/aiyou-enhancer-theme/client.js'),'utf8') !== expected.source) throw new Error('Theme native selectors differ from the checked official export map');
+}
+const mediaDirectory = join(runtime, 'vendor', 'media-tools');
+for (const entry of await readdir(mediaDirectory, { withFileTypes: true })) {
+  if (entry.isDirectory() && /^(darwin|win32|linux)-(arm64|x64)$/.test(entry.name) && entry.name !== manifest.upstream.platform)
+    throw new Error('A foreign native media payload was packaged: ' + entry.name);
+}
+if (manifest.upstream.platform.startsWith('darwin-')) {
+  for (const executable of ['ffmpeg','ffprobe']) await stat(join(mediaDirectory,manifest.upstream.platform,'bin',executable));
 }
 const checks = [];
 const seen = new Set();

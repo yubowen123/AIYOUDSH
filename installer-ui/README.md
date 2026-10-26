@@ -6,10 +6,10 @@
 
 ```js
 import { buildInstaller } from './installer-ui/build.mjs';
-const result = await buildInstaller('/absolute/output/AIYOUDSH 增强安装器.app', resourcesSource);
+const result = await buildInstaller('/absolute/output/AIYOUDSH 增强安装器.app', resourcesSource, { arch: 'x64' });
 ```
 
-第二个参数可省略。提供时，它是完整 `Contents/Resources` 源目录；构建器验证并复制其内容。省略时生成空 Resources，由主打包器填充。返回 `{ appPath, executablePath, infoPath, resourcesPath, architecture }`。构建只编译、写入目标 `.app` 并验证文件，不运行安装器或修改 Harness profile。该阶段不签名，主打包器应在填充最终资源后统一处理签名。
+第二、三个参数可省略，默认使用当前进程架构；`arch` 仅接受 `arm64` 或 `x64`，用于显式交叉编译。提供第二个参数时，它是完整 `Contents/Resources` 源目录；构建器验证并复制其内容。省略时生成空 Resources，由主打包器填充。返回 `{ appPath, executablePath, infoPath, resourcesPath, architecture }`。构建只编译、写入目标 `.app` 并验证文件，不运行安装器或修改 Harness profile。该阶段不签名，主打包器应在填充最终资源后统一处理签名。
 
 资源必须保留以下相对结构：
 
@@ -25,10 +25,10 @@ Contents/Resources/
 
 精确子进程参数为 `[resources/installer/installer.mjs, "install" | "uninstall", "--runtime", resources/runtime]`。子进程应以退出码 `0` 和一个 JSON 对象报告成功；`ok: false` 或非零退出码均展示失败。输出格式不完整时显示“操作结果尚未确认”。stderr 会被独立持续读取并丢弃，stdout 最多保留 256 KiB，仅用于解析结果，不会展示。
 
-构建依赖 macOS 自带 Command Line Tools 中的 `swiftc`、AppKit、`plutil` 与 `file`，生成当前主机架构的 Mach-O，最低系统版本为 macOS 12。可直接运行：
+构建依赖 macOS 自带 Command Line Tools 中的 `swiftc`、AppKit、`plutil` 与 `file`，生成请求架构的 Mach-O，以 `file` 与 `lipo` 双重核对。ARM 最低系统版本为 macOS 12，Intel 为 macOS 13；实际官方宿主与媒体工具的系统要求仍须分别满足。可直接运行：
 
 ```text
-node installer-ui/build.mjs /absolute/output/AIYOUDSH-Installer.app [resources-source]
+node installer-ui/build.mjs /absolute/output/AIYOUDSH-Installer.app [resources-source] [--arch arm64|x64]
 ```
 
 本次已编译并通过 Mach-O、Info.plist 与完整载荷签名检查。主任务已启动中文安装器并实际点击“安装增强”，回读“增强已安装”；官方 Harness 重启后可见新界面。真实卸载未在用户环境执行，恢复与后续编辑保护已在隔离测试中验证。
