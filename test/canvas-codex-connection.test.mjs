@@ -58,8 +58,8 @@ async function waitFor(check,{timeoutMs=15000,label='fixture condition'}={}){
  assert.fail(label+' did not settle within '+timeoutMs+'ms');
 }
 async function fixture(t,mode='normal'){
- const root=await mkdtemp(join(tmpdir(),'dsh-local-cli-')),bin=join(root,'codex-fixture'),log=join(root,'wire.jsonl');await writeFile(bin,'#!'+process.execPath+'\n'+fixtureScript,{mode:0o755});await writeFile(log,'');
- const children=[],spawnImpl=(exe,args,options)=>{const child=spawn(exe,args,{...options,env:{...options.env,CLI_FIXTURE_MODE:mode,CLI_FIXTURE_LOG:log}});children.push(child);return child;};
+ const root=await mkdtemp(join(tmpdir(),'dsh-local-cli-')),bin=join(root,'codex-fixture.cjs'),log=join(root,'wire.jsonl');await writeFile(bin,fixtureScript,{mode:0o755});await writeFile(log,'');
+ const children=[],spawnImpl=(exe,args,options)=>{const child=spawn(exe===bin?process.execPath:exe,exe===bin?[bin,...args]:args,{...options,env:{...options.env,CLI_FIXTURE_MODE:mode,CLI_FIXTURE_LOG:log}});children.push(child);return child;};
  const effects=[],ctx={events:{dispatch:()=>[]},logger:{warn(){}},effect(fn){const it=fn();if(it?.next){const yielded=it.next().value,dispose=()=>yielded?.();effects.push(dispose);return dispose;}effects.push(it);return it;},waterfall(_self,_event,_options,run){return run();},get(name){return this[name];}};
  const llm=Object.assign(Object.create(LlmRuntime.prototype),{ctx,adapters:new Map(),directory:new Map(),discoveries:new Map()});
  ctx.llm=llm;ctx.agents={get:id=>['session-a','session-b'].includes(id)?{session:{id,header:{cwd:root},requestHeader:()=>null}}:undefined};ctx.agentDefaultModel={currentSelection:()=>({provider:'codex-cli',model:'fixture-model'})};ctx.sessionProjections={stateOf:()=>({pending:null})};
