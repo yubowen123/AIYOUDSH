@@ -34,6 +34,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: Test publication gates without network or release changes
         run: node --test test/publish-verified-release.test.mjs
       - name: Publish the exact verified main commit

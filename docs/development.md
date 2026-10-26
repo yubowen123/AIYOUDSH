@@ -144,7 +144,9 @@ ARM/Windows 基线固定为官方 `0.2.1-rc.2 / 332895e`，Intel 固定 `0.2.1-r
 
 Mac 实机界面、Windows CI 编译/自测、隔离 junction 事务与 Windows 宿主聊天验收应分别记录。CI 自测安装器的参数、进程环境和结果解析，或输出安装器自身截图，不代表已经在用户 Windows 桌面加载增强并验收聊天。当前证据范围见 [v0.5.0 说明](releases/v0.5.0.md#验证范围)。
 
-源码 ZIP 打包使用 Python 3 标准库，显式保留 UTF-8 文件名；macOS 打包环境需可调用 `python3`。仅运行源码构建、测试与验证不需要 Python。
+源码 ZIP 打包使用 Python 标准库，显式保留 UTF-8 文件名；发布完整性测试使用 Python 3.11+ 读取 ditto 的 UTF-8 元数据，环境需可调用 `python3`。CI 固定 Python 3.12。仅运行源码构建和 `npm run verify` 不需要 Python；完整 `npm test` 需要 Python 3.11+，Mac 上的实际 AppKit 编译检查还需要 Command Line Tools。
+
+手动发布入口为 [Publish verified release](../.github/workflows/publish-verified.yml)。输入已成功的 main Verify run ID 与匹配 `package.json` 的稳定版本 tag；只接受当前 main 同一提交的三个平台全部成功结果，下载对应产物、校验 ZIP 与 SHA 后发布。PR 构建、fork、过期 main、附件冲突或已公开版本会被拒绝，不移动旧 tag，也不覆盖已发布附件。
 
 ## UI 颜色约定
 
