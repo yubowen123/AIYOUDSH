@@ -8,21 +8,21 @@
 
 AIYOUDSH 是可安装、可卸载的桌面增强包：基于官方安装包的原生扩展接口，重新整理导航和对话侧栏，加入主题配置、动态背景、本地资产与项目管理。v0.8.3 延续 AIYOUPLUS 画布与创作工具的本地融合，文字使用宿主模型，素材使用 DSH 统一素材库；新增全插件主题同步和独立的画布外观配置；素材库采用左目录右素材，支持目录关联与扫描，媒体 API 支持文档、模型目录与调用合同自动关联配置。本轮主题检查在 macOS Apple Silicon 与隔离浏览器中分层验证；v0.5.0 的 Windows x64 支持保留，新增主题及画布能力尚未完成 Windows 桌面实测。
 
-[下载 v0.5.0](https://github.com/yubowen123/AIYOUDSH/releases/tag/v0.5.0) · [安装与卸载](docs/installation.md) · [功能说明](docs/features.md) · [主题与动效](docs/themes.md) · [构建源码](docs/development.md) · [问题反馈](https://github.com/yubowen123/AIYOUDSH/issues)
+[下载 v0.8.3](https://github.com/yubowen123/AIYOUDSH/releases/tag/v0.8.3) · [安装与卸载](docs/installation.md) · [功能说明](docs/features.md) · [主题与动效](docs/themes.md) · [构建源码](docs/development.md) · [问题反馈](https://github.com/yubowen123/AIYOUDSH/issues)
 
 ![AIYOUDSH 工作台：左侧功能栏与对话列表、中间聊天和主题背景；macOS 实机](docs/screenshots/overview.jpg)
 
-本轮变更与验证边界见 [v0.8.3 说明](docs/releases/v0.8.3.md)。下方保留 v0.5.0 的历史公开下载链接；新版本产物、校验和安装结果以本次交付记录为准。
+本轮变更与验证边界见 [v0.8.3 说明](docs/releases/v0.8.3.md)。v0.8.3 发布 macOS arm64 与完整源码；Windows v0.5.0 下载明确保留为历史版本，不代表新增画布能力已完成 Windows 桌面验收。
 
 ## 下载与兼容
 
 | 平台 | 安装包 | 条件 |
 | --- | --- | --- |
-| Windows 10 / 11 x64 | [AIYOUDSH-v0.5.0-windows-x64.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.5.0/AIYOUDSH-v0.5.0-windows-x64.zip) | 官方 x64 应用、.NET Framework 4.8；当前用户安装，无需管理员权限 |
-| macOS Apple Silicon arm64 | [AIYOUDSH-v0.5.0-macos-arm64.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.5.0/AIYOUDSH-v0.5.0-macos-arm64.zip) | 官方 arm64 应用；原生 AppKit 安装器 |
-| 可构建源码 | [AIYOUDSH-v0.5.0-source.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.5.0/AIYOUDSH-v0.5.0-source.zip) | Node.js 24 或更新版本；按平台构建 |
+| Windows 10 / 11 x64（历史 v0.5.0） | [AIYOUDSH-v0.5.0-windows-x64.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.5.0/AIYOUDSH-v0.5.0-windows-x64.zip) | 历史稳定包；官方 x64 应用、.NET Framework 4.8。v0.8.3 新能力尚未完成 Windows 桌面验收 |
+| macOS Apple Silicon arm64 | [AIYOUDSH-v0.8.3-macos-arm64.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.3/AIYOUDSH-v0.8.3-macos-arm64.zip) | 官方 arm64 应用；原生 AppKit 安装器 |
+| 可构建源码 | [AIYOUDSH-v0.8.3-source.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.3/AIYOUDSH-v0.8.3-source.zip) | Node.js 24 或更新版本；按平台构建 |
 
-[SHA-256 校验文件](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.5.0/AIYOUDSH-v0.5.0-SHA256SUMS.txt) · [v0.5.0 说明](docs/releases/v0.5.0.md) · [上一版 macOS v0.4.0](https://github.com/yubowen123/AIYOUDSH/releases/tag/v0.4.0)
+[SHA-256 校验文件](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.3/AIYOUDSH-v0.8.3-SHA256SUMS.txt) · [v0.5.0 说明](docs/releases/v0.5.0.md) · [上一版 macOS v0.4.0](https://github.com/yubowen123/AIYOUDSH/releases/tag/v0.4.0)
 
 两平台均精确适配官方 **`0.2.1-rc.2` / `332895e0f7c9d4dbfb29729f5eb367fa263ff986`**，各自校验对应平台的应用归档和组件哈希。不匹配时停止安装；Mac Intel 与 Windows ARM 不在当前支持范围。
 
@@ -56,9 +56,9 @@ Windows 图为实际编译安装器在 GitHub Windows runner 中的准备界面�
 
 ## 项目知识卡片
 
-![AIYOUDSH GitHub 项目知识卡片](docs/knowledge-card.png)
+![AIYOUDSH v0.8.3：共享画布、DSH 素材库、媒体 API 与本地 Codex CLI](docs/knowledge-card-v0.8.3.png)
 
-基于本仓库功能与安装文档生成的项目图解；应用实机效果以上方截图为准。
+基于 v0.8.3 源码与验证记录生成的项目图解（2026-10-26）。本地测试 374 项通过、1 项平台检查跳过；配置保存不等于真实模型生成通过，Windows 新能力未完成桌面实测。[审查与剩余事项](docs/releases/v0.8.3-audit.md)。应用实机效果以上方截图为准。
 
 ## 安装
 
@@ -95,4 +95,4 @@ AIYOUDSH 是官方应用的外挂增强，不是可独立启动的官方 fork。
 
 ---
 
-**English:** AIYOUDSH is a removable workbench and theme add-on for official DeepSeek Harness. v0.5.0 targets Windows 10/11 x64 and macOS Apple Silicon with platform-specific compatibility checks. It requires one exact `0.2.1-rc.2` build. Sources include editable JavaScript reconstruction partitions and extensions, not a standalone app or a restoration of the original TypeScript project. The gallery above shows macOS captures; see the release notes for validation scope.
+**English:** AIYOUDSH is a removable workbench and theme add-on for official DeepSeek Harness. v0.8.3 adds a shared canvas, DSH asset workflows, configurable media APIs and local Codex CLI integration. The current release ships macOS Apple Silicon and source archives; the historical Windows v0.5.0 download remains available. New canvas/theme features have not completed Windows desktop validation. It requires one exact `0.2.1-rc.2` build. Sources include editable JavaScript reconstruction partitions and extensions, not a standalone app or a restoration of the original TypeScript project. The gallery above shows macOS captures; see the release notes for validation scope.
