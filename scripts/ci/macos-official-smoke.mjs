@@ -57,10 +57,30 @@ export function validateRuntimeEvidence(actual) {
   assert.equal(actual?.platform, 'darwin', 'The official payload did not run on macOS.');
   assert.equal(actual.arch, 'x64', 'The official payload is not an actual x64 process.');
   assert.ok(Number.isSafeInteger(actual.pid) && actual.pid > 0 && typeof actual.executable === 'string' && typeof actual.node === 'string');
-  const translated = actual.translated === '1';
-  const intel = !translated && actual.hardwareArm64 === '0' && (actual.translated === '0' || actual.translated === null);
+  const value = field => typeof field === 'string' ? field.trim() : '';
+  const translationFlag = value(actual.translated);
+  const armFlag = value(actual.hardwareArm64);
+  const vendor = value(actual.cpuVendor);
+  const brand = value(actual.cpuBrand);
+  const machine = value(actual.hardwareMachine);
+  const translated = translationFlag === '1';
+  const intelVendor = /^GenuineIntel$/iu.test(vendor);
+  const intelBrand = /\bIntel\b/iu.test(brand);
+  const appleCpu = /Apple/iu.test(vendor + ' ' + brand);
+  const armMachine = /^(?:arm|aarch)/iu.test(machine);
+  // Intel macOS may omit hw.optional.arm64 and sysctl.proc_translated. Missing
+  // optional keys are neutral; a positive Intel CPU identity is still needed.
+  // Translation=1 always wins, and contradictory Apple/ARM evidence must fail.
+  const intel = !translated && ['', '0'].includes(translationFlag) && ['', '0'].includes(armFlag)
+    && !appleCpu && !armMachine && (intelVendor || intelBrand);
   assert.ok(translated || intel, 'Unable to distinguish Intel hardware from Rosetta using actual sysctl evidence.');
-  return { ...actual, executionMode: translated ? 'rosetta-x64' : 'native-intel-x64', nativeIntelHardware: intel, userDesktopAcceptance: false };
+  const classificationEvidence = translated ? ['sysctl.proc_translated=1'] : [
+    ...(intelVendor ? ['machdep.cpu.vendor=GenuineIntel'] : []),
+    ...(intelBrand ? ['machdep.cpu.brand_string identifies Intel'] : []),
+    ...(armFlag === '0' ? ['hw.optional.arm64=0'] : []),
+    ...(machine === 'x86_64' ? ['hw.machine=x86_64'] : []),
+  ];
+  return { ...actual, executionMode: translated ? 'rosetta-x64' : 'native-intel-x64', nativeIntelHardware: intel, classificationEvidence, userDesktopAcceptance: false };
 }
 
 async function digest(file) {
@@ -128,9 +148,9 @@ async function runtimeEvidencePayload() {
   const { spawnSync } = await import('node:child_process');
   const read = key => {
     const result = spawnSync('/usr/sbin/sysctl', ['-in', key], { encoding: 'utf8' });
-    return result.status === 0 ? result.stdout.trim() : null;
+    return result.status === 0 ? result.stdout.trim() || null : null;
   };
-  return { platform: process.platform, arch: process.arch, node: process.versions.node, electron: process.versions.electron, executable: process.execPath, pid: process.pid, translated: read('sysctl.proc_translated'), hardwareArm64: read('hw.optional.arm64'), cpuBrand: read('machdep.cpu.brand_string') };
+  return { platform: process.platform, arch: process.arch, node: process.versions.node, electron: process.versions.electron, executable: process.execPath, pid: process.pid, translated: read('sysctl.proc_translated'), hardwareArm64: read('hw.optional.arm64'), cpuVendor: read('machdep.cpu.vendor'), cpuBrand: read('machdep.cpu.brand_string'), hardwareMachine: read('hw.machine') };
 }
 
 async function hostPayload(config) {
@@ -293,6 +313,7 @@ export async function runSmoke(options) {
     };
     const serialize = (fn, config) => `(${fn.toString()})(${JSON.stringify(config)}).then(value=>console.log(${JSON.stringify(marker)}+JSON.stringify(value))).catch(error=>{console.log(${JSON.stringify(marker)}+JSON.stringify({ok:false,code:error.code||error.name,message:String(error.message).slice(0,400),checks:error.smokeChecks}));process.exitCode=1;});`;
     const actual = officialScript(serialize(runtimeEvidencePayload), 'actual-runtime-evidence');
+    report.rawRuntimeEvidence = actual;
     assert.equal(await realpath(actual.executable), await realpath(executable));
     report.actualRuntime = validateRuntimeEvidence(actual);
     if (baseline.embeddedRuntime?.node) assert.equal(actual.node, baseline.embeddedRuntime.node, 'Official Electron embedded Node version changed.');

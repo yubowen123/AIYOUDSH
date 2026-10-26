@@ -42,10 +42,36 @@ test('actual x64 process evidence distinguishes Rosetta from Intel hardware and 
   const rosetta = validateRuntimeEvidence(actual);
   assert.equal(rosetta.executionMode, 'rosetta-x64');
   assert.equal(rosetta.nativeIntelHardware, false);
-  const intel = validateRuntimeEvidence({ ...actual, translated: null, hardwareArm64: '0' });
+  const intel = validateRuntimeEvidence({ ...actual, translated: null, hardwareArm64: '0', cpuVendor: 'GenuineIntel', cpuBrand: 'Intel(R) Core(TM) i7', hardwareMachine: 'x86_64' });
   assert.equal(intel.executionMode, 'native-intel-x64');
   assert.equal(intel.nativeIntelHardware, true);
   for (const changed of [{ ...actual, arch: 'arm64' }, { ...actual, platform: 'linux' }, { ...actual, translated: null }, { ...actual, translated: '0', hardwareArm64: '1' }, { ...actual, pid: 0 }]) assert.throws(() => validateRuntimeEvidence(changed));
+});
+
+test('native Intel sysctl evidence remains valid when the optional ARM and translation keys do not exist', () => {
+  const actual = { platform: 'darwin', arch: 'x64', node: '24.21.0', executable: '/isolated/official-app', pid: 456, translated: null, hardwareArm64: null, cpuVendor: 'GenuineIntel', cpuBrand: 'Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz', hardwareMachine: 'x86_64' };
+  for (const value of [actual, { ...actual, cpuVendor: null }, { ...actual, cpuBrand: null }, { ...actual, translated: '0' }]) {
+    const evidence = validateRuntimeEvidence(value);
+    assert.equal(evidence.executionMode, 'native-intel-x64');
+    assert.equal(evidence.nativeIntelHardware, true);
+  }
+  const translated = validateRuntimeEvidence({ ...actual, translated: '1' });
+  assert.equal(translated.executionMode, 'rosetta-x64');
+  assert.equal(translated.nativeIntelHardware, false);
+});
+
+test('missing optional sysctl keys never turn Apple, unknown or contradictory hardware into Intel', () => {
+  const actual = { platform: 'darwin', arch: 'x64', node: '24.21.0', executable: '/isolated/official-app', pid: 456, translated: null, hardwareArm64: null, cpuVendor: null, cpuBrand: null, hardwareMachine: null };
+  for (const value of [
+    actual,
+    { ...actual, hardwareMachine: 'x86_64' },
+    { ...actual, hardwareArm64: '0', hardwareMachine: 'x86_64', cpuBrand: 'Unknown Virtual CPU' },
+    { ...actual, cpuVendor: 'Apple', cpuBrand: 'Apple M5 Max', hardwareMachine: 'arm64' },
+    { ...actual, cpuBrand: 'Apple M5 Max', hardwareMachine: 'x86_64' },
+    { ...actual, hardwareArm64: '1', cpuVendor: 'GenuineIntel', cpuBrand: 'Intel(R) Xeon' },
+    { ...actual, hardwareMachine: 'arm64', cpuVendor: 'GenuineIntel' },
+    { ...actual, translated: 'invalid', cpuVendor: 'GenuineIntel' },
+  ]) assert.throws(() => validateRuntimeEvidence(value), /Unable to distinguish/);
 });
 
 test('isolation fence rejects official application and user profile locations without rejecting similarly named fixtures', () => {
