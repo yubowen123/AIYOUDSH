@@ -6,25 +6,26 @@
 
 **让官方 DeepSeek Harness 拥有更完整的工作台、主题和创作入口。**
 
-AIYOUDSH 是可安装、可卸载的桌面增强包：基于官方安装包的原生扩展接口，重新整理导航和对话侧栏，加入主题配置、动态背景、本地资产与项目管理。v0.8.3 延续 AIYOUPLUS 画布与创作工具的本地融合，文字使用宿主模型，素材使用 DSH 统一素材库；新增全插件主题同步和独立的画布外观配置；素材库采用左目录右素材，支持目录关联与扫描，媒体 API 支持文档、模型目录与调用合同自动关联配置。本轮主题检查在 macOS Apple Silicon 与隔离浏览器中分层验证；v0.5.0 的 Windows x64 支持保留，新增主题及画布能力尚未完成 Windows 桌面实测。
+AIYOUDSH 是可安装、可卸载的桌面增强包：基于官方安装包的原生扩展接口，重新整理导航和对话侧栏，加入主题配置、动态背景、本地资产与项目管理。v0.8.4 新增 Intel Mac（x64）独立安装包，并延续 AIYOUPLUS 画布与创作工具的本地融合，文字使用宿主模型，素材使用 DSH 统一素材库；新增全插件主题同步和独立的画布外观配置；素材库采用左目录右素材，支持目录关联与扫描，媒体 API 支持文档、模型目录与调用合同自动关联配置。本轮主题检查在 macOS Apple Silicon 与隔离浏览器中分层验证；v0.5.0 的 Windows x64 支持保留，新增主题及画布能力尚未完成 Windows 桌面实测。
 
-[下载 v0.8.3](https://github.com/yubowen123/AIYOUDSH/releases/tag/v0.8.3) · [安装与卸载](docs/installation.md) · [功能说明](docs/features.md) · [主题与动效](docs/themes.md) · [构建源码](docs/development.md) · [问题反馈](https://github.com/yubowen123/AIYOUDSH/issues)
+[下载 v0.8.4](https://github.com/yubowen123/AIYOUDSH/releases/tag/v0.8.4) · [安装与卸载](docs/installation.md) · [功能说明](docs/features.md) · [主题与动效](docs/themes.md) · [构建源码](docs/development.md) · [问题反馈](https://github.com/yubowen123/AIYOUDSH/issues)
 
 ![AIYOUDSH 工作台：左侧功能栏与对话列表、中间聊天和主题背景；macOS 实机](docs/screenshots/overview.jpg)
 
-本轮变更与验证边界见 [v0.8.3 说明](docs/releases/v0.8.3.md)。v0.8.3 发布 macOS arm64 与完整源码；Windows v0.5.0 下载明确保留为历史版本，不代表新增画布能力已完成 Windows 桌面验收。
+本轮 Intel 适配与验证范围见 [v0.8.4 说明](docs/releases/v0.8.4.md)。v0.8.4 分别发布 macOS Apple Silicon、Intel 与完整源码；Windows v0.5.0 下载保留为历史版本。
 
 ## 下载与兼容
 
 | 平台 | 安装包 | 条件 |
 | --- | --- | --- |
 | Windows 10 / 11 x64（历史 v0.5.0） | [AIYOUDSH-v0.5.0-windows-x64.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.5.0/AIYOUDSH-v0.5.0-windows-x64.zip) | 历史稳定包；官方 x64 应用、.NET Framework 4.8。v0.8.3 新能力尚未完成 Windows 桌面验收 |
-| macOS Apple Silicon arm64 | [AIYOUDSH-v0.8.3-macos-arm64.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.3/AIYOUDSH-v0.8.3-macos-arm64.zip) | 官方 arm64 应用；原生 AppKit 安装器 |
-| 可构建源码 | [AIYOUDSH-v0.8.3-source.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.3/AIYOUDSH-v0.8.3-source.zip) | Node.js 24 或更新版本；按平台构建 |
+| macOS Apple Silicon arm64 | [AIYOUDSH-v0.8.4-macos-arm64.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.4/AIYOUDSH-v0.8.4-macos-arm64.zip) | 官方 arm64 应用；原生 AppKit 安装器 |
+| macOS Intel x64 | [AIYOUDSH-v0.8.4-macos-x64.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.4/AIYOUDSH-v0.8.4-macos-x64.zip) | macOS 13+；官方 Intel rc.1 应用；独立 x64 安装器与媒体工具 |
+| 可构建源码 | [AIYOUDSH-v0.8.4-source.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.4/AIYOUDSH-v0.8.4-source.zip) | Node.js 24 或更新版本；按平台构建 |
 
-[SHA-256 校验文件](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.3/AIYOUDSH-v0.8.3-SHA256SUMS.txt) · [v0.5.0 说明](docs/releases/v0.5.0.md) · [上一版 macOS v0.4.0](https://github.com/yubowen123/AIYOUDSH/releases/tag/v0.4.0)
+[SHA-256 校验文件](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.4/AIYOUDSH-v0.8.4-SHA256SUMS.txt) · [v0.5.0 说明](docs/releases/v0.5.0.md) · [上一版 macOS v0.4.0](https://github.com/yubowen123/AIYOUDSH/releases/tag/v0.4.0)
 
-两平台均精确适配官方 **`0.2.1-rc.2` / `332895e0f7c9d4dbfb29729f5eb367fa263ff986`**，各自校验对应平台的应用归档和组件哈希。不匹配时停止安装；Mac Intel 与 Windows ARM 不在当前支持范围。
+Apple Silicon 与 Windows 目标固定官方 **`0.2.1-rc.2 / 332895e`**；Intel 目标固定官方 **`0.2.1-rc.1 / ed75efe`**，其官方 Intel [ZIP](https://download.deepseek.com/dsh-desk/bin/mac-x64/deepseek-harness-0.2.1-rc.1-mac-x64.zip)已独立核对。各包校验对应架构、应用归档和组件哈希，不匹配时停止安装。Windows ARM 不在支持范围。
 
 ## 工作台与功能
 
@@ -81,7 +82,7 @@ npm test
 npm run verify
 ```
 
-Node.js 24 起，默认按当前平台构建 `dist/addon/runtime/`；也可显式选择 `darwin-arm64` 或 `win32-x64` 目标。根构建使用随仓库依赖，无需先运行 `npm install`。macOS 打包使用 `npm run package`，Windows 使用 `npm run package:windows`。[开发与验证指南](docs/development.md)
+Node.js 24 起，默认按当前平台构建 `dist/addon/runtime/`；也可显式选择 `darwin-arm64`、`darwin-x64` 或 `win32-x64` 目标。根构建使用随仓库依赖，无需先运行 `npm install`。macOS 打包使用 `npm run package`，Windows 使用 `npm run package:windows`。[开发与验证指南](docs/development.md)
 
 ## 当前范围
 
@@ -103,4 +104,4 @@ AIYOUDSH 是官方应用的外挂增强，不是可独立启动的官方 fork。
 
 ---
 
-**English:** AIYOUDSH is a removable workbench and theme add-on for official DeepSeek Harness. v0.8.3 adds a shared canvas, DSH asset workflows, configurable media APIs and local Codex CLI integration. The current release ships macOS Apple Silicon and source archives; the historical Windows v0.5.0 download remains available. New canvas/theme features have not completed Windows desktop validation. It requires one exact `0.2.1-rc.2` build. Sources include editable JavaScript reconstruction partitions and extensions, not a standalone app or a restoration of the original TypeScript project. The gallery above shows macOS captures; see the release notes for validation scope.
+**English:** AIYOUDSH is a removable workbench and theme add-on for official DeepSeek Harness. v0.8.3 adds a shared canvas, DSH asset workflows, configurable media APIs and local Codex CLI integration. v0.8.4 ships separate macOS Apple Silicon and Intel x64 installers plus source archives; the historical Windows v0.5.0 download remains available. New canvas/theme features have not completed Windows desktop validation. The Intel target requires macOS 13+ and official `0.2.1-rc.1 / ed75efe`; Apple Silicon and Windows retain `0.2.1-rc.2 / 332895e`. Sources include editable JavaScript reconstruction partitions and extensions, not a standalone app or a restoration of the original TypeScript project. The gallery above shows macOS captures; see the release notes for validation scope.

@@ -25,7 +25,7 @@ node addon/installer.mjs dry-run --runtime dist/addon/runtime
 
 | 错误或表现 | 含义与处理 |
 | --- | --- |
-| `APP_PLATFORM` | 安装包目标与当前系统/架构不一致。选用 Windows x64 或 macOS arm64 对应包。 |
+| `APP_PLATFORM` | 安装包目标与当前系统/架构不一致。选用 Windows x64、macOS Apple Silicon arm64 或 Intel x64 对应包；Intel 固定官方 rc.1，ARM/Windows 固定 rc.2。 |
 | `APP_NOT_FOUND` | 未找到官方应用。使用安装器选择真实目录，或通过 `--app` 指定。 |
 | `APP_VERSION` / `APP_HASH` / `APP_COMPATIBILITY` | 官方版本、归档或原生模块与适配基线不符。当前版本未安装；核对官方构建，等待对应适配。 |
 | `PROFILE_FORMAT` | desktop profile 尚未初始化。先正常打开官方应用一次，再重试。 |

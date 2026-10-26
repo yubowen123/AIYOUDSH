@@ -4,21 +4,21 @@
 
 ## 选择平台
 
-| 平台 | v0.5.0 下载 | 额外环境 |
+| 平台 | 下载 | 官方应用与环境 |
 | --- | --- | --- |
-| Windows 10 / 11 x64 | [Windows x64 安装包](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.5.0/AIYOUDSH-v0.5.0-windows-x64.zip) | .NET Framework 4.8；Node.js 24 优先，也可检测官方内嵌运行时 |
-| macOS Apple Silicon arm64 | [macOS arm64 安装包](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.5.0/AIYOUDSH-v0.5.0-macos-arm64.zip) | 官方 arm64 应用；安装器可使用其随带运行时 |
+| macOS Intel x64 | [v0.8.4 Intel 安装包](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.4/AIYOUDSH-v0.8.4-macos-x64.zip) | macOS 13+，官方 Intel `0.2.1-rc.1 / ed75efe` |
+| macOS Apple Silicon arm64 | [v0.8.4 Apple Silicon 安装包](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.4/AIYOUDSH-v0.8.4-macos-arm64.zip) | 官方 arm64 `0.2.1-rc.2 / 332895e`；既有 ARM FFmpeg 8.1 声明 macOS 26+ |
+| Windows 10 / 11 x64（历史版） | [v0.5.0 Windows 安装包](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.5.0/AIYOUDSH-v0.5.0-windows-x64.zip) | 官方 x64 `0.2.1-rc.2 / 332895e`，.NET Framework 4.8；新增画布业务尚未完整桌面验收 |
 
-Mac Intel、Windows ARM 和其他官方构建未列入支持。安装包只有增强运行库，不包含或替换官方应用。
-
-两平台官方版本固定为 `0.2.1-rc.2`，构建固定为 `332895e0f7c9d4dbfb29729f5eb367fa263ff986`。还会校验应用归档与被适配模块：
+在 Mac 的“关于本机”查看芯片：显示 Intel 选 x64，显示 Apple M 系列选 arm64。Intel 与 Apple Silicon 使用不同的官方基线和原生媒体组件，不能将另一架构 ZIP 改名使用。Intel 官方 [rc.1 ZIP](https://download.deepseek.com/dsh-desk/bin/mac-x64/deepseek-harness-0.2.1-rc.1-mac-x64.zip) 是当前固定基线；不要让官方更新后绕过安装校验。Windows ARM 与其他未列构建尚不支持。增强包不包含或替换官方应用。
 
 | 官方 `app.asar` | SHA-256 |
 | --- | --- |
-| macOS arm64 | `b9ec4c2bbc20c9dbc3e39fa4c961434a943434ab0a803052b26753dd15f3b066` |
+| macOS Intel x64 | `c0681004889259e80449344cc725c06fa9a3b1e65746a00e08f7c2086e1f2bcb` |
+| macOS Apple Silicon arm64 | `b9ec4c2bbc20c9dbc3e39fa4c961434a943434ab0a803052b26753dd15f3b066` |
 | Windows x64 | `47874618bf5b3011fcaac10cd4c85f69da333e70d4f99b921207c78d0999512a` |
 
-以上是**官方应用归档**的哈希，增强 ZIP 的哈希另见 Release 中的 [SHA256SUMS](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.5.0/AIYOUDSH-v0.5.0-SHA256SUMS.txt)。不匹配时应保留校验并等待对应适配。
+上表为官方应用归档哈希，增强 ZIP 校验另见 [v0.8.4 SHA256SUMS](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.4/AIYOUDSH-v0.8.4-SHA256SUMS.txt)。不匹配时保留校验并等待对应适配。
 
 ## Windows 安装
 

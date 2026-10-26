@@ -676,6 +676,42 @@
         }
       ],
       "scope": "pinned-offline-host-schema-test-reference"
+    },
+    {
+      "name": "FFmpeg and FFprobe (Intel macOS)",
+      "version": "6.1.1-tessus",
+      "license": "GPL-3.0-or-later",
+      "directory": "aiyou/vendor/media-tools/darwin-x64",
+      "upstream": {
+        "type": "git",
+        "url": "https://github.com/FFmpeg/FFmpeg/tree/n6.1.1"
+      },
+      "notices": [
+        {
+          "file": "aiyou/vendor/media-tools/darwin-x64/licenses/COPYING.GPLv3",
+          "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+        }
+      ],
+      "scope": "darwin-x64-local-media-runtime",
+      "provenance": "aiyou/vendor/media-tools/darwin-x64/provenance.json"
+    },
+    {
+      "name": "node-addon-require-builtin-darwin-x64",
+      "version": "0.1.9",
+      "license": "MIT",
+      "directory": "test/runtime/node_modules/node-addon-require-builtin-darwin-x64",
+      "upstream": {
+        "type": "git",
+        "url": "git+https://github.com/deepseek-ai/dsh-node-addon-require-builtin.git",
+        "directory": "packages/require-builtin/darwin-x64"
+      },
+      "notices": [
+        {
+          "file": "test/runtime/node_modules/node-addon-require-builtin-darwin-x64/LICENSE",
+          "sha256": "75bd0a6d6b9f9f0a6c792ca89832360b19749ebe16af0222e34387f262baa95e"
+        }
+      ],
+      "scope": "pinned-offline-host-test-runtime"
     }
   ],
   "taskboardWebInventory": "aiyou/vendor/codex-taskboard/third-party-licenses/inventory.json",

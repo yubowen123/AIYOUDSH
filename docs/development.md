@@ -1,11 +1,11 @@
-# 源码构建与双平台打包
+# 源码构建与三目标打包
 
 [返回首页](../README.md) · [贡献方式](../CONTRIBUTING.md)
 
 ## 环境与目标
 
 - Node.js **24 或更新版本**；根构建使用随仓库依赖，不需要先运行 `npm install`。
-- 支持目标：`darwin-arm64`、`win32-x64`。源码构建和隔离测试不修改真实 Harness profile。
+- 支持目标：`darwin-arm64`、`darwin-x64`、`win32-x64`。源码构建和隔离测试不修改真实 Harness profile。
 - macOS 安装器：macOS、Command Line Tools、Swift/AppKit、`codesign` 与 `ditto`。
 - Windows 安装器：Windows 10/11 x64、PowerShell、.NET Framework 4.8；使用系统 `csc.exe` 编译 WinForms，无需额外 .NET SDK。
 
@@ -28,7 +28,7 @@ node aiyou/verify-embedded.mjs
 
 | 命令 | 作用 |
 | --- | --- |
-| `npm run build` | 构建目标平台的两个界面模块与 13 个功能模块，写入兼容清单 |
+| `npm run build` | 构建目标平台的两个界面模块与 16 个有效功能模块，写入兼容清单 |
 | `npm test` | 导航、MOKE、主题、原生 workspace 与共享安装事务测试 |
 | `npm run verify` | 核对构建产物、模块身份与语法 |
 | `node aiyou/verify.mjs` | 临时 DSH 根目录下验证功能模块和本地服务 |
@@ -40,6 +40,7 @@ node aiyou/verify-embedded.mjs
 
 ```sh
 node scripts/build-addon.mjs --platform darwin-arm64 --out dist/macos/runtime
+node scripts/build-addon.mjs --platform darwin-x64 --out dist/intel/runtime
 node scripts/build-addon.mjs --platform win32-x64 --out dist/windows/runtime
 ```
 
@@ -51,6 +52,8 @@ npm run verify
 ```
 
 Windows 兼容清单见 [platforms/win32-x64.json](../platforms/win32-x64.json)。两平台的官方 `app.asar` 哈希不同；Windows 原生 client 的 CSS class 差异通过[语义映射](../platforms/win32-x64-selectors.json)适配。映射覆盖 335 个 class、主题涉及其中 31 个引用，不能用 Mac 包改后缀代替。
+
+Intel 基线见 [darwin-x64.json](../platforms/darwin-x64.json)，独立固定官方 rc.1，而非 ARM 的 rc.2。Intel [CSS 语义映射](../platforms/darwin-x64-selectors.json)有 335 项已取证 class，主题引用 31 项；只映射未替换的原生模块，恢复分区保持原样。每个运行包只携带当前目标媒体工具，源码保留两套 Mac 载荷。
 
 ## 本机安装检查
 
@@ -78,7 +81,23 @@ npm run build -- --platform darwin-arm64
 npm run package
 ```
 
-该入口生成 Mac 安装包及源码归档，并验证本地 ad-hoc 签名。Windows x64 主机：
+Intel Mac 原生构建：
+
+```sh
+npm run build -- --platform darwin-x64
+npm run package
+```
+
+也可在 Mac 上显式交叉打包，但必须先构建正确架构运行库：
+
+```sh
+node scripts/build-addon.mjs --platform darwin-x64 --out dist/intel/runtime
+node scripts/package-addon.mjs --platform darwin-x64 --runtime dist/intel/runtime --out dist/delivery
+```
+
+打包器核对 manifest 目标与版本，Swift 编译后使用 `file`/`lipo`检查真实架构。Intel 安装器最低 macOS 13；ARM 安装器保留 12，其官方宿主与媒体工具另有系统要求。stage 按平台隔离，两个运行目录都必须匹配同一目标；输出分别为 `macos-arm64.zip` 和 `macos-x64.zip`。此入口生成 Mac 安装包与完整源码，并验证 ad-hoc 签名。交叉编译与 Rosetta 运行均不等于 Intel 硬件验收。
+
+Windows x64 主机：
 
 ```sh
 npm run build -- --platform win32-x64
@@ -100,19 +119,19 @@ Windows GUI 与载荷必须完整解压，不能只分发独立 EXE。打包器�
 
 ```text
 AIYOUDSH/
-├── addon/                    # 双平台共享安装事务、备份、兼容检查与 YAML
+├── addon/                    # 三目标共享安装事务、备份、兼容检查与 YAML
 ├── installer-ui/             # macOS Swift/AppKit 安装器
 ├── installer-win/            # Windows C#/WinForms 安装器与脚本
-├── platforms/                # 平台官方基线与 Windows 语义 CSS 映射
+├── platforms/                # 平台官方基线与 Intel/Windows 语义 CSS 映射
 ├── packages/
 │   ├── dsh-client-ui-sidebar/ # 导航、品牌、MOKE、顶部工具与恢复分区
 │   ├── dsh-client-ui-workspace/ # 原生会话列表、状态投影与恢复分区
 │   └── dsh-client-ui-*/       # 主题适配所需原生 CSS 参考
 ├── aiyou/
-│   ├── modules/              # 14 个功能源码模块，13 个默认安装
+│   ├── modules/              # 有效功能模块与共享画布、媒体适配
 │   ├── lib/                  # 共享适配与服务桥接
 │   └── vendor/               # 随包资产与看板服务
-├── scripts/                  # 目标构建、核对与双平台打包
+├── scripts/                  # 目标构建、核对与三目标打包
 ├── test/                     # 隔离测试和平台运行时夹具
 └── docs/                     # 使用、开发、版本说明与截图
 ```
@@ -121,7 +140,7 @@ AIYOUDSH/
 
 ## 兼容与验证原则
 
-基线固定为官方 `0.2.1-rc.2 / 332895e`。适配新构建需重读发布组件，核对 slot、投影、模块身份、原生 CSS 和接口，再更新兼容清单；不能只改版本字符串或绕过哈希。
+ARM/Windows 基线固定为官方 `0.2.1-rc.2 / 332895e`，Intel 固定 `0.2.1-rc.1 / ed75efe`。适配新构建需重读发布组件，核对 slot、投影、模块身份、原生 CSS 和接口，再更新兼容清单；不能只改版本字符串或绕过哈希。
 
 Mac 实机界面、Windows CI 编译/自测、隔离 junction 事务与 Windows 宿主聊天验收应分别记录。CI 自测安装器的参数、进程环境和结果解析，或输出安装器自身截图，不代表已经在用户 Windows 桌面加载增强并验收聊天。当前证据范围见 [v0.5.0 说明](releases/v0.5.0.md#验证范围)。
 
@@ -130,3 +149,7 @@ Mac 实机界面、Windows CI 编译/自测、隔离 junction 事务与 Windows 
 ## UI 颜色约定
 
 修改控件、插件或弹窗时遵循[界面前景与背景配对规范](ui-color-standard.md)，保留媒体作品区与用户原始配置；有实际对比度疑点时用渲染结果验收。
+
+## 原生 Intel CI
+
+GitHub Actions 固定 `macos-15-intel`，起步断言 `darwin-x64`；ARM 的 `macos-15`不能作为 Intel 运行证据。CI 在真实 x64 进程执行全部回归、构建与打包，随后运行 `node scripts/ci/macos-official-smoke.mjs`。该检查下载并核对固定官方 ZIP、在临时 profile 安装与卸载、执行官方原生运行时/SQLite/sharp及鉴权接口；报告区分 `native-intel-x64` 与 `rosetta-x64`。不触达正式 app、profile 或用户凭证，不发起模型请求。

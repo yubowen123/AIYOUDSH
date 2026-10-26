@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "version": "0.8.3",
+  "version": "0.8.4",
   "applicationBaseline": "installed-app 0.2.1-rc.2",
   "storage": "${DSH_HOME}/aiyou-enhancer",
   "transport": "native connection.requestRejection + relative /aiyoucodex-dsh routes",

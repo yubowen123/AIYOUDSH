@@ -12,7 +12,11 @@ const sourceDirectory = dirname(fileURLToPath(import.meta.url));
  * resourcesSource, when supplied, is copied as the Contents/Resources root and
  * must contain installer/installer.mjs, installer/vendor/yaml and runtime/.
  */
-export async function buildInstaller(appPath, resourcesSource) {
+export async function buildInstaller(appPath, resourcesSource, options = {}) {
+  const requestedArch = options.arch ?? process.arch;
+  const swiftArch = requestedArch === 'arm64' ? 'arm64' : requestedArch === 'x64' ? 'x86_64' : null;
+  if (!swiftArch) throw new Error('Installer architecture must be arm64 or x64.');
+  const minimumSystemVersion = requestedArch === 'x64' ? '13.0' : '12.0';
   if (process.platform !== 'darwin') throw new Error('The AppKit installer must be built on macOS.');
   const { version } = JSON.parse(await readFile(join(sourceDirectory, '..', 'package.json'), 'utf8'));
   const absoluteAppPath = resolve(appPath);
@@ -31,7 +35,7 @@ export async function buildInstaller(appPath, resourcesSource) {
   }
 
   const executablePath = join(macOS, 'AIYOUDSHInstaller');
-  const target = `${process.arch === 'arm64' ? 'arm64' : 'x86_64'}-apple-macos12.0`;
+  const target = `${swiftArch}-apple-macos${minimumSystemVersion}`;
   await execute('/usr/bin/xcrun', [
     'swiftc', '-swift-version', '5', '-O', '-whole-module-optimization', '-target', target,
     '-framework', 'AppKit', join(sourceDirectory, 'Installer.swift'), '-o', executablePath,
@@ -48,7 +52,7 @@ export async function buildInstaller(appPath, resourcesSource) {
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>${version}</string>
   <key>CFBundleVersion</key><string>1</string>
-  <key>LSMinimumSystemVersion</key><string>12.0</string>
+  <key>LSMinimumSystemVersion</key><string>${minimumSystemVersion}</string>
   <key>NSPrincipalClass</key><string>NSApplication</string>
   <key>NSHighResolutionCapable</key><true/>
   <key>LSUIElement</key><false/>
@@ -56,12 +60,21 @@ export async function buildInstaller(appPath, resourcesSource) {
 `);
   await execute('/usr/bin/plutil', ['-lint', infoPath]);
   const { stdout } = await execute('/usr/bin/file', [executablePath]);
-  if (!stdout.includes('Mach-O')) throw new Error('The compiled installer is not a Mach-O executable.');
-  return { appPath: absoluteAppPath, executablePath, infoPath, resourcesPath: resources, architecture: process.arch };
+  if (!stdout.includes('Mach-O') || !stdout.includes(swiftArch)) throw new Error('The compiled installer is not the requested Mach-O architecture.');
+  const { stdout: architectures } = await execute('/usr/bin/lipo', ['-archs', executablePath]);
+  if (architectures.trim() !== swiftArch) throw new Error(`Installer architecture mismatch: expected ${swiftArch}, received ${architectures.trim()}.`);
+  const architecture = { arm64: 'arm64', x86_64: 'x64' }[architectures.trim()];
+  return { appPath: absoluteAppPath, executablePath, infoPath, resourcesPath: resources, architecture };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const appPath = process.argv[2];
-  if (!appPath) throw new Error('Usage: node installer-ui/build.mjs <output.app> [resources-source]');
-  process.stdout.write(`${JSON.stringify(await buildInstaller(appPath, process.argv[3]))}\n`);
+  const positional = [], options = {};
+  const args = process.argv.slice(2);
+  for (let index = 0; index < args.length; index++) {
+    if (args[index] === '--arch' && options.arch === undefined && args[index + 1] && !args[index + 1].startsWith('--')) options.arch = args[++index];
+    else if (args[index].startsWith('--')) throw new Error('Usage: node installer-ui/build.mjs <output.app> [resources-source] [--arch arm64|x64]');
+    else positional.push(args[index]);
+  }
+  if (!positional.length || positional.length > 2) throw new Error('Usage: node installer-ui/build.mjs <output.app> [resources-source] [--arch arm64|x64]');
+  process.stdout.write(`${JSON.stringify(await buildInstaller(positional[0], positional[1], options))}\n`);
 }

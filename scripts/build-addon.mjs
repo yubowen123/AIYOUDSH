@@ -35,7 +35,15 @@ for (const [original, local, id] of replacements) {
   for (const entry of manifest.entries) {
     let data = Buffer.concat(await Promise.all(entry.parts.map(part => readFile(join(source, part.file)))));
     if (entry.output === 'lib/client.js') {
-      const text = data.toString('utf8');
+      let text = data.toString('utf8');
+      if (original === 'dsh-client-ui-sidebar' && platform === 'darwin-x64') {
+        // The rc.1 Intel/rc.2 ARM semantic comparison proves this sole badge
+        // difference. Keep frozen recovery partitions unchanged and show the
+        // actual target build rather than the source recovery build.
+        const badge = '0.2.1-rc.2-332895e';
+        if (text.split(badge).length !== 2) throw new Error('Recovered sidebar build badge has drifted');
+        text = text.replace(badge, `${baseline.appVersion}-${baseline.buildCommit.slice(0,7)}`);
+      }
       const from = `id: "@deepseek-ai/${original}"`;
       if (!text.includes(from)) throw new Error(`Client module identity missing in ${original}`);
       data = Buffer.from(text.replace(from, `id: "@local/${local}"`));
@@ -50,6 +58,7 @@ for (const [original, local, id] of replacements) {
   metadata.private = true;
   metadata.aiyouOriginalPackage = `@deepseek-ai/${original}`;
   metadata.aiyouOriginalBuild = '332895e0f7c9d4dbfb29729f5eb367fa263ff986';
+  metadata.aiyouTargetBuild = baseline.buildCommit;
   await writeFile(join(target, 'package.json'), JSON.stringify(metadata, null, 2) + '\n');
   if (original === 'dsh-client-ui-workspace') {
     // Profile modules resolve from a versioned external directory, so ship the
@@ -60,15 +69,25 @@ for (const [original, local, id] of replacements) {
 }
 const { buildAddonFeatures } = await import('../aiyou/build.mjs');
 const features = await buildAddonFeatures(out);
+// Each installer carries only the native media payload selected by its runtime.
+// The source archive retains all supported payloads for offline rebuilds.
+const mediaDirectory = join(out, 'vendor', 'media-tools');
+for (const entry of await readdir(mediaDirectory, { withFileTypes: true })) {
+  if (entry.isDirectory() && /^(darwin|win32|linux)-(arm64|x64)$/.test(entry.name) && entry.name !== platform)
+    await rm(join(mediaDirectory, entry.name), { recursive: true, force: true });
+}
+if (platform.startsWith('darwin-')) {
+  for (const executable of ['ffmpeg', 'ffprobe']) await stat(join(mediaDirectory, platform, 'bin', executable));
+}
 let selectorMapping;
-if (platform === 'win32-x64') {
-  const mapBytes = await readFile(join(root,'platforms','win32-x64-selectors.json'));
+if (baseline.selectorMapping) {
+  const mapBytes = await readFile(join(root, baseline.selectorMapping));
   const descriptor = JSON.parse(mapBytes);
   if (descriptor.buildCommit !== baseline.buildCommit || descriptor.appVersion !== baseline.appVersion) throw new Error('Native selector map targets a different official build');
   const themeClient = join(out,'modules','aiyou-enhancer-theme','client.js');
   const compiled = rewriteThemeSelectors(await readFile(themeClient,'utf8'), descriptor);
   await writeFile(themeClient, compiled.source);
-  selectorMapping = { file: 'platforms/win32-x64-selectors.json', sha256: createHash('sha256').update(mapBytes).digest('hex'), references: compiled.references.length };
+  selectorMapping = { file: baseline.selectorMapping, sha256: createHash('sha256').update(mapBytes).digest('hex'), references: compiled.references.length };
 }
 // The native workspace owns labels and urgency. Do not install a second,
 // independent row-state provider with a conflicting source of truth.

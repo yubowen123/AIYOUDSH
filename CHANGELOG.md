@@ -2,6 +2,13 @@
 
 版本描述按可交付行为记录；完整兼容要求见[安装指南](docs/installation.md)。
 
+## v0.8.4
+
+- 新增 macOS Intel `darwin-x64`：固定真实官方 rc.1 基线，独立校验归档、组件与 CSS 语义映射；Apple Silicon/Windows 基线保留 rc.2。
+- 新增原始 x86_64 FFmpeg/FFprobe 6.1.1、来源哈希与完整许可；运行包按目标裁剪，源码支持离线重建两个 Mac 目标。
+- AppKit 与打包器支持真实 x64 编译、架构/版本预检和平台隔离 stage，Intel 最低 macOS 13，拒绝误用 ARM 运行库。
+- CI 增加原生 `macos-15-intel` 与隔离官方宿主检查；静态、Rosetta、原生 CI 与完整桌面人工验收分别记录。见 [v0.8.4 说明](docs/releases/v0.8.4.md)。
+
 ## v0.8.3
 
 - 修复任务上下文保存与自动提取、辅助面板的对话绑定、Skills 失败草稿与键盘事件，以及静置倒计时更新。

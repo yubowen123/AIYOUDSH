@@ -14,7 +14,7 @@ node addon/installer.mjs uninstall --dry-run
 node addon/installer.mjs uninstall
 ```
 
-源码工程运行库位于 `dist/addon/runtime`。Windows 运行库必须先按 `win32-x64` 构建，macOS 使用 `darwin-arm64` 构建；两者不能混装。命令行可显式选择官方安装位置，例如：
+源码工程运行库位于 `dist/addon/runtime`。Windows 运行库必须先按 `win32-x64` 构建，macOS 按芯片使用 `darwin-arm64` 或 `darwin-x64`；三目标不能混装。命令行可显式选择官方安装位置，例如：
 
 ```powershell
 node addon/installer.mjs dry-run --runtime runtime --app "C:\Users\Me\AppData\Local\Programs\DeepSeek Harness\DeepSeek Harness.exe"
@@ -36,7 +36,7 @@ Windows 的 `--app` 接收安装根目录或真实存在的 `.exe`，归一为�
 
 运行库 manifest 保持 `schemaVersion: 1`，包含：
 
-- `upstream.platform`：`darwin-arm64` 或 `win32-x64`。缺失时仅按旧版 Mac ARM64 格式处理。
+- `upstream.platform`：`darwin-arm64`、`darwin-x64` 或 `win32-x64`。缺失时仅按旧版 Mac ARM64 格式处理。
 - 精确 `upstream.appVersion/buildCommit/appAsarSha256/compatibility`。
 - `modules`、`patches` 和 `legacyPluginIds`。
 

@@ -22,6 +22,22 @@ test('official Mac and Windows manifests lock distinct archives and exact compon
  assert.notEqual(mac.compatibility.find(x=>x.package.endsWith('ui-sidebar')&&x.file==='lib/client.js').sha256,win.compatibility.find(x=>x.package.endsWith('ui-sidebar')&&x.file==='lib/client.js').sha256);
  await assert.rejects(platformBaseline(root,'win32-arm64'),/Unsupported/);
 });
+test('Intel Mac pins the real rc.1 archive independently of Apple Silicon rc.2',async()=>{
+ const arm=await platformBaseline(root,'darwin-arm64'),intel=await platformBaseline(root,'darwin-x64');
+ assert.equal(intel.os,'darwin');assert.equal(intel.arch,'x64');assert.equal(intel.appVersion,'0.2.1-rc.1');
+ assert.equal(intel.buildCommit,'ed75efeffee65f9fe93625bbd76a68cb219aaaf9');assert.equal(intel.minimumMacOS,'13.0');
+ assert.notEqual(intel.appAsarSha256,arm.appAsarSha256);assert.equal(intel.compatibility.length,6);
+ assert.match(intel.sourceUrl,/^https:\/\/download\.deepseek\.com\/dsh-desk\/bin\/mac-x64\//);
+ assert.equal(Buffer.from(intel.archiveSha512,'base64').length,64);
+});
+test('Intel theme maps only proven native CSS exports and retains custom ARM-source UI classes',async()=>{
+ const intelDescriptor=JSON.parse(await readFile(new URL('../platforms/darwin-x64-selectors.json',import.meta.url),'utf8'));
+ const compiled=rewriteThemeSelectors(source,intelDescriptor),intel=load(compiled.source),mac=load(source);
+ const frame=intelDescriptor.modules.find(x=>x.package.endsWith('ui-layout')).cssModules.find(x=>x.path.endsWith('/AppFrame.module.css.mjs')).exports.frame;
+ const css=intel.buildThemeSurfaceCss(THEMES['mecha-control']);assert.ok(css.includes('.'+frame.intel));assert.ok(!css.includes('.'+frame.mac));
+ assert.ok(mac.buildThemeSurfaceCss(THEMES['mecha-control']).includes('.'+frame.mac));assert.equal(compiled.references.length,31);
+ const bad=structuredClone(intelDescriptor);bad.mapping[frame.mac]='unproven_intel_class';assert.throws(()=>rewriteThemeSelectors(source,bad),/evidence mismatch/);
+});
 test('Windows theme CSS follows official semantic exports while source Mac CSS stays unchanged',()=>{
  const compiled=rewriteThemeSelectors(source,descriptor);
  const win=load(compiled.source),mac=load(source);

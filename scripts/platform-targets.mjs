@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-export const SUPPORTED_PLATFORMS = ['darwin-arm64', 'win32-x64'];
+export const SUPPORTED_PLATFORMS = ['darwin-arm64', 'darwin-x64', 'win32-x64'];
 export async function platformBaseline(root, platform) {
   if (!SUPPORTED_PLATFORMS.includes(platform)) throw new Error('Unsupported target platform: ' + platform);
   const baseline = JSON.parse(await readFile(join(root, 'platforms', platform + '.json'), 'utf8'));
@@ -15,17 +15,18 @@ export async function platformBaseline(root, platform) {
   return baseline;
 }
 export function rewriteThemeSelectors(source, descriptor) {
-  if (descriptor.schemaVersion !== 1 || descriptor.platform !== 'win32-x64' || !descriptor.mapping || !Array.isArray(descriptor.modules))
-    throw new Error('Invalid Windows native selector map');
+  const targetKey = descriptor.platform === 'win32-x64' ? 'windows' : descriptor.platform === 'darwin-x64' ? 'intel' : null;
+  if (descriptor.schemaVersion !== 1 || !targetKey || !descriptor.mapping || !Array.isArray(descriptor.modules))
+    throw new Error('Invalid native selector map');
   const evidence = new Map();
   const expectedReferences = new Set();
   for (const module of descriptor.modules) {
     if (!['chat', 'conversation', 'layout', 'sidebar-right'].some(name => module.package === '@deepseek-ai/dsh-client-ui-' + name))
       throw new Error('Selector map must only address untouched official modules');
     for (const css of module.cssModules) for (const [key, value] of Object.entries(css.exports)) {
-      if (descriptor.mapping[value.mac] !== value.windows || !/^[-A-Za-z_][A-Za-z0-9_-]*$/.test(value.mac)
-          || !/^[-A-Za-z_][A-Za-z0-9_-]*$/.test(value.windows)) throw new Error('Native CSS export evidence mismatch: ' + key);
-      evidence.set(value.mac, value.windows);
+      if (descriptor.mapping[value.mac] !== value[targetKey] || !/^[-A-Za-z_][A-Za-z0-9_-]*$/.test(value.mac)
+          || !/^[-A-Za-z_][A-Za-z0-9_-]*$/.test(value[targetKey])) throw new Error('Native CSS export evidence mismatch: ' + key);
+      evidence.set(value.mac, value[targetKey]);
       if (value.themeReferences) expectedReferences.add(value.mac);
     }
   }
@@ -36,6 +37,6 @@ export function rewriteThemeSelectors(source, descriptor) {
   const pattern = new RegExp('(?<![A-Za-z0-9_-])(?:' + candidates.join('|') + ')(?![A-Za-z0-9_-])', 'g');
   const references = new Set();
   const compiled = source.replace(pattern, value => { references.add(value); return evidence.get(value); });
-  if (!references.size || references.size < expectedReferences.size) throw new Error('Windows theme selectors were not fully applied');
+  if (!references.size || references.size < expectedReferences.size) throw new Error('Native theme selectors were not fully applied');
   return { source: compiled, references: [...references].sort() };
 }

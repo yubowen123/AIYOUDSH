@@ -37,7 +37,8 @@
     "vary",
     "zod",
     "node-addon-require-builtin-win32-x64-msvc",
-    "@deepseek-ai/dsh-authorization"
+    "@deepseek-ai/dsh-authorization",
+    "node-addon-require-builtin-darwin-x64"
   ],
   "embeddedWebServer": {
     "source": "Current installed DeepSeek Harness 0.2.1-rc.2 application payload; package bytes unchanged",
@@ -261,5 +262,103 @@
       "sha256": "912e04e68c2455cbb77651031449574f992720c90311e6cbecb1d35020bc1072",
       "license": "native-json-schema.LICENSE"
     }
-  ]
+  ],
+  "darwinX64NativeFixture": {
+    "source": "Official DeepSeek Harness macOS Intel 0.2.1-rc.1 application payload; package and native binary bytes unchanged; includes upstream MIT license.",
+    "sourceUrl": "https://download.deepseek.com/dsh-desk/bin/mac-x64/deepseek-harness-0.2.1-rc.1-mac-x64.zip",
+    "sourceAppVersion": "0.2.1-rc.1",
+    "sourceBuildCommit": "ed75efeffee65f9fe93625bbd76a68cb219aaaf9",
+    "archiveSha256": "67bff9b16632bd6af1293650ffebfc91cadba597d5a479a8355cc130f0c8c3d3",
+    "appAsarSha256": "c0681004889259e80449344cc725c06fa9a3b1e65746a00e08f7c2086e1f2bcb",
+    "purpose": "macOS x64 Node-API v9 optional native-loader fixture for isolated official WebServer tests; does not ship the official application or user data.",
+    "closure": [
+      {
+        "name": "node-addon-require-builtin-darwin-x64",
+        "version": "0.1.9",
+        "path": "node_modules/node-addon-require-builtin-darwin-x64",
+        "treeSha256": "9bebfd800d021c57f3a3462cfc8daa93ca75ef96bf044743ddb8bf1a74db9f90"
+      }
+    ],
+    "files": [
+      {
+        "file": "LICENSE",
+        "size": 1096,
+        "sha256": "75bd0a6d6b9f9f0a6c792ca89832360b19749ebe16af0222e34387f262baa95e",
+        "sourceEntry": "dsh/node_modules/node-addon-require-builtin-darwin-x64/LICENSE",
+        "sourceContainer": "Contents/Resources/app.asar",
+        "sourceAsarIntegritySha256": "75bd0a6d6b9f9f0a6c792ca89832360b19749ebe16af0222e34387f262baa95e"
+      },
+      {
+        "file": "README.md",
+        "size": 217,
+        "sha256": "1489a222e860edf224977c47d43a18df2810e7ff20af34ebd917a87daa19a23d",
+        "sourceEntry": "dsh/node_modules/node-addon-require-builtin-darwin-x64/README.md",
+        "sourceContainer": "Contents/Resources/app.asar",
+        "sourceAsarIntegritySha256": "1489a222e860edf224977c47d43a18df2810e7ff20af34ebd917a87daa19a23d"
+      },
+      {
+        "file": "index.js",
+        "size": 127,
+        "sha256": "1ca7929a06a837121c8dcc6e485a3ac9becfdaf2f3ded95e088d1df54019608a",
+        "sourceEntry": "dsh/node_modules/node-addon-require-builtin-darwin-x64/index.js",
+        "sourceContainer": "Contents/Resources/app.asar",
+        "sourceAsarIntegritySha256": "1ca7929a06a837121c8dcc6e485a3ac9becfdaf2f3ded95e088d1df54019608a"
+      },
+      {
+        "file": "package.json",
+        "size": 696,
+        "sha256": "8b48f366e7fb98af7a5aeccd8808a646d86e70c920e85d31035fafc8f210a663",
+        "sourceEntry": "dsh/node_modules/node-addon-require-builtin-darwin-x64/package.json",
+        "sourceContainer": "Contents/Resources/app.asar",
+        "sourceAsarIntegritySha256": "8b48f366e7fb98af7a5aeccd8808a646d86e70c920e85d31035fafc8f210a663"
+      },
+      {
+        "file": "prebuilds.json",
+        "size": 214,
+        "sha256": "596976e67c3b41cd9a8d4809f75248b5924f3daeb4193d36a26e56f9b949252d",
+        "sourceEntry": "dsh/node_modules/node-addon-require-builtin-darwin-x64/prebuilds.json",
+        "sourceContainer": "Contents/Resources/app.asar",
+        "sourceAsarIntegritySha256": "596976e67c3b41cd9a8d4809f75248b5924f3daeb4193d36a26e56f9b949252d"
+      },
+      {
+        "file": "prebuilt/darwin-x64-napi-v9.node",
+        "size": 221776,
+        "sha256": "66cf75dc02c4874619ee0032593c7de17a71cb04eff34d155ea5795a277545e2",
+        "sourceEntry": "dsh/node_modules/node-addon-require-builtin-darwin-x64/prebuilt/darwin-x64-napi-v9.node",
+        "sourceContainer": "Contents/Resources/app.asar",
+        "sourceAsarIntegritySha256": "66cf75dc02c4874619ee0032593c7de17a71cb04eff34d155ea5795a277545e2",
+        "sourcePhysicalPath": "Contents/Resources/app.asar.unpacked/dsh/node_modules/node-addon-require-builtin-darwin-x64/prebuilt/darwin-x64-napi-v9.node"
+      }
+    ],
+    "execution": "Loaded successfully with the unchanged official x64 Node 24.21.0 under Rosetta on Apple Silicon; physical Intel hardware is not claimed.",
+    "verification": {
+      "runtime": {
+        "platform": "darwin",
+        "arch": "x64",
+        "node": "v24.21.0",
+        "nodeApi": "10"
+      },
+      "binding": {
+        "mode": "napi",
+        "product": "require-builtin",
+        "backend": "napi",
+        "abi": "napi-v9",
+        "bindingSource": "optional-package",
+        "optionalPackageName": "node-addon-require-builtin-darwin-x64",
+        "optionalBinaryRelativePath": "prebuilt/darwin-x64-napi-v9.node",
+        "platformPackageSuffix": "darwin-x64",
+        "fixtureBinaryPath": "node_modules/node-addon-require-builtin-darwin-x64/prebuilt/darwin-x64-napi-v9.node",
+        "loadedBinaryLocation": "loader-managed temporary native cache",
+        "loadedBinarySha256": "66cf75dc02c4874619ee0032593c7de17a71cb04eff34d155ea5795a277545e2",
+        "cacheBytesMatchFixture": true
+      },
+      "requireBuiltin": {
+        "fsReadFileSync": "function",
+        "internalUtilTypesIsDate": "function",
+        "realDateAccepted": true,
+        "plainObjectRejected": true
+      }
+    },
+    "treeHashFormat": "SHA-256 of Unicode code-point-sorted package-relative path, NUL, file bytes, NUL"
+  }
 }

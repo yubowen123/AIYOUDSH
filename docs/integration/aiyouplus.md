@@ -42,7 +42,7 @@
 - 自动测试、真实浏览器业务、实际官方宿主插件菜单与完整重启分层验收。v0.7.1 素材库替换证据以本任务交付目录「画布素材库替换」的验收清单为准；「画布项目工具完善」保留 v0.7.0 证据；「融合设计」保留 v0.6.0 历史证据。
 - 浏览器业务覆盖原画布创建/保存/重开、统一原件预览、关闭立即重开、媒体处理、流水线、3D JSON/GLB、生产模板与项目存储隔离。
 - 模型通道使用受控 HTTP 模拟服务与宿主适配夹具验证。CLI 版本、已有登录和模型目录另有真实只读检查；本轮没有发起真实 CLI 推理或供应商计费生成，也没有代用户完成 Codex 登录。
-- 本次媒体二进制为 macOS arm64、声明最低 macOS 26；Windows 可维护源码保留，但新画布的 Windows 桌面、媒体二进制尚未验收。可通过 DSH_FFMPEG_PATH/DSH_FFPROBE_PATH 指定适配本机的工具。
+- Mac 媒体按目标分别携带：arm64 为既有 FFmpeg 8.1（声明最低 macOS 26），Intel x64 为 6.1.1-tessus 原件，随 Intel macOS 13+ 增强包提供。Windows 可维护源码保留，新画布的 Windows 桌面、媒体二进制尚未完整验收。可通过 DSH_FFMPEG_PATH/DSH_FFPROBE_PATH 指定适配本机的工具；Intel 来源与验证范围见 [v0.8.4 说明](../releases/v0.8.4.md)。
 - 旧 PLUS 账户、云存储、独立素材库、独立扩展桥和独立 HTTP 生产网关不启用。生产能力通过 DSH 原生工具与当前画布协调器提供，不沿用旧网关。
 
 ## 开发
@@ -51,4 +51,4 @@
 
 `npm run build` 自动重建画布并组装 18 个运行模块。`npm test`、`npm run verify` 及 `node --test aiyou/vendor/aiyouplus-canvas/test/runtime-host.test.mjs` 检查宿主集成、素材、模型和本地引擎。浏览器专项脚本与可调用动作规范在 vendor 的 README/actions.json 中。
 
-插件安装器核对官方 0.2.1-rc.2 / 332895e 基线和 ASAR 哈希，保留私有备份和卸载回执。不要通过改写兼容哈希跳过检查；完整官方应用和用户 profile 不进入交付包。
+插件安装器按平台核对官方基线和 ASAR 哈希：Intel 为 `0.2.1-rc.1 / ed75efe`，Apple Silicon/Windows 为 `0.2.1-rc.2 / 332895e`，并保留私有备份和卸载回执。不要通过改写兼容哈希跳过检查；完整官方应用和用户 profile 不进入交付包。
