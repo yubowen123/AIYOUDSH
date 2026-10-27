@@ -8,10 +8,10 @@ const {buildGenericRequest}=require('../aiyou/lib/canvas/providers/aiyouplus-gen
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 
 async function fixture(t,ids){
- let config;const plans=[],events=new EventTarget();let configs=[];
+ let config,deferred;const plans=[],events=new EventTarget();let configs=[];
  const setCatalog=values=>{const catalog=buildApiaiCatalog(values);config={provider:'apiai',profiles:{apiai:{provider:'apiai',name:'APIAI fixture',baseUrl:'https://fixture.invalid',protocol:'http-json',authType:'bearer',authHeader:'Authorization',enabled:true,hasKey:true,...catalog}}};};setCatalog(ids);
  const adapter=createCanvasModelAdapter({eventTarget:events,invoke:async(command,args)=>{
-  if(command==='aiyouplus_model_config')return config;
+  if(command==='aiyouplus_model_config'){const snapshot=config,wait=deferred;deferred=null;if(wait){wait.started();await wait.gate;}return snapshot;}
   if(command==='aiyouplus_model_generate'){plans.push({args,plan:buildGenericRequest({...config.profiles.apiai,apiKey:'offline-key'},args)});return{paths:['/tmp/apiai-offline-fixture.mp4'],taskId:'offline-fixture'};}
   throw Error('Unexpected command '+command);
  }});
@@ -22,7 +22,7 @@ async function fixture(t,ids){
   const result=await adapter.generate({node,nodes:[node],updateNode(){},setHistory(){},getReferenceSources:async()=>[],cacheOutput:async output=>({...output,url:'file://'+output.path})});
   assert.equal(result.status,'completed',result.error);return plans.at(-1);
  }
- return{adapter,generate,plans,setCatalog,events,configs:()=>configs};
+ return{adapter,generate,plans,setCatalog,events,configs:()=>configs,pauseNextRead(){let started,release;const began=new Promise(r=>{started=r;}),gate=new Promise(r=>{release=r;});deferred={started,gate};return{began,release};}};
 }
 
 test('Kling duration controls preserve the documented string wire type and aspect ratio',async t=>{
@@ -47,4 +47,10 @@ test('an existing canvas refreshes its own configuration on focus and detaches w
  const f=await fixture(t,['gpt-image-1']);assert.equal(f.configs().length,1);f.setCatalog(['gpt-image-1','veo3']);
  f.events.dispatchEvent(new Event('focus'));await tick();assert.equal(f.configs().length,2);
  f.adapter.dispose();f.setCatalog(['sora-2']);f.events.dispatchEvent(new Event('focus'));await tick();assert.equal(f.configs().length,2);
+});
+
+test('configuration invalidation during an older directory read schedules a fresh read instead of losing the update',async t=>{
+ const f=await fixture(t,['gpt-image-1']),read=f.pauseNextRead();f.events.dispatchEvent(new Event('focus'));await read.began;
+ f.setCatalog(['gpt-image-1','veo3']);f.events.dispatchEvent(new Event('aiyouplus-model-config-changed'));read.release();await tick();await tick();
+ assert.equal(f.configs().length,2);assert.ok(f.configs().some(model=>model.modelName==='veo3'));
 });

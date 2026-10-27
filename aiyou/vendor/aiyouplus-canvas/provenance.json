@@ -302,7 +302,7 @@
       "source": "renderer-src/local/canvas-model-adapter.js",
       "target": "public/local/canvas-model-adapter.js",
       "sha256": "4c20d7d1fe8fd639a95de9501d59751774f5d6aa98299b70807c73f3bbe3f3ae",
-      "currentSha256": "279c9a19d1d1ffc2f125aaf04d19335ffb6793d108baa9dde97e7743b7931691",
+      "currentSha256": "729be163f179458a955ca35649387454548b24a0e7ff0ba97b83b95db19d69cb",
       "modifiedForHost": true
     },
     {
