@@ -213,7 +213,7 @@ export async function publishVerifiedRelease({ env = process.env, root = rootDir
 
     if (await remoteMain(client) !== headSha) fail('Remote main advanced before draft creation.');
     await assertTagTarget(client, tag, headSha);
-    if (!release) release = await client.api('releases', { method: 'POST', body: { tag_name: tag, target_commitish: headSha, name: `AIYOUDSH ${tag} · Intel Mac 支持`, body: notes, draft: true, prerelease: false } });
+    if (!release) release = await client.api('releases', { method: 'POST', body: { tag_name: tag, target_commitish: headSha, name: `AIYOUDSH ${tag}`, body: notes, draft: true, prerelease: false } });
     validateDraftRelease(release, { tag, headSha });
     const assetsPath = `releases/${release.id}/assets`;
     validateDraftRelease(await client.api('releases/' + release.id), { tag, headSha });

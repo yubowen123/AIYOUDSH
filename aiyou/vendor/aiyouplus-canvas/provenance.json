@@ -302,7 +302,7 @@
       "source": "renderer-src/local/canvas-model-adapter.js",
       "target": "public/local/canvas-model-adapter.js",
       "sha256": "4c20d7d1fe8fd639a95de9501d59751774f5d6aa98299b70807c73f3bbe3f3ae",
-      "currentSha256": "be31b5d3db2e88366c35f360b9e300a51c7551c4040e007aad415f1410910ca1",
+      "currentSha256": "729be163f179458a955ca35649387454548b24a0e7ff0ba97b83b95db19d69cb",
       "modifiedForHost": true
     },
     {
@@ -1974,12 +1974,13 @@
       "Canvas background alpha and controlled theme image use a separate backdrop pseudo-layer; original SVG grid pan/zoom supports dots/lines/none and original connection canvas receives the configured edge color",
       "The original bottom background/theme buttons navigate to DSH theme settings with source-bound project/session/panel identity instead of ineffective local appearance settings",
       "All 22 workspaces, node/menu surfaces and retained dialogs use host presentation colors; original pattern/tiling/cutout artwork, canonical media and 3D capture pixels remain unchanged",
-      "The original app-canvas-viewport wrapper stays transparent along with every canvas background ancestor; native range and checkbox accents follow the host theme without affecting media opacity"
+      "The original app-canvas-viewport wrapper stays transparent along with every canvas background ancestor; native range and checkbox accents follow the host theme without affecting media opacity",
+      "v0.8.5: verified GGWK/APIAI default business origin; authenticated account catalog intersects anonymous live endpoint bindings; declarative multipart/content recovery; bound Key protection and canvas model invalidation. No provider Key or generation copied."
     ],
     "files": [
       {
         "path": "README.md",
-        "sha256": "9f52b01157d88f16af730d7a896b3c265611216a59311315610da1227f806dd0"
+        "sha256": "8227e31e6ff22407736edcba6b2eb148af63a185c14e20a576329ca3a49f374d"
       },
       {
         "path": "scripts/build.mjs",
@@ -2125,7 +2126,7 @@
       },
       {
         "path": "aiyou/vendor/canvas-model-settings/index.html",
-        "sha256": "182bd76ccd80f92504708d98c9894b8561f109bb1dea31b4cc5c63c7bc6284db"
+        "sha256": "4cd4321f2c4e76ee6f923c8173b38cbcc968854ee06d3a5ff96545e45c1cb40a"
       },
       {
         "path": "aiyou/vendor/codex-workspace-enhancer/asset-browser/public/ui-v3.css",
@@ -2137,7 +2138,7 @@
       },
       {
         "path": "aiyou/lib/canvas/model-service.mjs",
-        "sha256": "6b423067eeb9c7dcad5cc9c6df4801eb80992361cd5cdcce78f29b5b0c1ebc16"
+        "sha256": "544c7b93d6a391dae2a899bdb9d3874b44b168e153e64aa76aa6bc54aecbc3b1"
       },
       {
         "path": "aiyou/modules/asset-console/client.js",
@@ -2145,7 +2146,7 @@
       },
       {
         "path": "aiyou/vendor/canvas-model-settings/app.js",
-        "sha256": "c1c93e821ce2223abee6f554ffe68630e45e6c0edd174bb09d7f157b6131a643"
+        "sha256": "4c69f1ddccbd86aa0405d514fa7c92d761934c947670958e78e6a5a80eb1485b"
       },
       {
         "path": "aiyou/vendor/codex-workspace-enhancer/asset-browser/canvas-asset-store.js",
@@ -2198,6 +2199,18 @@
       {
         "path": "aiyou/modules/usage/client.js",
         "sha256": "54bafcc25ddbd653caca9dbc001bb1f3b8726b8e529807a54f1e1dae516b7090"
+      },
+      {
+        "path": "aiyou/lib/canvas/providers/aiyouplus-generic-provider.cjs",
+        "sha256": "24def8cf9423312ee518f97b590248e4f6bcabf2ecae251212d55c85565afe3b"
+      },
+      {
+        "path": "aiyou/lib/canvas/providers/aiyouplus-provider-registry.cjs",
+        "sha256": "63ad5226c3a1152543a11f4290d3477c51eb80d27b0a390de3dd766df5367a17"
+      },
+      {
+        "path": "aiyou/lib/canvas/providers/apiai-default-profile.cjs",
+        "sha256": "890104053feeb81f7b60a23b3b58e191602a5fa3a9f26edbc543bebd667108f4"
       }
     ]
   }

@@ -5,6 +5,7 @@ const PROTOCOLS=Object.freeze(['openai-compatible','http-json','anthropic-messag
 const KINDS=Object.freeze(['chat','image','video','audio','music']);
 const MINIMAX_SYSTEM_VOICES=Object.freeze(['Chinese (Mandarin)_Sweet_Lady','Chinese (Mandarin)_Male_Announcer','Chinese (Mandarin)_Wise_Women','English_expressive_narrator','English_Graceful_Lady','English_Insightful_Speaker']);
 const BUILTIN_PROFILES=Object.freeze({
+  apiai:Object.freeze({provider:'apiai',name:'APIAI 默认媒体通道',baseUrl:'https://www.ggwk1.online',protocol:'http-json',authType:'bearer',authHeader:'Authorization',scope:'production',enabled:true,docsUrl:'https://apiai.apifox.cn/',modelCatalog:[]}),
   deepseek:Object.freeze({provider:'deepseek',name:'DeepSeek 官方',baseUrl:'https://api.deepseek.com',protocol:'openai-compatible',authType:'bearer',authHeader:'Authorization',scope:'production',enabled:true,docsUrl:'https://api-docs.deepseek.com',modelCatalog:[]}),
   minimax:Object.freeze({provider:'minimax',name:'MiniMax 官方',baseUrl:'https://api.minimax.io',protocol:'minimax-native',authType:'bearer',authHeader:'Authorization',scope:'production',enabled:true,docsUrl:'https://platform.minimax.io/docs',modelCatalog:[]}),
   openai:Object.freeze({provider:'openai',name:'OpenAI 兼容 / 本地服务',baseUrl:'https://api.openai.com/v1',protocol:'openai-compatible',authType:'bearer',authHeader:'Authorization',scope:'production',enabled:true,docsUrl:'',modelCatalog:[]}),
@@ -15,6 +16,7 @@ const UNSAFE_KEYS=new Set(['__proto__','prototype','constructor']);
 const SECRET_KEYS=/^(authorization|api[-_]?key|x-api-key|password|secret|access[-_]?token|refresh[-_]?token|token|encryptedKey)$/i;
 const TEMPLATE_ROOTS=new Set(['model','prompt','text','messages','system','temperature','max_tokens','maxTokens','tools','tool_choice','response_format','aspectRatio','resolution','duration','referenceUrls','referencePaths','referenceImages','referenceImageUrls','referenceBase64','references','referenceMedia','referenceVideoUrls','referenceAudioUrls','maskImage','maskImageUrl','maskBase64','mask','image','imageUrl','firstFrame','lastFrame','lyrics','instrumental','voiceId','speed','volume','pitch','count','width','height','parameters','taskId','userId','userName','projectName','seed','n','format','negativePrompt','input','customParameters']);
 const BLOCKED_HEADERS=new Set(['host','cookie','set-cookie','content-length','content-type','connection','transfer-encoding','proxy-authorization','proxy-authenticate','upgrade','trailer','te','origin','referer']);
+const DOWNLOAD_MEDIA_TYPES=new Set(['image/png','image/jpeg','image/webp','image/gif','video/mp4','video/webm','audio/mpeg','audio/wav','audio/ogg','audio/flac','audio/mp4','audio/webm']);
 const isObject=value=>value!==null&&typeof value==='object'&&!Array.isArray(value)&&(Object.getPrototypeOf(value)===Object.prototype||Object.getPrototypeOf(value)===null);
 const serviceId=id=>Object.hasOwn(BUILTIN_PROFILES,id)||/^service-[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
 const createServiceId=()=> 'service-'+crypto.randomUUID();
@@ -82,6 +84,19 @@ function selectors(input,keys) {
   const result={};for(const key of keys)if(input[key]!==undefined){parseFieldPath(input[key]);result[key]=input[key];}
   return result;
 }
+function normalizeRequestEncoding(request) {
+  const result={};
+  if(request.encoding!==undefined){
+    if(!['json','multipart-form-data'].includes(request.encoding))throw new Error('请求编码仅支持JSON或multipart-form-data');
+    result.encoding=request.encoding;
+  }
+  if(request.fileFields!==undefined){
+    const fields=request.fileFields;
+    if(request.encoding!=='multipart-form-data'||!Array.isArray(fields)||fields.length>32||new Set(fields).size!==fields.length||fields.some(key=>typeof key!=='string'||!/^[A-Za-z_][A-Za-z0-9_.\[\]-]{0,99}$/.test(key)||UNSAFE_KEYS.has(key)||SECRET_KEYS.test(key)||!Object.hasOwn(request.template||{},key)))throw new Error('文件字段必须是multipart模板中明确声明的顶层字段');
+    result.fileFields=[...fields];
+  }
+  return result;
+}
 function normalizeModelCatalog(catalog=[],options={}) {
   if(!Array.isArray(catalog)||catalog.length>512)throw new Error('模型目录必须是最多512项的数组');
   const seen=new Set();
@@ -102,7 +117,7 @@ function normalizeModelCatalog(catalog=[],options={}) {
       if(!isObject(raw.request)||String(raw.request.method||'POST').toUpperCase()!=='POST')throw new Error('生成接口仅允许POST');
       if(raw.request.headers!==undefined)throw new Error('请求模板不能自行配置鉴权请求头');
       if(!isObject(raw.request.template))throw new Error('请求模板必须为JSON对象');
-      model.request={method:'POST',path:relativePath(raw.request.path),template:safeJson(raw.request.template,{template:true})};
+      model.request={method:'POST',path:relativePath(raw.request.path),template:safeJson(raw.request.template,{template:true}),...normalizeRequestEncoding(raw.request)};
       if(raw.request.optionalFields!==undefined){
         const list=raw.request.optionalFields;
         if(!Array.isArray(list)||list.length>128||list.some(key=>typeof key!=='string'||!Object.hasOwn(model.request.template,key)||!/^\{\{[^{}]+\}\}$/.test(model.request.template[key])||raw.parameterSchema?.[key]?.required===true))throw new Error('可选字段须为模板中非必填的完整变量字段');
@@ -119,6 +134,11 @@ function normalizeModelCatalog(catalog=[],options={}) {
       model.polling={method:'GET',path:relativePath(poll.path,{polling:true}),...selectors(poll,['statusPath','urlsPath','base64Path','errorPath','subtitlePath','subtitleUrlPath'])};
       if(!model.polling.statusPath)throw new Error('轮询必须配置statusPath');
       for(const field of ['completedValues','failedValues']){if(!Array.isArray(poll[field])||!poll[field].length||poll[field].length>30)throw new Error('轮询完成/失败状态列表无效');model.polling[field]=poll[field].map(x=>text(x,'轮询状态',100));}
+      if(poll.download!==undefined){
+        const download=poll.download;
+        if(!isObject(download)||String(download.method||'GET').toUpperCase()!=='GET'||!DOWNLOAD_MEDIA_TYPES.has(download.mimeType))throw new Error('任务结果回取仅支持已声明的GET媒体格式');
+        model.polling.download={method:'GET',path:relativePath(download.path,{polling:true}),mimeType:download.mimeType};
+      }
     }
     if(options.protocol==='http-json'&&(!model.request||!model.response||(!model.response.binary&&!['textPath','urlsPath','base64Path','taskIdPath'].some(key=>Object.hasOwn(model.response,key)))))throw new Error('HTTP JSON模型必须配置请求与结果映射');
     if(model.polling&&!model.response?.taskIdPath)throw new Error('轮询模型必须配置taskIdPath');
@@ -152,4 +172,4 @@ function validateServiceProfile(raw,options={}) {
   if(protocol==='http-json'&&Object.entries(models).some(([kind,id])=>!modelCatalog.some(model=>model.kind===kind&&model.id===id)))throw new Error('HTTP JSON默认模型必须具有对应的请求与响应配置，不能回退到其他模型');
   return {...(provider?{provider}:{}),name,baseUrl:url.href.replace(/\/+$/,''),protocol,authType,authHeader,scope,enabled:raw.enabled??builtin.enabled??true,docsUrl,modelCatalog,models};
 }
-module.exports={BUILTIN_PROFILES,PROTOCOLS,KINDS,MINIMAX_SYSTEM_VOICES,createServiceId,validateServiceProfile,normalizeModelCatalog,parseFieldPath,isWureadUrl,isValidServiceId:serviceId};
+module.exports={BUILTIN_PROFILES,PROTOCOLS,KINDS,MINIMAX_SYSTEM_VOICES,createServiceId,validateServiceProfile,normalizeModelCatalog,normalizeRequestEncoding,parseFieldPath,isWureadUrl,isValidServiceId:serviceId};

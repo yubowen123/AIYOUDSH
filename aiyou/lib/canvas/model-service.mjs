@@ -4,7 +4,8 @@ import {randomUUID,createHash} from 'node:crypto';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
 const {validateServiceProfile,normalizeModelCatalog,createServiceId,BUILTIN_PROFILES}=require('./providers/aiyouplus-provider-registry.cjs');
-const {executeGeneric,genericCatalog}=require('./providers/aiyouplus-generic-provider.cjs');
+const {executeGeneric,genericCatalog,address}=require('./providers/aiyouplus-generic-provider.cjs');
+const {APIAI_PRESET,buildApiaiCatalog,validateApiaiReferences}=require('./providers/apiai-default-profile.cjs');
 const {executeMiniMax,MINIMAX_MODELS,MINIMAX_SYSTEM_VOICES}=require('./providers/aiyouplus-minimax-provider.cjs');
 const {discoverApi}=require('./providers/aiyouplus-api-discovery.cjs');
 const {assertNetworkAllowed,isLoopbackUrl}=require('./providers/aiyouplus-runtime.cjs');
@@ -25,8 +26,8 @@ const hostProfile={provider:'host',name:'DSH 当前对话模型',baseUrl:'',prot
 export function createModelService({stateDir,assets,llm,fetch:transport=globalThis.fetch,emit=()=>{},mediaTools,credentials}={}){
  if(!path.isAbsolute(stateDir||''))throw new TypeError('模型状态目录必须是绝对路径');
  const configFile=path.join(stateDir,'model-services.json'),jobsDir=path.join(stateDir,'model-jobs'),outputDir=path.join(stateDir,'outputs');
- const active=new Map(),reservations=new Map(),temporary=new Map(),sessionKeys=new Map(),sessionSelection=new Map();
- let closed=false,queue=Promise.resolve();
+ const active=new Map(),reservations=new Map(),temporary=new Map(),sessionKeys=new Map(),sessionSelection=new Map(),catalogReads=new Set();
+ let stopping=false,closed=false,queue=Promise.resolve();
  const serialize=fn=>{const p=queue.catch(()=>{}).then(fn);queue=p;return p;};
  const scope=(context,id)=>(context.sessionId||'configuration')+'\0'+id;
  const recordKey=id=>'aiyou-enhancer-aiyouplus/'+id;
@@ -64,9 +65,11 @@ export function createModelService({stateDir,assets,llm,fetch:transport=globalTh
   const selected=sessionSelection.get(context.sessionId)||store.provider;
   const media=publicProfiles[selected]||{};
   return{...media,provider:selected||'host',profiles:publicProfiles,models:{...(media.models||{}),chat:'dsh-current'},chatProvider:'host',hostModel:caps,
-   enabledProviders:Object.values(publicProfiles).filter(p=>p.enabled).map(p=>p.provider),productionProviders:Object.values(publicProfiles).filter(p=>p.enabled&&p.scope==='production').map(p=>p.provider),credentialManagedByHost:true};
+   enabledProviders:Object.values(publicProfiles).filter(p=>p.enabled).map(p=>p.provider),productionProviders:Object.values(publicProfiles).filter(p=>p.enabled&&p.scope==='production').map(p=>p.provider),credentialManagedByHost:true,defaultMediaChannel:{...APIAI_PRESET}};
  }
- async function configure(args,context){return serialize(async()=>{
+ async function configure(args,context){return serialize(()=>configureLocked(args,context));}
+ async function configureLocked(args,context){
+  if(stopping||closed)throw fail('模型服务已关闭','DISPOSED');
   const source={...(plain(args.profile)?args.profile:{}),...args};
   const id=source.create||source.provider==='new'?createServiceId():source.provider||source.id;
   if(!id)throw fail('新增服务需显式选择创建，编辑需提供服务ID','INVALID_REQUEST');
@@ -118,6 +121,59 @@ export function createModelService({stateDir,assets,llm,fetch:transport=globalTh
   if(sessionOnly){temporary.set(scope(context,id),safe);sessionSelection.set(context.sessionId,id);}
   else{store.profiles[id]=safe;store.provider=id;await write(configFile,store);temporary.delete(scope(context,id));sessionSelection.delete(context.sessionId);}
   return publicConfig(context);
+ }
+ async function discoverApiai(profile,apiKey,context){
+  const controller=new AbortController();catalogReads.add(controller);
+  const signal=AbortSignal.any([controller.signal,AbortSignal.timeout(30000),...(context.signal?[context.signal]:[])]);
+  try{
+   async function getJson(url,{authenticated=false}={}){
+    signal.throwIfAborted();assertNetworkAllowed(url);
+    const response=await transport(url,{method:'GET',headers:{Accept:'application/json',...(authenticated?{Authorization:'Bearer '+apiKey}:{})},credentials:'omit',redirect:'error',signal});
+    if(!response.ok){await response.body?.cancel?.().catch(()=>{});const denied=authenticated&&(response.status===401||response.status===403);throw fail(denied?'通道 Key 无效或没有读取模型目录的权限（HTTP '+response.status+'）':'读取'+(authenticated?'账号模型目录':'站点媒体接口映射')+'失败（HTTP '+response.status+'）',denied?'CATALOG_AUTH_FAILED':'CATALOG_UNAVAILABLE');}
+    const chunks=[];let size=0;
+    for await(const chunk of response.body||[]){size+=chunk.length;if(size>4*1024*1024)throw fail('通道元数据超过4MiB，未修改原配置','CATALOG_LIMIT');chunks.push(Buffer.from(chunk));}
+    signal.throwIfAborted();try{return JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{throw fail('通道未返回有效的JSON元数据，请检查API地址','CATALOG_INVALID');}
+   }
+   const payload=await getJson(address(profile,'/v1/models'),{authenticated:true});
+   const rows=payload?.data;
+   if(!Array.isArray(rows)||rows.length>10000)throw fail('模型目录须包含最多10000项的data数组','CATALOG_INVALID');
+   // The live business site declares model-specific endpoints independently of
+   // its shared documentation. Read that public binding without forwarding Key.
+   const metadataUrl=new URL('/api/pricing',profile.baseUrl).href;
+   const platformCatalog=await getJson(metadataUrl);
+   if(platformCatalog?.success!==true||!Array.isArray(platformCatalog.data)||platformCatalog.data.length>10000||!plain(platformCatalog.supported_endpoint)||!Array.isArray(platformCatalog.vendors))throw fail('站点没有返回完整的模型与接口绑定，原配置已保留','CATALOG_INVALID');
+   // Directory metadata is untrusted. Only IDs and ownership needed for the
+   // documented contract intersection are retained; never echo an injected Key.
+   const fields=['id','name','display_name','owned_by','owner_by','provider','vendor','type','kind','modality','task'];
+   const forbidden=/qiniu|qnaigc|qiniucdn|qiniudn|qiniucs|qiniup|qiniuapi|qnqcdn|qbox\.me|clouddn\.com|qnssl\.com|七牛/i;
+   const safe=rows.filter(row=>plain(row)&&typeof row.id==='string'&&row.id.length<=200&&!row.id.includes(apiKey)&&!fields.some(field=>typeof row[field]==='string'&&forbidden.test(row[field]))).map(row=>Object.fromEntries(fields.filter(field=>typeof row[field]==='string'&&row[field].length<=200&&!row[field].includes(apiKey)).map(field=>[field,row[field]])));
+   const result=buildApiaiCatalog(safe,{previousModels:profile.models,platformCatalog});
+   const sources=[...new Set([metadataUrl,...result.evidence.flatMap(item=>item.sourceUrls||[])])].map(url=>({type:'public-document',url}));
+   return{...result,evidence:[...result.evidence,...sources],readyToConfigure:result.modelCatalog.length>0,accountCatalogVerified:true,availableModelCount:safe.length,source:APIAI_PRESET.docsUrl};
+  }catch(error){
+   if(signal.aborted)throw fail(stopping||closed?'模型服务已关闭':'模型目录读取已取消或超时',stopping||closed?'DISPOSED':'ABORTED');
+   if(error?.code&&/^(CATALOG_|MISSING_)/.test(error.code))throw fail(scrub(error.message,apiKey),error.code);
+   throw fail('无法读取通道模型目录，请检查API地址、网络和Key','CATALOG_UNAVAILABLE');
+  }finally{catalogReads.delete(controller);}
+ }
+ async function autoConfigure(args,context){return serialize(async()=>{
+  if(stopping||closed)throw fail('模型服务已关闭','DISPOSED');
+  if(args.provider!==undefined&&args.provider!=='apiai')throw fail('此自动配置入口仅适用于APIAI通道','INVALID_REQUEST');
+  const {all}=await profiles(context),previous=all.apiai;
+  const baseUrl=args.baseUrl===undefined?previous?.baseUrl||APIAI_PRESET.baseUrl:args.baseUrl;
+  if(typeof baseUrl!=='string'||!baseUrl.trim())throw fail('请填写通道的真实API地址；Apifox文档中的{{URL}}不是服务地址','MISSING_BASE_URL');
+  let profile;try{profile=validateServiceProfile({...BUILTIN_PROFILES.apiai,provider:'apiai',baseUrl,models:{},modelCatalog:[]});}catch{throw fail('通道API地址无效，请使用真实HTTPS服务地址','INVALID_REQUEST');}
+  if(/(?:^|\.)apifox\.(?:cn|com)$/i.test(new URL(profile.baseUrl).hostname))throw fail('Apifox是文档站，请填写通道的真实API地址','INVALID_REQUEST');
+  if(args.sessionOnly!==undefined&&typeof args.sessionOnly!=='boolean')throw fail('会话保存选项无效','INVALID_REQUEST');
+  if(args.clearKey)throw fail('删除Key请使用删除凭证操作，自动配置需要有效Key','MISSING_CREDENTIAL');
+  if(args.apiKey!==undefined&&(typeof args.apiKey!=='string'||args.apiKey.length>65536||/[\r\n\0]/.test(args.apiKey)))throw fail('凭证格式无效','INVALID_REQUEST');
+  const key=args.apiKey||await keyFor(profile,context);
+  const same=previous&&sameBinding(binding(previous),binding(profile));
+  const discovery=await discoverApiai({...profile,models:same?previous.models:{}},key,context);
+  if(!discovery.readyToConfigure)return{configuration:await publicConfig(context),discovery,configured:false};
+  context.signal?.throwIfAborted();if(stopping||closed)throw fail('模型服务已关闭','DISPOSED');
+  const configuration=await configureLocked({...profile,modelCatalog:discovery.modelCatalog,models:discovery.models,sessionOnly:args.sessionOnly,...(args.apiKey?{apiKey:args.apiKey}:{})},context);
+  return{configuration,discovery,configured:true};
  });}
  async function selected(args,context,required=true){
   const {store,all}=await profiles(context),id=args.provider||sessionSelection.get(context.sessionId)||store.provider,p=all[id];
@@ -236,7 +292,7 @@ export function createModelService({stateDir,assets,llm,fetch:transport=globalTh
   reservations.set(id,{sessionId:context.sessionId,projectId:context.projectId,fingerprint,promise});return promise;
  }
  async function execute(args,context,previous){
-  if(closed)throw fail('模型服务已关闭','DISPOSED');
+  if(stopping||closed)throw fail('模型服务已关闭','DISPOSED');
   const id=previous?.id||args.requestId||randomUUID();jobFile(id);
   if(active.has(id)){own(active.get(id).job,context);if(active.get(id).fingerprint!==digest(JSON.stringify(args)))throw fail('同一请求ID的参数已变化','REQUEST_CONFLICT');return active.get(id).promise;}
   const existing=previous||await read(jobFile(id));
@@ -276,6 +332,7 @@ export function createModelService({stateDir,assets,llm,fetch:transport=globalTh
     };
     if(!job.resultReceipt){
      const refs=job.taskId?[]:await referenceData(args,context);
+     if(!job.taskId&&cfg.provider==='apiai'){try{validateApiaiReferences(entry,refs);}catch(error){throw fail(scrub(error.message,cfg.apiKey),'INVALID_REFERENCE');}}
      let mask;
      if(!job.taskId&&args.maskPath){
       if(!entry.maskSupported)throw fail('当前模型未声明蒙版输入能力，未提交生成','INVALID_REFERENCE');
@@ -295,10 +352,11 @@ export function createModelService({stateDir,assets,llm,fetch:transport=globalTh
   });slot.promise=promise;active.set(id,slot);return promise;
  }
  async function invoke(command,args={},context={}){
-  if(closed)throw fail('模型服务已关闭','DISPOSED');
+  if(stopping||closed)throw fail('模型服务已关闭','DISPOSED');
   if(!plain(args))throw fail('模型参数必须为对象','INVALID_REQUEST');
   if(command==='aiyouplus_model_config')return publicConfig(context);
   if(command==='aiyouplus_model_configure')return configure(args,context);
+  if(command==='aiyouplus_model_autoconfigure')return autoConfigure(args,context);
   if(command==='aiyouplus_model_delete')return configure({...args,action:'delete'},context);
   if(command==='aiyouplus_model_generate')return generate(args,context);
   if(command==='aiyouplus_model_stop'){const task=active.get(args.requestId);if(task)own(task.job,context);task?.controller.abort(fail('已停止等待，服务端任务可能继续','ABORTED'));return{stoppedWaiting:Boolean(task),remoteTaskCancelled:false};}
@@ -313,6 +371,10 @@ export function createModelService({stateDir,assets,llm,fetch:transport=globalTh
   if(command==='aiyouplus_model_catalog'){
    if(args.provider==='host')return{models:{chat:['dsh-current']},capabilities:await llm?.capabilities?.(context),source:'DSH current session',liveDiscovery:false};
    const cfg=await selected(args,context,false);
+   if(cfg.provider==='apiai'){
+    if(!cfg.apiKey)return{modelCatalog:cfg.modelCatalog,models:cfg.models,liveDiscovery:false,connection:'credentials_required',requiresKey:true};
+    const discovery=await discoverApiai(cfg,cfg.apiKey,context);return{...discovery,liveDiscovery:true,connection:'reachable'};
+   }
    if(cfg.protocol==='minimax-native')return{modelCatalog:cfg.modelCatalog,models:cfg.models,source:'configured MiniMax official contract; account permission unverified',liveDiscovery:false};
    return genericCatalog({fetch:transport,signal:context.signal},cfg);
   }
@@ -333,6 +395,12 @@ export function createModelService({stateDir,assets,llm,fetch:transport=globalTh
   }
   throw fail('未知模型命令：'+command,'UNSUPPORTED_COMMAND');
  }
- async function dispose(){closed=true;for(const task of active.values())task.controller.abort(fail('画布模型服务已关闭','DISPOSED'));await Promise.allSettled([...reservations.values()].map(t=>t.promise));temporary.clear();sessionKeys.clear();sessionSelection.clear();}
+ async function dispose(){
+  stopping=true;for(const controller of catalogReads)controller.abort();for(const task of active.values())task.controller.abort(fail('画布模型服务已关闭','DISPOSED'));
+  // Reads and queued work stop immediately. A save already inside the native
+  // credential/config commit drains before shutdown completes, so its Key and
+  // public profile cannot be left half-written by cancellation.
+  await Promise.allSettled([queue,...[...reservations.values()].map(t=>t.promise)]);temporary.clear();sessionKeys.clear();sessionSelection.clear();closed=true;
+ }
  return{invoke,dispose};
 }
