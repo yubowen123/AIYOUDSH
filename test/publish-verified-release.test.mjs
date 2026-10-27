@@ -205,7 +205,7 @@ test('successful publication uses ARM source, verifies remote hashes, then marks
   assert.equal(report.assets.find(asset => asset.name.endsWith('-source.zip')).sha256, digest('verified-source-arm64'));
   assert.equal(f.state.mutations[0].body.draft, true);
   assert.equal(f.state.mutations[0].body.target_commitish, headSha);
-  assert.equal(f.state.mutations[0].body.name, `AIYOUDSH ${tag} · Intel Mac 支持`);
+  assert.equal(f.state.mutations[0].body.name, `AIYOUDSH ${tag}`);
   assert.ok(f.state.mutations[0].body.body.includes(`AIYOUDSH-${tag}-SHA256SUMS.txt`));
   assert.match(f.state.mutations[0].body.body, /Windows.*历史 v0\.5\.0/);
   assert.equal(f.state.mutations.at(-1).body.make_latest, 'true');

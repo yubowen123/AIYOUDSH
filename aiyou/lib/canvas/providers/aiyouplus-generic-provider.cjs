@@ -2,7 +2,7 @@
 // Declarative model transports. No executable snippets, provider keys or SDKs
 // are taken from documentation; credentials remain scoped to their service.
 const {assertNetworkAllowed}=require('./aiyouplus-runtime.cjs');
-const {parseFieldPath,isWureadUrl,normalizeModelCatalog}=require('./aiyouplus-provider-registry.cjs');
+const {parseFieldPath,isWureadUrl,normalizeModelCatalog,normalizeRequestEncoding}=require('./aiyouplus-provider-registry.cjs');
 const {buildChatPayload}=require('./aiyouplus-chat-request.cjs');
 const BAD=/qiniu|qnaigc|qbox\.me|clouddn\.com|qnssl\.com|qiniucdn\.com|七牛/i;
 const CHAT_FIELDS=['tools','tool_choice','response_format','max_tokens','temperature','top_p','stop','parallel_tool_calls'];
@@ -50,6 +50,53 @@ function headers(cfg) {
   return value;
 }
 function sources(refs){return refs.imageUrls||refs.referenceImageUrls||(refs.imageUrl?[refs.imageUrl]:[]);}
+const MULTIPART_MEDIA=Object.freeze({
+  'image/png':{extension:'png',matches:b=>b.subarray(0,8).toString('hex')==='89504e470d0a1a0a'},
+  'image/jpeg':{extension:'jpg',matches:b=>b.subarray(0,3).toString('hex')==='ffd8ff'},
+  'image/webp':{extension:'webp',matches:b=>b.subarray(0,4).toString()==='RIFF'&&b.subarray(8,12).toString()==='WEBP'},
+  'image/gif':{extension:'gif',matches:b=>['GIF87a','GIF89a'].includes(b.subarray(0,6).toString())},
+  'video/mp4':{extension:'mp4',matches:b=>b.subarray(4,8).toString()==='ftyp'},
+  'video/webm':{extension:'webm',matches:b=>b.subarray(0,4).toString('hex')==='1a45dfa3'},
+  'audio/mp4':{extension:'m4a',matches:b=>b.subarray(4,8).toString()==='ftyp'},
+  'audio/webm':{extension:'webm',matches:b=>b.subarray(0,4).toString('hex')==='1a45dfa3'},
+  'audio/mpeg':{extension:'mp3',matches:b=>b.subarray(0,3).toString()==='ID3'||b.length>1&&b[0]===255&&(b[1]&224)===224},
+  'audio/wav':{extension:'wav',matches:b=>b.subarray(0,4).toString()==='RIFF'&&b.subarray(8,12).toString()==='WAVE'},
+  'audio/ogg':{extension:'ogg',matches:b=>b.subarray(0,4).toString()==='OggS'},
+  'audio/flac':{extension:'flac',matches:b=>b.subarray(0,4).toString()==='fLaC'},
+});
+function multipartFile(value,key,index) {
+  if(typeof value!=='string')throw new Error('文件字段只接受已授权媒体的Base64 data URL：'+key);
+  const match=/^data:([a-z0-9.+-]+\/[a-z0-9.+-]+);base64,([A-Za-z0-9+/]*={0,2})$/.exec(value),type=match?.[1],spec=MULTIPART_MEDIA[type];
+  if(!match||!spec||!match[2].length||match[2].length%4!==0)throw new Error('文件字段必须是支持的媒体类型与有效Base64 data URL：'+key);
+  const bytes=Buffer.from(match[2],'base64');
+  if(!bytes.length||bytes.length>48*1024*1024||bytes.toString('base64')!==match[2]||!spec.matches(bytes))throw new Error('文件字段的媒体字节或Base64无效：'+key);
+  return{bytes,mimeType:type,filename:'reference-'+index+'.'+spec.extension};
+}
+function multipartParts(body,fileFields=[]) {
+  const parts=[],files=new Set(fileFields);let index=0;
+  for(const [key,value]of Object.entries(body)){
+    if(!/^[A-Za-z_][A-Za-z0-9_.\[\]-]{0,99}$/.test(key))throw new Error('multipart字段名无效');
+    if(files.has(key)){
+      const values=Array.isArray(value)?value:[value];
+      if(!values.length||values.length>64)throw new Error('multipart文件字段必须包含1至64份媒体：'+key);
+      for(const item of values)parts.push({key,file:multipartFile(item,key,index++)});
+    }else{
+      if(!['string','number','boolean'].includes(typeof value)||typeof value==='number'&&!Number.isFinite(value))throw new Error('multipart普通字段仅接受文字、数字或布尔值：'+key);
+      parts.push({key,value:String(value)});
+    }
+  }
+  return parts;
+}
+function multipartBody(body,fileFields) {
+  const form=new FormData();
+  // Repeated files keep the exact declared field name (for example image[]).
+  // Objects/arrays in ordinary fields are never guessed into JSON or files.
+  for(const part of multipartParts(body,fileFields)){
+    if(part.file)form.append(part.key,new Blob([part.file.bytes],{type:part.file.mimeType}),part.file.filename);
+    else form.append(part.key,part.value);
+  }
+  return form;
+}
 function anthropicPayload(payload,parameters) {
   if(payload.response_format!==undefined)throw new Error('Claude Messages不接受OpenAI response_format；请使用已核对的原生结构化输出映射');
   const system=payload.messages.filter(m=>m.role==='system').map(m=>m.content).join('\n');
@@ -146,14 +193,19 @@ function buildGenericRequest(cfg,args,refs={},ctx={}) {
     if(!encoded.includes(value)&&!encoded.includes(bare))throw new Error('请求映射遗漏了已选择的参考素材或蒙版，未提交生成');
   }
   const pathVariables=Object.fromEntries(Object.entries(variables).filter(([,v])=>['string','number','boolean'].includes(typeof v)).map(([k,v])=>[k,encodeURIComponent(String(v))]));
-  return {url:address(cfg,render(request.path,pathVariables)),method:'POST',headers:headers(cfg),body,response,polling:model.polling,model};
+  const encoding=normalizeRequestEncoding(request),requestHeaders=headers(cfg);
+  if(encoding.encoding==='multipart-form-data'){
+    multipartParts(body,encoding.fileFields);
+    delete requestHeaders['Content-Type'];
+  }
+  return {url:address(cfg,render(request.path,pathVariables)),method:'POST',headers:requestHeaders,body,response,polling:model.polling,model,...encoding};
 }
 async function readResponse(ctx,cfg,url,options,responseMap,signal){
   const response=await ctx.fetch(url,{...options,signal:signal?AbortSignal.any([signal,AbortSignal.timeout(180000)]):AbortSignal.timeout(180000),redirect:'error'});
   if(responseMap.binary&&response.ok){
     const buffers=[];let size=0;
     for await(const chunk of response.body){size+=chunk.length;if(size>512*1024*1024)throw new Error('二进制结果超过512 MiB');buffers.push(chunk);}
-    const type=(response.headers.get('content-type')||responseMap.mimeType||'').split(';')[0];
+    const type=(response.headers.get('content-type')||responseMap.mimeType||'').split(';')[0].trim().toLowerCase();
     if(!size||/text\/html|application\/json/.test(type))throw new Error('服务未返回有效媒体原件');
     return{binary:{bytes:Buffer.concat(buffers),mimeType:type,extension:type.startsWith('audio/')?'.mp3':type.startsWith('video/')?'.mp4':'.png'}};
   }
@@ -172,7 +224,9 @@ function mediaResult(data,response){
   const urls=items.map(item=>typeof item==='string'?item:item?.url).filter(Boolean);
   for(const url of urls){if(!/^https?:\/\//i.test(url)||BAD.test(url))throw new Error('模型媒体地址无效或属于禁用供应商');assertNetworkAllowed(url,false);}
   const encoded=select(data,response.base64Path),buffers=[];
-  for(const value of encoded===undefined?[]:Array.isArray(encoded)?encoded:[encoded]){
+  // Wildcard selection may include missing fields for URL-only items. Keep
+  // mixed URL/Base64 batches without treating absent optional values as data.
+  for(const value of (encoded===undefined?[]:Array.isArray(encoded)?encoded:[encoded]).filter(value=>value!==undefined&&value!==null)){
     if(typeof value!=='string'||value.length>700*1024*1024||!/^[A-Za-z0-9+/=\r\n]+$/.test(value))throw new Error('媒体Base64无效');
     buffers.push({bytes:Buffer.from(value,'base64'),mimeType:response.mimeType||'image/png',extension:response.mimeType?.startsWith('audio/')?'.mp3':'.png'});
   }
@@ -190,7 +244,8 @@ async function executeGeneric(ctx,cfg,args,refs={},previous){
   }
   let taskId=previous?.taskId,data;
   if(!taskId){
-    const result=await readResponse(ctx,cfg,plan.url,{method:'POST',headers:plan.headers,body:JSON.stringify(plan.body)},plan.response,ctx.signal);
+    const body=plan.encoding==='multipart-form-data'?multipartBody(plan.body,plan.fileFields):JSON.stringify(plan.body);
+    const result=await readResponse(ctx,cfg,plan.url,{method:'POST',headers:plan.headers,body},plan.response,ctx.signal);
     if(result.binary)return{urls:[],buffers:[result.binary]};
     data=result.data;taskId=select(data,plan.response.taskIdPath);
     if(taskId!==undefined&&taskId!==null){
@@ -223,6 +278,13 @@ async function executeGeneric(ctx,cfg,args,refs={},previous){
     return{text,toolCalls,usage:data.usage,finishReason:choice?.finish_reason};
   }
   const result=mediaResult(data,taskId?{...plan.response,...plan.polling}:plan.response);
+  if(taskId&&!result.urls.length&&!result.buffers.length&&plan.polling.download){
+    const download=plan.polling.download,path=render(download.path,{taskId:encodeURIComponent(taskId)});
+    const downloaded=await readResponse(ctx,cfg,address(cfg,path),{method:'GET',headers:plan.headers},{binary:true,mimeType:download.mimeType},ctx.signal);
+    if(!downloaded.binary||downloaded.binary.mimeType!==download.mimeType)throw new Error('任务结果回取未返回声明格式的媒体原件');
+    downloaded.binary.extension='.'+MULTIPART_MEDIA[download.mimeType].extension;
+    result.buffers.push(downloaded.binary);
+  }
   if(!result.urls.length&&!result.buffers.length)throw new Error('任务没有有效媒体原件，未标记成功');
   const mapping=taskId?plan.polling:plan.response;
   return{...result,taskId,subtitle:select(data,mapping?.subtitlePath),subtitleUrl:select(data,mapping?.subtitleUrlPath),metadata:{provider:cfg.provider,model:args.model}};

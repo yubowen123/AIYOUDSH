@@ -5,13 +5,15 @@
       "file": "aiyouplus-provider-registry.cjs",
       "source": "/Users/yubowen/Documents/ChatGPT/AI 游戏拓展/安装 reverse-skill 技能/AIYOUPLUS/app/electron/aiyouplus-provider-registry.cjs",
       "sourceSha256": "eba9672868453d8a0e95b55eb1532b24c0cc960b185f9f41e3581f3f13bcd0df",
-      "changes": "Node-only source reused; integration transport lives outside this file"
+      "changes": "Node-only source adapted for AIYOUDSH; v0.8.5 adds declared multipart request encoding, safe media file validation and same-origin result retrieval. Original source hash retained.",
+      "currentSha256": "63ad5226c3a1152543a11f4290d3477c51eb80d27b0a390de3dd766df5367a17"
     },
     {
       "file": "aiyouplus-generic-provider.cjs",
       "source": "/Users/yubowen/Documents/ChatGPT/AI 游戏拓展/安装 reverse-skill 技能/AIYOUPLUS/app/electron/aiyouplus-generic-provider.cjs",
       "sourceSha256": "3a159187b22ea59b996440d5d614f0954675717d825d23a782b4291480f6168c",
-      "changes": "Node-only source reused; integration transport lives outside this file"
+      "changes": "Node-only source adapted for AIYOUDSH; v0.8.5 adds declared multipart request encoding, safe media file validation and same-origin result retrieval. Original source hash retained.",
+      "currentSha256": "24def8cf9423312ee518f97b590248e4f6bcabf2ecae251212d55c85565afe3b"
     },
     {
       "file": "aiyouplus-minimax-provider.cjs",
@@ -36,6 +38,19 @@
       "source": "/Users/yubowen/Documents/ChatGPT/AI 游戏拓展/安装 reverse-skill 技能/AIYOUPLUS/app/electron/aiyouplus-api-discovery.test.cjs",
       "sourceSha256": "6697e33fb55daed5296dea1ee6798f9be31a2756fb63a2f800f8929fd8d5380c",
       "changes": "unchanged offline/loopback parser contract regression"
+    }
+  ],
+  "hostAdditions": [
+    {
+      "file": "apiai-default-profile.cjs",
+      "currentSha256": "890104053feeb81f7b60a23b3b58e191602a5fa3a9f26edbc543bebd667108f4",
+      "origin": "AIYOUDSH original implementation",
+      "sources": [
+        "https://www.ggwk1.online/api/status",
+        "https://www.ggwk1.online/api/pricing",
+        "https://apiai.apifox.cn/"
+      ],
+      "scope": "Pure declarative catalog intersection and reference guards; no network or credentials."
     }
   ]
 }

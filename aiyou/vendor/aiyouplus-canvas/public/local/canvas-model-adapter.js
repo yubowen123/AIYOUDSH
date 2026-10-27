@@ -338,7 +338,10 @@ export function createCanvasModelAdapter(options = {}) {
           if (kind === 'video') args.duration = normalizedDuration(node.settings.duration);
         } else {
           if((Object.hasOwn(model.parameterSchema||{},'resolution')||Object.hasOwn(model.parameters||{},'resolution'))&&(node.settings.resolution&&node.settings.resolution!=='Auto'||model.parameters?.resolution))args.resolution=node.settings.resolution&&node.settings.resolution!=='Auto'?node.settings.resolution:model.parameters.resolution;
-          if(kind==='video'&&(Object.hasOwn(model.parameterSchema||{},'duration')||Object.hasOwn(model.parameters||{},'duration'))&&(node.settings.duration||model.parameters?.duration))args.duration=normalizedDuration(node.settings.duration||model.parameters.duration);
+          if(kind==='video'&&(Object.hasOwn(model.parameterSchema||{},'duration')||Object.hasOwn(model.parameters||{},'duration'))&&(node.settings.duration||model.parameters?.duration)){
+            const duration=normalizedDuration(node.settings.duration||model.parameters.duration);
+            args.duration=model.parameterSchema?.duration?.type==='string'?String(duration):duration;
+          }
         }
       } else if (kind === 'audio') {
         const genericAudio = model.genericProtocol && model.genericProtocol !== 'minimax-native';
@@ -399,10 +402,13 @@ export function createCanvasModelAdapter(options = {}) {
   }
   const onCancel = event => { const id = event.detail?.nodeId; if (id && active.has(id)) void stop(id).catch(() => {}); };
   eventTarget?.addEventListener?.('cancelPolling', onCancel);
-  const onConfigChanged = () => { void refreshModels().catch(() => {}); };
+  const onConfigChanged = () => { if(!disposed)void refreshModels().catch(() => {}); };
   eventTarget?.addEventListener?.('aiyouplus-model-config-changed', onConfigChanged);
+  eventTarget?.addEventListener?.('focus',onConfigChanged);
+  const channel=typeof window!=='undefined'&&typeof BroadcastChannel==='function'?new BroadcastChannel('aiyoudsh-media-models'):null;
+  if(channel)channel.onmessage=event=>{if(event.data?.type==='configuration-changed')onConfigChanged();};
   function getDefaultModel(kind){if(kind==='chat')return configuredModels.find(m=>m.type==='Chat'&&m.nativeService==='host')?.id;const type=({chat:'Chat',image:'Image',video:'Video',audio:'Speech',music:'Music'})[kind],profile=currentConfig?.profiles?.[currentConfig?.provider];return configuredModels.find(m=>m.type===type&&m.nativeService===currentConfig?.provider&&m.modelName===profile?.models?.[kind])?.id||configuredModels.find(m=>m.type===type&&nativeProviderProfile(currentConfig,m.nativeService)?.enabled!==false)?.id;}
-  return { version: 2, supports, registerModels, refreshModels, getDefaultModel, isNativeChat: isNativeChatModel, getMediaModel:getNativeMediaModel, chatResponse, generate, generateChat, stop, cacheOutput(output, bindings) { return cacheCanvasModelOutput(output, { invoke, ...bindings }); }, dispose() { disposed = true; modelUnsubscribe?.(); modelUnsubscribe = undefined; eventTarget?.removeEventListener?.('cancelPolling', onCancel); eventTarget?.removeEventListener?.('aiyouplus-model-config-changed', onConfigChanged); } };
+  return { version: 2, supports, registerModels, refreshModels, getDefaultModel, isNativeChat: isNativeChatModel, getMediaModel:getNativeMediaModel, chatResponse, generate, generateChat, stop, cacheOutput(output, bindings) { return cacheCanvasModelOutput(output, { invoke, ...bindings }); }, dispose() { disposed = true; channel?.close();modelUnsubscribe?.(); modelUnsubscribe = undefined; eventTarget?.removeEventListener?.('cancelPolling', onCancel); eventTarget?.removeEventListener?.('aiyouplus-model-config-changed', onConfigChanged);eventTarget?.removeEventListener?.('focus',onConfigChanged); } };
 }
 if (typeof window !== 'undefined') {
   const adapter = createCanvasModelAdapter();
