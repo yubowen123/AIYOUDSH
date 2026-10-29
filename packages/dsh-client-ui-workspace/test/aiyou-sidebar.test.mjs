@@ -174,6 +174,7 @@ test('assembled native browser wires filters, cards and preserved search without
   const card = descendants(flatTree).find(node => node.type === harness.internals.AiyouSessionCard);
   assert.equal(card.props.node.pinned, true);
   const cardTree = harness.internals.AiyouSessionCard(card.props);
+  assert.equal(cardTree.props.style.background, 'var(--aiyou-harness-session-card-fill, var(--dsw-alias-bg-layer-1))');
   assert.ok(descendants(cardTree).some(node => node.type === harness.internals.SessionNodeItem));
   const searchHarness = browserHarness({ ...state, aiyouQuery: '视频' });
   const searchTree = searchHarness.internals.WorkspaceBrowser(searchHarness.props);

@@ -37,7 +37,7 @@ window.__ModuleLoader__.load({
     const API = `${API_ORIGIN}/aiyoucodex-dsh/theme`;
 
     // Configuration contract mirrors configuration.mjs; covered by parity tests.
-    const ALPHA_KEYS=['overall','chrome','sidebar','chat','panel','card','message','composer','composer-area','control','menu','text','border','shadow','decoration','image'];
+    const ALPHA_KEYS=['overall','chrome','sidebar','chat','panel','card','session-card','message','composer','composer-area','control','menu','text','border','shadow','decoration','image'];
     const COLOR_KEYS=['primary','secondary','link','success','danger','warning','inverse','bg','surface','elevated','border','userBg','accent'];
     const CANVAS_COLOR_KEYS=['bg','node','panel','text','muted','border','accent','grid','edge'];
     const CANVAS_OPACITY_KEYS=['bg','node','panel','toolbar'];
@@ -72,7 +72,7 @@ window.__ModuleLoader__.load({
     function defaultConfiguration(theme){
      const c=role=>theme.primitives?.[theme.semantic?.[role]];
      const colors={primary:c('text'),secondary:c('muted'),link:c('running'),success:c('complete'),danger:c('error'),warning:c('accent'),inverse:c('elevated'),...theme.controls?.colors,bg:c('bg'),surface:c('surface'),elevated:c('elevated'),border:c('border'),userBg:c('user-bg'),accent:c('brand')||c('accent')};
-     return {motion:Boolean(theme.background?.animated),alpha:Object.fromEntries(ALPHA_KEYS.map(key=>[key,Number.isFinite(theme.controls?.alpha?.[key])?theme.controls.alpha[key]:key==='chat'||key==='composer-area'?0:1])),colors,background:{type:theme.background?.animated?'video':'image',fit:theme.background?.fit||'cover',x:theme.background?.x??75,y:theme.background?.y??50,opacity:theme.background?.opacity??0.46},canvas:defaultCanvasConfiguration(colors,theme)};
+     return {motion:Boolean(theme.background?.animated),alpha:Object.fromEntries(ALPHA_KEYS.map(key=>[key,Number.isFinite(theme.controls?.alpha?.[key])?theme.controls.alpha[key]:key==='session-card'?theme.controls?.alpha?.card??1:key==='chat'||key==='composer-area'?0:1])),colors,background:{type:theme.background?.animated?'video':'image',fit:theme.background?.fit||'cover',x:theme.background?.x??75,y:theme.background?.y??50,opacity:theme.background?.opacity??0.46},canvas:defaultCanvasConfiguration(colors,theme)};
     }
     function normalizeConfiguration(value,theme){
      if(!object(value))throw new Error('主题配置须为对象');
@@ -90,7 +90,8 @@ window.__ModuleLoader__.load({
        output[group][key]=entry;
       }
      }
-     if(!theme.background?.animated)output.background.type='image';
+     if(value.alpha&&own(value.alpha,'card')&&!own(value.alpha,'session-card'))output.alpha['session-card']=value.alpha.card;
+ if(!theme.background?.animated)output.background.type='image';
      output.canvas=normalizeCanvasConfiguration(own(value,'canvas')?value.canvas:{},output.colors,theme);
      return output;
     }
@@ -563,6 +564,8 @@ ${scope}[data-dsh-theme-adapted] .dsh-generic-tool :is([data-status],[data-capab
         '--aiyou-harness-chrome-fill': fill(surface, 'chrome', 0.95),
         '--aiyou-harness-panel-fill': fill(elevated, 'panel', 0.98),
         '--aiyou-harness-card-fill': fill(elevated, 'card', 0.96),
+        '--aiyou-harness-session-card-fill': fill(elevated, 'session-card', opacity('card',0.96)),
+        '--aiyou-harness-session-row-fill': alpha(accent,0.09*opacity('session-card',opacity('card',0.96))*opacity('overall')),
         '--aiyou-harness-menu-fill': fill(elevated, 'menu', 0.98),
         '--aiyou-harness-control-fill': fill(surface, 'control', 0.96),
         '--aiyou-harness-question-primary-label': controlLabel(bg, accent),
@@ -615,6 +618,8 @@ ${scope} ._6Qf49G_sidebarCol{background:var(--aiyou-harness-sidebar-fill)}
 ${scope} [data-aiyou-sidebar]{background:transparent}
 ${scope} .aiyou-navigation-rail{background:var(--aiyou-harness-rail-fill);border-color:var(--aiyou-harness-border)}
 ${scope} .aiyou-session-pane{background:var(--aiyou-harness-sidebar-fill)}
+${scope} [data-aiyou-session-card]{--dsw-alias-interactive-bg-hover:var(--aiyou-harness-session-row-fill)}
+${scope} [data-aiyou-session-card]:has([role="treeitem"][aria-selected="true"]){--aiyou-harness-session-card-border:var(--dsw-alias-brand-primary)}
 ${scope} :is(.ST7X_W_root,.icaHSq_frame,.icaHSq_root){background:var(--aiyou-harness-chat-fill)}
 ${scope} .ST7X_W_header{background:var(--aiyou-harness-chrome-fill);border-bottom-color:var(--aiyou-harness-border);box-shadow:0 1px 0 ${alpha(elevated,0.25)}}
 ${scope} :is(.ST7X_W_tab,.irMxjq_iconButton,.wmirxG_button){color:var(--dsw-alias-label-secondary)}
@@ -925,7 +930,18 @@ ${buildAssetLibraryThemeCss(theme,p,scope)}
       const presentDraft=()=>{if(controller.saved&&comparable(draft)===comparable(controller.saved)){draft=controller.saved;controller.commit(draft);}else controller.preview(draft,owner);};
       return {
         snapshot,
-        async load(){const ticket=++sequence,value=await read(API,{cache:'no-store'});if(closed||ticket!==sequence)return null;state=value;draft=prepared(value.active,value.detail);details.clear();drafts.clear();details.set(draft.id,draft.detail);controller.commit(draft);return snapshot();},
+        async load(){
+          const ticket=++sequence,value=await read(API,{cache:'no-store'});if(closed||ticket!==sequence)return null;
+          state=value;draft=prepared(value.active,value.detail);
+          // A save may finish while this catalogue read is in flight. The controller
+          // already rejects that stale paint; keep the form on the same saved revision.
+          if(!controller.commit(draft)){
+            draft=controller.saved;if(!draft)return null;
+            state={...value,active:draft.id,detail:draft.id===SYSTEM_THEME_ID?null:draft.detail,revision:controller.hostRevision,
+              ...(draft.id===SYSTEM_THEME_ID?{systemConfiguration:draft.detail.configuration}:{})};
+          }
+          details.clear();drafts.clear();details.set(draft.id,draft.detail);return snapshot();
+        },
         async preview(id){
           const ticket=++sequence;
           if(draft)drafts.set(draft.id,draft);
@@ -1045,7 +1061,7 @@ ${buildAssetLibraryThemeCss(theme,p,scope)}
       const selected=state?.previewDetail,configuration=selected?.configuration;
       const field={display:'grid',gridTemplateColumns:'minmax(100px,1fr) minmax(100px,1.5fr) 42px',alignItems:'center',gap:'8px',fontSize:'12px',padding:'5px 0'};
       const group={border:'1px solid var(--dsw-alias-border-l2)',borderRadius:'12px',padding:'10px 12px',minWidth:0};
-      const alphaLabels={overall:'全部表面',chrome:'顶部栏',sidebar:'会话栏',chat:'聊天底层',panel:'右侧面板',card:'卡片',message:'收发气泡',composer:'输入框内部','composer-area':'输入框外层',control:'按钮控件',menu:'菜单',text:'文字',border:'边框',shadow:'阴影'};
+      const alphaLabels={overall:'全部表面',chrome:'顶部栏',sidebar:'会话栏',chat:'聊天底层',panel:'右侧面板',card:'卡片','session-card':'对话卡片',message:'收发气泡',composer:'输入框内部','composer-area':'输入框外层',control:'按钮控件',menu:'菜单',text:'文字',border:'边框',shadow:'阴影'};
       const colorLabels={primary:'主要文字',secondary:'辅助文字',link:'链接',success:'完成',danger:'错误',warning:'提醒',inverse:'反色文字',bg:'整体底色',surface:'表面底色',elevated:'卡片底色',border:'边框',userBg:'用户气泡',accent:'强调色'};
       const slider=(label,value,change,disabled=false)=>h('label',{style:field},h('span',null,label),h('input',{type:'range',min:0,max:100,step:1,value,disabled:busy||disabled,'aria-label':label,onChange:event=>change(Number(event.target.value))}),h('output',{style:{fontVariantNumeric:'tabular-nums',textAlign:'right'}},`${Math.round(value)}%`));
       const section=(title,children,open=true,props={})=>h('details',{style:group,open,...props},h('summary',{style:{fontWeight:600,cursor:'pointer',marginBottom:'8px'}},title),...children);

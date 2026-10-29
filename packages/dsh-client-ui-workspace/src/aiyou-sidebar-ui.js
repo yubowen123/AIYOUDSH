@@ -6,7 +6,7 @@ const AIYOU_SIDEBAR_STYLE = {
   activeTab: { color: 'var(--dsw-alias-label-primary)', background: 'var(--dsw-alias-bg-layer-2)', boxShadow: '0 1px 3px #00000012' },
   folders: { display: 'flex', gap: '5px', overflowX: 'auto', paddingBottom: '3px', scrollbarWidth: 'thin' },
   folder: { flex: '0 0 auto', maxWidth: '150px', padding: '4px 8px', borderRadius: '7px', border: '1px solid var(--dsw-alias-border-l2)', color: 'var(--dsw-alias-label-secondary)', background: 'transparent', font: 'inherit', fontSize: '11px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', cursor: 'pointer' },
-  card: { margin: '3px 0 7px', borderRadius: '10px', border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-1)', overflow: 'hidden' },
+  card: { margin: '3px 0 7px', borderRadius: '10px', border: '1px solid var(--aiyou-harness-session-card-border, var(--dsw-alias-border-l2))', background: 'var(--aiyou-harness-session-card-fill, var(--dsw-alias-bg-layer-1))', overflow: 'hidden' },
   body: { padding: '0 11px 9px 28px', display: 'flex', flexDirection: 'column', gap: '6px' },
   preview: { margin: 0, color: 'var(--dsw-alias-label-secondary)', fontSize: '11px', lineHeight: '17px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', overflowWrap: 'anywhere', cursor: 'pointer' },
   footer: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px' },

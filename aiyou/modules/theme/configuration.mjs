@@ -1,4 +1,4 @@
-export const ALPHA_KEYS=['overall','chrome','sidebar','chat','panel','card','message','composer','composer-area','control','menu','text','border','shadow','decoration','image'];
+export const ALPHA_KEYS=['overall','chrome','sidebar','chat','panel','card','session-card','message','composer','composer-area','control','menu','text','border','shadow','decoration','image'];
 export const COLOR_KEYS=['primary','secondary','link','success','danger','warning','inverse','bg','surface','elevated','border','userBg','accent'];
 export const CANVAS_COLOR_KEYS=['bg','node','panel','text','muted','border','accent','grid','edge'];
 export const CANVAS_OPACITY_KEYS=['bg','node','panel','toolbar'];
@@ -33,7 +33,7 @@ export function normalizeCanvasConfiguration(value,colors,theme={}){
 export function defaultConfiguration(theme){
  const c=role=>theme.primitives?.[theme.semantic?.[role]];
  const colors={primary:c('text'),secondary:c('muted'),link:c('running'),success:c('complete'),danger:c('error'),warning:c('accent'),inverse:c('elevated'),...theme.controls?.colors,bg:c('bg'),surface:c('surface'),elevated:c('elevated'),border:c('border'),userBg:c('user-bg'),accent:c('brand')||c('accent')};
- return {motion:Boolean(theme.background?.animated),alpha:Object.fromEntries(ALPHA_KEYS.map(key=>[key,Number.isFinite(theme.controls?.alpha?.[key])?theme.controls.alpha[key]:key==='chat'||key==='composer-area'?0:1])),colors,background:{type:theme.background?.animated?'video':'image',fit:theme.background?.fit||'cover',x:theme.background?.x??75,y:theme.background?.y??50,opacity:theme.background?.opacity??0.46},canvas:defaultCanvasConfiguration(colors,theme)};
+ return {motion:Boolean(theme.background?.animated),alpha:Object.fromEntries(ALPHA_KEYS.map(key=>[key,Number.isFinite(theme.controls?.alpha?.[key])?theme.controls.alpha[key]:key==='session-card'?theme.controls?.alpha?.card??1:key==='chat'||key==='composer-area'?0:1])),colors,background:{type:theme.background?.animated?'video':'image',fit:theme.background?.fit||'cover',x:theme.background?.x??75,y:theme.background?.y??50,opacity:theme.background?.opacity??0.46},canvas:defaultCanvasConfiguration(colors,theme)};
 }
 export function normalizeConfiguration(value,theme){
  if(!object(value))throw new Error('主题配置须为对象');
@@ -51,6 +51,7 @@ export function normalizeConfiguration(value,theme){
    output[group][key]=entry;
   }
  }
+ if(value.alpha&&own(value.alpha,'card')&&!own(value.alpha,'session-card'))output.alpha['session-card']=value.alpha.card;
  if(!theme.background?.animated)output.background.type='image';
  output.canvas=normalizeCanvasConfiguration(own(value,'canvas')?value.canvas:{},output.colors,theme);
  return output;

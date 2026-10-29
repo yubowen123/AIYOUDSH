@@ -315,9 +315,9 @@ test('host migrates saved selection, persists per-theme options atomically, and 
   (await import(new URL(`../aiyou/modules/theme/index.js?configuration=${Date.now()}`,import.meta.url))).apply(ctx);
   async function request(path,payload){const req=Readable.from(payload?[Buffer.from(JSON.stringify(payload))]:[]);Object.assign(req,{method:payload?'POST':'GET',url:path,headers:payload?{'content-type':'application/json'}:{}});let status,raw;const res={setHeader(){},writeHead(value){status=value;},end(value){raw=value;}};await routes.get(path.split('?')[0]).handler(req,res);return {status,value:JSON.parse(raw)};}
   let value=await request('/aiyoucodex-dsh/theme');assert.equal(value.value.active,pink.id);assert.equal(value.value.revision,0);
-  let result=await request('/aiyoucodex-dsh/theme/select',{id:dark.id,options:{alpha:{composer:0.17},background:{x:28},colors:{primary:'#ffffff'}},ifRevision:0});assert.equal(result.status,200);assert.equal(result.value.revision,1);assert.equal(result.value.detail.configuration.alpha.composer,0.17);
+  let result=await request('/aiyoucodex-dsh/theme/select',{id:dark.id,options:{alpha:{composer:0.17,'session-card':0},background:{x:28},colors:{primary:'#ffffff'}},ifRevision:0});assert.equal(result.status,200);assert.equal(result.value.revision,1);assert.equal(result.value.detail.configuration.alpha.composer,0.17);
   const concurrent=await Promise.all([request('/aiyoucodex-dsh/theme/select',{id:pink.id,options:{background:{x:19}},ifRevision:1}),request('/aiyoucodex-dsh/theme/select',{id:dark.id,options:{background:{x:71}},ifRevision:1})]);assert.deepEqual(concurrent.map(result=>result.status).sort(),[200,409]);
-  const state=JSON.parse(await readFile(join(fixture,'aiyou-enhancer/theme.json'),'utf8'));assert.equal(state.retained,'legacy-field');assert.equal(state.options[dark.id].alpha.composer,0.17);assert.equal(state.revision,2);
+  const state=JSON.parse(await readFile(join(fixture,'aiyou-enhancer/theme.json'),'utf8'));assert.equal(state.retained,'legacy-field');assert.equal(state.options[dark.id].alpha.composer,0.17);assert.equal(state.options[dark.id].alpha['session-card'],0);assert.equal(state.revision,2);
   result=await request('/aiyoucodex-dsh/theme/select',{id:dark.id,options:{alpha:{composer:2}},ifRevision:2});assert.equal(result.status,400);assert.equal(JSON.parse(await readFile(join(fixture,'aiyou-enhancer/theme.json'),'utf8')).revision,2);
   result=await request('/aiyoucodex-dsh/theme/detail?id='+dark.id);assert.equal(result.value.configuration.background.x,concurrent[1].status===200?71:28);assert.equal(result.value.base.configuration,undefined);assert.equal(result.value.defaultConfiguration.alpha.composer,dark.controls.alpha.composer);
   result=await request('/aiyoucodex-dsh/theme/select',{id:'system',ifRevision:2});assert.equal(result.status,200);assert.equal(result.value.detail,null);assert.equal(JSON.parse(await readFile(join(fixture,'aiyou-enhancer/theme.json'),'utf8')).options[dark.id].alpha.composer,0.17);
@@ -351,6 +351,44 @@ test('same-theme configuration previews become dirty; cancel/default/reset and s
  session.dispose();controller.dispose();
 });
 
+test('reopening settings ignores a catalogue read older than a completed save',async()=>{
+ const {controller,doc}=controllerFixture(),pending=deferred();
+ const session=api.createThemeSession(controller,()=>pending.promise);
+ const opening=session.load();
+ const saved=configureTheme(pink,{alpha:{sidebar:0},background:{x:32,opacity:0.61}});
+ controller.commit({id:pink.id,detail:saved,hostRevision:9});
+ pending.resolve(response({active:pink.id,detail:configureTheme(pink,{}),revision:8,themes:[{id:pink.id}]}));
+ const state=await opening;
+ assert.equal(state.previewDetail.configuration.background.x,32);
+ assert.equal(state.previewDetail.configuration.background.opacity,0.61);
+ assert.equal(state.previewDetail.configuration.alpha.sidebar,0);
+ assert.equal(state.revision,9);assert.equal(state.dirty,false);
+ assert.ok(doc.head.children[0].textContent.includes('background-position:32% 50%'));
+ session.dispose();controller.dispose();
+});
+
+test('conversation card transparency is independent and survives save and a fresh settings controller',async()=>{
+ const {controller}=controllerFixture(),remote=configurationRemote(),session=api.createThemeSession(controller,remote.request);
+ await session.load();
+ const before=session.snapshot().previewDetail.configuration;
+ session.edit({alpha:{'session-card':0},background:{x:29}});
+ const saved=await session.save();
+ assert.equal(saved.previewDetail.configuration.alpha.card,before.alpha.card);
+ session.dispose();controller.dispose();
+ const reopenedController=controllerFixture().controller,reopened=api.createThemeSession(reopenedController,remote.request);
+ const state=await reopened.load();
+ assert.equal(state.previewDetail.configuration.alpha['session-card'],0);
+ assert.equal(state.previewDetail.configuration.background.x,29);
+ assert.equal(state.dirty,false);
+ const css=api.buildThemeSurfaceCss(state.previewDetail);
+ assert.match(css,/--aiyou-harness-session-card-fill:rgba\([^;]+, 0\);/u);
+ assert.match(css,/\[data-aiyou-session-card\]\{[^}]*--dsw-alias-interactive-bg-hover:var\(--aiyou-harness-session-row-fill\)/u);
+ const legacy=normalizeConfiguration({alpha:{card:0.37}},pink);
+ assert.equal(legacy.alpha['session-card'],0.37);
+ assert.deepEqual(JSON.parse(JSON.stringify(api.normalizeConfiguration({alpha:{card:0.37}},pink))),JSON.parse(JSON.stringify(legacy)));
+ reopened.dispose();reopenedController.dispose();
+});
+
 test('save completion cannot replace a newer local edit or a later preview after the old settings panel closes',async()=>{
  const {controller,doc}=controllerFixture(),remote=configurationRemote();let finish,payload;
  const request=(url,init)=>init?.method==='POST'?new Promise(resolve=>{payload=JSON.parse(init.body);finish=()=>resolve({ok:true,json:async()=>({active:payload.id,detail:configureTheme(THEMES[payload.id],payload.options),revision:1})});}):remote.request(url,init);
@@ -368,7 +406,8 @@ test('configuration page renders native interactive settings and wires controls 
  const render=()=>{hookIndex=0;refIndex=0;const tree=sandbox.themeTest.ThemePanel(),nodes=[];const walk=node=>{if(Array.isArray(node))return node.forEach(walk);if(node&&typeof node==='object'){nodes.push(node);node.children?.forEach(walk);}};walk(tree);return nodes;};
  let nodes=render();const byLabel=label=>nodes.find(node=>node.props['aria-label']===label);
  assert.ok(byLabel('界面主题'));assert.ok(byLabel('背景模式'));assert.equal(byLabel('播放动态背景').props.checked,true);assert.ok(byLabel('主要文字 HEX'));
- assert.equal(nodes.filter(node=>node.tag==='input'&&node.props.type==='range').length,26);
+ assert.equal(nodes.filter(node=>node.tag==='input'&&node.props.type==='range').length,27);
+ byLabel('对话卡片透明度').props.onChange({target:{value:'100'}});assert.equal(current.previewDetail.configuration.alpha['session-card'],0);
  byLabel('输入框内部透明度').props.onChange({target:{value:'71'}});assert.equal(current.dirty,true);assert.ok(Math.abs(current.previewDetail.configuration.alpha.composer-0.29)<1e-9);
  nodes=render();byLabel('主要文字 HEX').props.onBlur({target:{value:'#ffffff'}});assert.equal(layers.values().next().value.tokens['--dsw-alias-label-primary'].light,'rgba(255, 255, 255, 1)');
  nodes=render();byLabel('背景模式').props.onChange({target:{value:'image'}});assert.equal(current.previewDetail.configuration.background.type,'image');
