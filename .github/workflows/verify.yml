@@ -1,102 +1,55 @@
-name: Verify
+name: Stage verified v0.8.6 release artifacts
 
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_dispatch:
 
 permissions:
-  contents: read
-
-concurrency:
-  group: verify-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  actions: read
+  contents: write
 
 jobs:
-  verify:
-    name: Verify ${{ matrix.target }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - target: darwin-arm64
-            runner: macos-15
-          - target: darwin-x64
-            runner: macos-15-intel
-          - target: win32-x64
-            runner: windows-latest
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: 30
+  stage-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
-      npm_config_offline: 'true'
-      npm_config_audit: 'false'
-      npm_config_fund: 'false'
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Download the successful three-platform build artifacts
+        uses: actions/download-artifact@v4
         with:
-          node-version: '24'
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Check the pinned native runtime architecture
-        run: node -e "if(process.platform + '-' + process.arch !== '${{ matrix.target }}') throw new Error('The runner must match the pinned runtime fixture')"
-      # No npm install, model credentials, or user profile is needed.
-      - name: Build the platform-specific removable add-on
-        run: npm run build
-      - name: Assert the runtime target
-        run: node -e "const m=require('./dist/addon/runtime/manifest.json'); if(m.upstream.platform !== '${{ matrix.target }}') throw new Error('Runtime target mismatch')"
-      - name: Run all regression tests
-        run: npm test
-      - name: Verify packaged module identities and selectors
-        run: npm run verify
-      - name: Verify feature services in an empty profile
-        run: node aiyou/verify.mjs
-      - name: Verify embedded services against the native router
-        run: node aiyou/verify-embedded.mjs
-      - name: Package macOS GUI and complete cross-platform source
-        if: startsWith(matrix.target, 'darwin-')
-        run: node scripts/package-addon.mjs
-      - name: Compile Windows GUI, run its self-tests, capture its CI screenshot and package
-        if: matrix.target == 'win32-x64'
-        run: node scripts/package-windows.mjs
-      - name: Prepare release archives inside the artifact workspace
-        run: >-
-          node -e "const fs=require('node:fs'),path=require('node:path');
-          const version=require('./package.json').version,target='${{ matrix.target }}';
-          const suffixes=target.startsWith('darwin-')?['macos-'+target.slice(7)+'.zip','source.zip']:target==='win32-x64'?['windows-x64.zip','windows-x64.zip.sha256']:null;
-          if(suffixes===null)throw new Error('Unsupported release archive target');
-          const output=path.resolve('dist/ci-release');fs.rmSync(output,{recursive:true,force:true});fs.mkdirSync(output,{recursive:true});
-          for(const suffix of suffixes){const name='AIYOUDSH-v'+version+'-'+suffix,source=path.resolve('..',name);if(fs.statSync(source).isFile()!==true)throw new Error('Missing release archive: '+name);fs.copyFileSync(source,path.join(output,name));}"
-      - name: Check the real official Windows base in an isolated temporary profile
-        if: matrix.target == 'win32-x64'
-        shell: pwsh
-        run: ./scripts/ci/windows-official-smoke.ps1
-      - name: Check the real official Intel Mac base in an isolated temporary profile
-        if: matrix.target == 'darwin-x64'
-        run: node scripts/ci/macos-official-smoke.mjs
-      - name: Upload macOS release and full source
-        if: startsWith(matrix.target, 'darwin-') && success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: AIYOUDSH-${{ matrix.target }}
-          if-no-files-found: error
-          path: |
-            dist/ci-release/AIYOUDSH-v*-macos-arm64.zip
-            dist/ci-release/AIYOUDSH-v*-macos-x64.zip
-            dist/ci-release/AIYOUDSH-v*-source.zip
-            dist/macos-official-smoke.json
-      - name: Upload Windows release and CI evidence
-        if: matrix.target == 'win32-x64' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: AIYOUDSH-win32-x64
-          if-no-files-found: error
-          path: |
-            dist/ci-release/AIYOUDSH-v*-windows-x64.zip
-            dist/ci-release/AIYOUDSH-v*-windows-x64.zip.sha256
-            dist/windows-installer-self-test.json
-            dist/windows-installer-ci.png
-            dist/windows-package-verification.json
-            dist/windows-official-smoke.json
+          run-id: 40898135331
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pattern: AIYOUDSH-*
+          path: artifacts
+      - name: Verify all four archives against the reviewed release checksums
+        shell: bash
+        run: |
+          python3 - <<'PYVERIFY'
+          from pathlib import Path
+          import hashlib, shutil
+          expected = {
+              'macos-arm64': ('AIYOUDSH-darwin-arm64', 'afac7a4a9ea6904c506788440099bbf46cd3639bc85a9d0d5ac12852d5c8016d'),
+              'macos-x64': ('AIYOUDSH-darwin-x64', 'ea1e85409322e5ace148cb39399a278f931da31b2ab6b59b6113a4bd6fc1e710'),
+              'windows-x64': ('AIYOUDSH-win32-x64', '6898ed39669a71ad47215d22229e4af0490d0c2f74fcf19f21b55420afe6df12'),
+              'source': ('AIYOUDSH-darwin-arm64', '50a13658442b49c30f689b1ce1df0e1185f786a022f8f832ed234d900eb17b44'),
+          }
+          stage = Path('stage'); stage.mkdir()
+          for suffix, (artifact, digest) in expected.items():
+              name = f'AIYOUDSH-v0.8.6-{suffix}.zip'
+              matches = list((Path('artifacts')/artifact).rglob(name))
+              assert len(matches) == 1, (name, matches)
+              path = matches[0]
+              assert hashlib.file_digest(path.open('rb'), 'sha256').hexdigest() == digest, name
+              shutil.copyfile(path, stage/name)
+              print(digest, name)
+          PYVERIFY
+      - name: Require the existing draft release
+        shell: bash
+        run: gh api repos/$GH_REPO/releases/428042046 --jq '.draft == true and .tag_name == "v0.8.6"' | grep -x true
+      - name: Upload verified archives while keeping the release draft
+        shell: bash
+        run: gh release upload v0.8.6 stage/*.zip --clobber
+      - name: Read back uploaded names, states, sizes and digests
+        shell: bash
+        run: gh api repos/$GH_REPO/releases/428042046 --jq '{tag_name,draft,assets:[.assets[]|{name,state,size,digest}]}'
