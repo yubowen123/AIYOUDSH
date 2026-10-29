@@ -14,8 +14,8 @@ using Microsoft.Win32;
 
 [assembly: System.Reflection.AssemblyTitle("AIYOUDSH 增强安装器")]
 [assembly: System.Reflection.AssemblyProduct("AIYOUDSH")]
-[assembly: System.Reflection.AssemblyVersion("0.5.0.0")]
-[assembly: System.Reflection.AssemblyFileVersion("0.5.0.0")]
+[assembly: System.Reflection.AssemblyVersion("0.8.6.0")]
+[assembly: System.Reflection.AssemblyFileVersion("0.8.6.0")]
 
 namespace AIYOUDSH.Installer
 {
