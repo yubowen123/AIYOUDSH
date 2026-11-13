@@ -62,7 +62,7 @@
     {
       "id": "taskboard",
       "name": "@local/aiyou-enhancer-taskboard",
-      "title": "项目管理",
+      "title": "任务大厅",
       "client": true,
       "tabKind": "aiyoucodex-taskboard",
       "source": "modules/taskboard",

@@ -68,6 +68,7 @@ const CONTENT_TYPES = new Map([
   [".png", "image/png"],
   [".svg", "image/svg+xml"],
   [".webp", "image/webp"],
+  [".glb", "model/gltf-binary"],
   [".woff", "font/woff"],
   [".woff2", "font/woff2"],
 ]);

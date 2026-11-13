@@ -23,6 +23,13 @@ import type {
   WorkflowWorkspaceRecord,
 } from "./types";
 
+import type { PipelineAction, PipelineRule, PipelineRun, PipelineSnapshot } from "./pipelineTypes";
+import type { HallAction, HallSnapshot, HallTask } from "./taskHallTypes";
+
+const HALL_PATH = "/aiyoucodex-dsh/taskboard/task-hall";
+
+const PIPELINE_PATH = "/aiyoucodex-dsh/taskboard/pipeline";
+
 const DEFAULT_USER_ACTOR: ActorIdentity = {
   type: "user",
   id: "local-user",
@@ -86,6 +93,27 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!response.ok) throw new ApiError(response.status, body);
   return body;
+}
+
+export function getTaskHall(projectId?: string, signal?: AbortSignal): Promise<HallSnapshot> {
+  const query = projectId ? "?" + new URLSearchParams({ projectId }).toString() : "";
+  return request<HallSnapshot>(HALL_PATH + query, { signal, cache: "no-store" });
+}
+
+export function mutateTaskHall(action: HallAction) {
+  return request<{ task: HallTask }>(HALL_PATH, { method: "POST", body: JSON.stringify(action) });
+}
+
+export function getPipeline(projectId: string, signal?: AbortSignal): Promise<PipelineSnapshot> {
+  const query = new URLSearchParams({ projectId });
+  return request<PipelineSnapshot>(`${PIPELINE_PATH}?${query}`, { signal, cache: "no-store" });
+}
+
+export function mutatePipeline(projectId: string, action: PipelineAction) {
+  return request<{ rule?: PipelineRule; run?: PipelineRun }>(PIPELINE_PATH, {
+    method: "POST",
+    body: JSON.stringify({ ...action, projectId }),
+  });
 }
 
 export async function listProjects(signal?: AbortSignal): Promise<Project[]> {

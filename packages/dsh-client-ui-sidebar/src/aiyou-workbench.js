@@ -8,7 +8,7 @@
             { id: 'aiyou-skills', kind: 'aiyoucodex-skills', label: 'Skills 分组', glyph: '✧', group: '创作与资产', primary: true },
             { id: 'aiyou-assets', kind: 'aiyoucodex-asset-console', label: '资产控制台', glyph: '▧', group: '创作与资产', primary: true },
             { id: 'aiyou-arena', kind: 'aiyoucodex-model-arena', label: '模型竞技场', glyph: '◇', group: '创作与资产', primary: true },
-            { id: 'aiyou-projects', kind: 'aiyoucodex-taskboard', label: '项目管理', glyph: '▤', group: '项目与协作', primary: true },
+            { id: 'aiyou-projects', kind: 'aiyoucodex-taskboard', label: '任务大厅', glyph: '▤', group: '项目与协作', primary: true, standalone: true, mainStage: true },
             { id: 'aiyou-context', kind: 'aiyoucodex-session-context', label: '任务上下文', glyph: '◎', group: '当前对话' },
             { id: 'aiyou-efficiency', kind: 'aiyoucodex-efficiency', label: '输出偏好', glyph: '≋', group: '当前对话' },
             { id: 'aiyou-usage', kind: 'aiyoucodex-usage', label: '用量与上下文', glyph: '◴', group: '当前对话', placement: 'header' },
@@ -31,7 +31,7 @@
                 : ctx.get('sessions').list.getSnapshot().byId[extra.sessionId];
             if (extra.sessionId !== undefined && (!session || session.id !== current?.id))
                 throw new Error('当前对话已切换，请在新对话顶部重新打开工具。');
-            if (!session && feature?.standalone) {
+            if (feature?.mainStage || (!session && feature?.standalone)) {
                 ctx.layout.selectPanel(feature.kind);
                 AIYOU_NAV_NOTICE.set({ message: '', activeId: featureId });
                 return feature.kind;
