@@ -21,3 +21,6 @@
 *.woff binary
 *.woff2 binary
 *.node binary
+
+# Keep Vite output byte-for-byte, including third-party GLSL template whitespace.
+/aiyou/vendor/codex-taskboard/dist/web/assets/*.js -whitespace linguist-generated=true

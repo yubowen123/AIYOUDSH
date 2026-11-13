@@ -44,7 +44,7 @@ under the original
 [Apache License 2.0](aiyou/vendor/codex-taskboard/LICENSE).
 
 The web interface is shipped as a prebuilt snapshot, together with its editable
-source and package lock. React, React DOM, React Flow, Markdown/GFM and their
+source and package lock. React, React DOM, React Flow, Three.js, Markdown/GFM and their
 transitive runtime dependencies retain their own licenses. Exact license text
 was copied from the npm tarballs named by that lock file after verifying each
 tarball's integrity. The LobeHub npm package omits its license text, so its

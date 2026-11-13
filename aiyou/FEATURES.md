@@ -35,7 +35,7 @@ MOKE AIGC 入口位于原生左侧图标栏，使用官方原生内置浏览器�
 | 模块 | 源码与行为 |
 | --- | --- |
 | 资产库 | `modules/asset-console` + `vendor/codex-workspace-enhancer/asset-browser`：完整资产项目、分类、分页、检索、预览、提示词、文本编辑、角色关联、元数据及文件操作服务；完整前端源码随包附带。新 profile 从扩展自己的空资产目录开始。 |
-| 项目管理 | `modules/taskboard` + `vendor/codex-taskboard/{server,shared,web,dist}`：完整 SQLite 服务、六泳道看板、任务/项目、评论、工作流与前端源码。 |
+| 3D 任务大厅 | `modules/taskboard` + `vendor/codex-taskboard/{server,shared,web,dist}`：原生入口、Agent 工位、自动任务钟楼、协作回执与 SQLite 数据；原有项目、议题和流水线仍可进入。 |
 | Skills | `modules/skills`：有界元数据检索、自动分类、自定义分组、常用收藏；默认用户根为本 DSH profile。 |
 | 主题配置 | `modules/theme`：独立配置页、内置色板、用户主题和对比度校验；背景模式、动态开关、位置/强度、15 项分层透明度和 13 项颜色；原生 token 与限定样式覆盖主体、气泡、输入区、顶栏、右栏和内嵌业务页。机甲原视频静音循环，同源鉴权及 Range；实时预览、取消、保存、系统默认、每主题独立持久化与并发冲突保护。 |
 | 用量与上下文（对话顶栏右侧） | `modules/usage`：仅呈现宿主实际记录的用量、上下文与耗时。缺失数值保持未知。 |

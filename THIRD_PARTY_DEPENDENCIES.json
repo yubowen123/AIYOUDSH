@@ -712,6 +712,34 @@
         }
       ],
       "scope": "pinned-offline-host-test-runtime"
+    },
+    {
+      "name": "three",
+      "version": "0.187.0",
+      "license": "MIT",
+      "source": "https://registry.npmjs.org/three/-/three-0.187.0.tgz",
+      "integrity": "sha512-Qiu7R+Cmh8CstZsY1uJOSWnVlfo7ZtNLV7mF8Jltk3LB3AtDu9cRZlcnRKkAk8Y4z6KKw35z7Y7Urd7jWY8etA==",
+      "notices": [
+        {
+          "file": "aiyou/vendor/codex-taskboard/third-party-licenses/three--0.187.0--LICENSE",
+          "sha256": "8b378ebe60e2fe500158cb0ac71cb5e8b7d92953c2abcc63a0eb90499653b5bc"
+        }
+      ],
+      "scope": "taskboard-web-runtime-dependency"
+    },
+    {
+      "name": "@types/three",
+      "version": "0.187.0",
+      "license": "MIT",
+      "source": "https://registry.npmjs.org/@types/three/-/three-0.187.0.tgz",
+      "integrity": "sha512-v+vKNarUtk4n2QRZ4+CN5ygMM0ARUjXjIQl0R/unMUfmStFeVqGbgqarbrpoGTXRZoulSH16ePrVJVxPJEbMUA==",
+      "notices": [
+        {
+          "file": "aiyou/vendor/codex-taskboard/third-party-licenses/types__three--0.187.0--LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+        }
+      ],
+      "scope": "taskboard-web-development-dependency"
     }
   ],
   "taskboardWebInventory": "aiyou/vendor/codex-taskboard/third-party-licenses/inventory.json",
