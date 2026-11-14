@@ -180,3 +180,53 @@ test('folder selections isolate pager and semantic-search snapshots at the same 
   const second = await search.select({ projectId: 'p', assets: b, revision: 'r', filters: { folderId: 'b', searchMode: 'laya', query: 'x' } });
   assert.deepEqual(calls, [['a'], ['b']]); assert.notEqual(first.key, second.key);
 });
+
+
+test('asset inspector reads a sibling prompt without rescanning and scopes notes and final state to the existing library', async t => {
+ const f=await fixture(t);
+ const library=await f.api('/api/library?project=local');
+ const image=library.assets.find(asset=>asset.name==='image.png');
+ assert.equal(image.promptAssociation.available,false);
+ const query=new URLSearchParams({project:'local',id:image.id,optional:'1'});
+ assert.equal((await f.api('/api/assets/prompt?'+query)).association,null);
+ await fs.writeFile(path.join(f.linked,'image.png.prompt.md'),'原始关联提示词');
+ assert.equal((await f.api('/api/assets/prompt?'+query)).association.prompt,'原始关联提示词');
+ const detail=await f.api('/api/assets/inspection?'+query);
+ assert.ok(detail.image.width>0 && detail.image.height>0);
+ await assert.rejects(f.api('/api/assets/inspection?'+new URLSearchParams({project:'wrong',id:image.id})), {status:404});
+ await f.api('/api/assets/prompt',{method:'POST',body:JSON.stringify({project:'local',assetId:image.id,prompt:'手动登记的提示词',negativePrompt:'不要字幕'})});
+ const prompt=(await f.api('/api/assets/prompt?'+query)).association;
+ assert.deepEqual([prompt.prompt,prompt.negativePrompt,prompt.source],['手动登记的提示词','不要字幕','manual-registration']);
+ await f.api('/api/assets/curation',{method:'PATCH',body:JSON.stringify({project:'local',ids:[image.id],final:true,notes:'镜头用图'})});
+ assert.equal((await f.api('/api/assets/inspection?'+query)).notes,'镜头用图');
+ assert.deepEqual((await f.api('/api/library?project=local&final=1&limit=10')).assets.map(asset=>asset.id),[image.id]);
+ assert.deepEqual((await f.api('/api/asset-platforms')).sources.map(item=>item.id),['dramatv','dreamina','neowow','libtv','tapnow']);
+ assert.equal((await (await fetch(f.origin+'/api/asset-platforms')).json()).error,'Local API authentication failed');
+});
+
+test('manual platform export imports into its own project with prompt and does not duplicate files on repeat', async t => {
+ const f=await fixture(t);
+ const folder=path.join(f.root,'TapNow export');
+ await fs.mkdir(folder);
+ await fs.writeFile(path.join(folder,'source.png'),PNG);
+ await fs.writeFile(path.join(folder,'source.png.prompt.md'),'导出随附提示词');
+ async function importOnce(){
+  const started=await f.api('/api/asset-platforms/sync',{method:'POST',body:JSON.stringify({source:'tapnow',exportFolder:folder,projectName:'示例项目'})});
+  for(let i=0;i<120;i++){
+   const job=await f.api('/api/asset-platforms/sync?id='+started.id);
+   if(job.state!=='running')return job;
+   await new Promise(resolve=>setTimeout(resolve,25));
+  }
+  assert.fail('import did not complete');
+ }
+ const first=await importOnce();
+ assert.deepEqual([first.state,first.downloaded,first.failed],['done',1,0]);
+ const second=await importOnce();
+ assert.deepEqual([second.localProjectId,second.skipped], [first.localProjectId,1]);
+ const results=await f.api('/api/library?project='+encodeURIComponent(first.localProjectId));
+ assert.equal(results.assets.length,1);
+ const a=results.assets[0];
+ const meta=await f.api('/api/assets/prompt?'+new URLSearchParams({id:a.id,project:first.localProjectId,optional:'1'}));
+ assert.deepEqual([meta.association.prompt,meta.platform.platform,meta.platform.project],['导出随附提示词','TapNow','示例项目']);
+ assert.equal(await fs.readFile(path.join(folder,'source.png.prompt.md'),'utf8'),'导出随附提示词');
+});
