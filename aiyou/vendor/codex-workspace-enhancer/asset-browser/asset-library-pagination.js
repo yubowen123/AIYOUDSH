@@ -20,8 +20,9 @@ export function normalizeLibraryPage(filters = {}) {
     category: String(filters.category || ""),
     query: String(filters.query || "").trim().toLocaleLowerCase("zh-CN"),
     searchMode: filters.searchMode === 'laya' ? 'laya' : 'keyword',
-    sort: ["relevance", "oldest", "name", "size", "largest"].includes(filters.sort) ? filters.sort : "newest",
+    sort: ["relevance", "oldest", "name", "size", "largest", "joined"].includes(filters.sort) ? filters.sort : "newest",
     related: filters.related !== false && filters.related !== "0",
+    finalOnly: filters.finalOnly === true,
     characterId: String(filters.characterId || ""),
     folderId: String(filters.folderId || ""),
   };
@@ -32,6 +33,7 @@ function compareAssets(sort) {
     let value = 0;
     if (sort === "name") value = nameCollator.compare(a.name || "", b.name || "");
     else if (sort === "oldest") value = (Number(a.mtimeMs) || 0) - (Number(b.mtimeMs) || 0);
+    else if (sort === "joined") value = (Date.parse(b.indexedAt) || 0) - (Date.parse(a.indexedAt) || 0);
     else if (sort === "size" || sort === "largest") value = (Number(b.size) || 0) - (Number(a.size) || 0);
     else value = (Number(b.mtimeMs) || 0) - (Number(a.mtimeMs) || 0);
     return value || nameCollator.compare(a.name || "", b.name || "") || String(a.id).localeCompare(String(b.id));
@@ -60,6 +62,7 @@ export class AssetLibraryPager {
       for (const asset of assets) {
         if (Object.hasOwn(smartCounts, asset.smartGroup)) smartCounts[asset.smartGroup] += 1;
         if (options.smartGroup && asset.smartGroup !== options.smartGroup) continue;
+        if (options.finalOnly && asset.final !== true) continue;
         counts.all += 1;
         if (Object.hasOwn(counts, asset.kind) && asset.kind !== "all") counts[asset.kind] += 1;
         if (options.kind && asset.kind !== options.kind) continue;
