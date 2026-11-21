@@ -186,7 +186,9 @@
 					rowToast.set(null);
 				}
 			});
+			const nativeMenus = installAiyouWorkspaceContextMenus(ctx);
 			const browserInjected = () => ({
+				settleNativeWorkspaceAction: nativeMenus.settle,
 				startSession: (workspaceId, options) => {
 					uiWorkspace.startSession(workspaceId, options);
 				},
@@ -215,6 +217,7 @@
 				closeAddWorkspace: shortcutControls.closeAdd,
 				setDirectoryBusy: shortcutControls.directoryBusy,
 				hooks: {
+					nativeWorkspaceAction: nativeMenus.request,
 					directoryFlow: browserFlowSource,
 					hostInfo,
 					workspaceShortcuts: shortcutControls.state,
@@ -225,6 +228,7 @@
 				createWorkspace: (input) => workspaces.create(input),
 				hooks: { directoryFlow: pickerFlowSource }
 			});
+			installAiyouWorkspacePickerFactory(ctx);
 			ctx.slots.inject("sidebar.workspaces", () => ctx.slots.register({
 				name: "sidebar.workspaces",
 				children: {

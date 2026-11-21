@@ -87,6 +87,7 @@
 						kind: "single",
 						scope: "root"
 					},
+					"sidebar.session.action": { kind: "hoc", scope: "root" },
 					"sidebar.settings": {
 						kind: "single",
 						scope: "root"

@@ -4,6 +4,10 @@
 
 ## 选择平台
 
+新版兼容构建 **v0.8.7**：Windows x64 与 Apple Silicon Mac 对应官方 `0.2.2-rc.5`；Intel Mac 对应官方 mac-x64 feed 的 `0.2.1-rc.4`。从 [Verify 构建产物](https://github.com/yubowen123/AIYOUDSH/actions/workflows/verify.yml)选择对应平台，核对同一提交的检查结果，完整解压后运行安装器。旧 v0.8.6 安装包不因此自动获得新版兼容。详见[适配说明](releases/v0.8.7.md)。
+
+以下为历史正式包与其原始支持范围：
+
 | 平台 | 下载 | 官方应用与环境 |
 | --- | --- | --- |
 | macOS Intel x64 | [v0.8.5 Intel 安装包](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.5/AIYOUDSH-v0.8.5-macos-x64.zip) | macOS 13+，官方 Intel `0.2.1-rc.1 / ed75efe` |

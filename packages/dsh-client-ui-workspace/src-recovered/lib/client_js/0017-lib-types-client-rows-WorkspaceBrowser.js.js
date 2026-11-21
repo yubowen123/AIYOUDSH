@@ -735,7 +735,7 @@
 		* @param props - composed slot props (shell owner share + store + injected actions).
 		* @returns the region element tree.
 		*/
-		function WorkspaceBrowser({ wide, usePanelInfo, expandSidebar, useSessions, useSessionStatus, useWorkspaces, useStore, actions, startSession, open, requestSessionRename, notifyArchivedNotOpenable, renameWorkspace, deleteWorkspace, insertWorkspaceBefore, unarchiveSession, createWorkspace, searchSessions, searchResultLimit, useDirectoryFlow, useHostInfo, useShortcuts, useWorkspaceShortcuts, requestSearch, requestAddWorkspace, closeAddWorkspace, setDirectoryBusy, renderSlot, t }) {
+		function WorkspaceBrowser({ wide, usePanelInfo, expandSidebar, useSessions, useSessionStatus, useWorkspaces, useStore, actions, startSession, open, requestSessionRename, notifyArchivedNotOpenable, renameWorkspace, deleteWorkspace, insertWorkspaceBefore, unarchiveSession, createWorkspace, searchSessions, searchResultLimit, useDirectoryFlow, useHostInfo, useShortcuts, useWorkspaceShortcuts, requestSearch, requestAddWorkspace, closeAddWorkspace, setDirectoryBusy, useNativeWorkspaceAction = () => null, settleNativeWorkspaceAction = () => {}, renderSlot, t }) {
 			const home = useHostInfo((info) => info.home);
 			const shortcuts = useShortcuts((rows) => rows);
 			const searchShortcut = shortcuts.find((row) => row.id === "session.search");
@@ -1034,6 +1034,19 @@
 			const [deleting, setDeleting] = (0, react.useState)(false);
 			const [deleteCommittedId, setDeleteCommittedId] = (0, react.useState)(null);
 			const [deleteError, setDeleteError] = (0, react.useState)(null);
+			const nativeWorkspaceAction = useNativeWorkspaceAction(value => value);
+			(0, react.useEffect)(() => {
+				if (nativeWorkspaceAction === null) return;
+				const { workspaceId, displayTitle, action } = nativeWorkspaceAction;
+				const workspace = storedWorkspaces.find(row => row.workspaceId === workspaceId);
+				if (workspace && action === "rename") {
+					setRenameTarget({ workspaceId, storedTitle: workspace.title });
+					setRenameDraft(displayTitle); setRenameError(null);
+				} else if (workspace && action === "delete") {
+					setDeleteTarget({ workspaceId, title: displayTitle }); setDeleteError(null);
+				}
+				settleNativeWorkspaceAction();
+			}, [nativeWorkspaceAction, settleNativeWorkspaceAction, storedWorkspaces]);
 			(0, react.useEffect)(() => {
 				if (deleteCommittedId === null || workspaces.some((workspace) => workspace.workspaceId === deleteCommittedId)) return;
 				setDeleting(false);

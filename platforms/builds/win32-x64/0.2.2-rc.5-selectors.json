@@ -1,0 +1,2223 @@
+{
+  "schemaVersion": 1,
+  "platform": "win32-x64",
+  "appVersion": "0.2.2-rc.5",
+  "buildCommit": "3f85d888b1297107937d9bd5b853f7e733e179a4",
+  "sourceUrl": "https://download.deepseek.com/dsh-desk/bin/win-x64/deepseek-harness-0.2.2-rc.5-win-x64.exe",
+  "scope": "Untouched official chat, conversation, layout and sidebar-right CSS exports only; custom sidebar/workspace bundles retain their bundled classes.",
+  "mapping": {
+    "JXrxFq_dsh-turn-mark-busy": "SNx2jG_dsh-turn-mark-busy",
+    "JXrxFq_dsh-turn-preview-enter": "SNx2jG_dsh-turn-preview-enter",
+    "JXrxFq_fadeBottom": "SNx2jG_fadeBottom",
+    "JXrxFq_fadeTop": "SNx2jG_fadeTop",
+    "JXrxFq_frame": "SNx2jG_frame",
+    "JXrxFq_mark": "SNx2jG_mark",
+    "JXrxFq_markActive": "SNx2jG_markActive",
+    "JXrxFq_markBusy": "SNx2jG_markBusy",
+    "JXrxFq_markPreview": "SNx2jG_markPreview",
+    "JXrxFq_markUnloaded": "SNx2jG_markUnloaded",
+    "JXrxFq_marks": "SNx2jG_marks",
+    "JXrxFq_preview": "SNx2jG_preview",
+    "JXrxFq_previewPrompt": "SNx2jG_previewPrompt",
+    "JXrxFq_previewResponse": "SNx2jG_previewResponse",
+    "JXrxFq_scroller": "SNx2jG_scroller",
+    "JXrxFq_slot": "SNx2jG_slot",
+    "icaHSq_callRow": "V4vHZW_callRow",
+    "icaHSq_column": "V4vHZW_column",
+    "icaHSq_flowItem": "V4vHZW_flowItem",
+    "icaHSq_frame": "V4vHZW_frame",
+    "icaHSq_hint": "V4vHZW_hint",
+    "icaHSq_modalAction": "V4vHZW_modalAction",
+    "icaHSq_older": "V4vHZW_older",
+    "icaHSq_openError": "V4vHZW_openError",
+    "icaHSq_root": "V4vHZW_root",
+    "icaHSq_running": "V4vHZW_running",
+    "icaHSq_runningContent": "V4vHZW_runningContent",
+    "icaHSq_runningDivider": "V4vHZW_runningDivider",
+    "icaHSq_runningIcon": "V4vHZW_runningIcon",
+    "icaHSq_runningText": "V4vHZW_runningText",
+    "icaHSq_runningWhaleAnimated": "V4vHZW_runningWhaleAnimated",
+    "icaHSq_runningWhaleStill": "V4vHZW_runningWhaleStill",
+    "icaHSq_scroll": "V4vHZW_scroll",
+    "icaHSq_toBottom": "V4vHZW_toBottom",
+    "icaHSq_toBottomSlot": "V4vHZW_toBottomSlot",
+    "icaHSq_turnSpacer": "V4vHZW_turnSpacer",
+    "TXqvFW_activityIcon": "BE0jCW_activityIcon",
+    "TXqvFW_body": "BE0jCW_body",
+    "TXqvFW_chevron": "BE0jCW_chevron",
+    "TXqvFW_content": "BE0jCW_content",
+    "TXqvFW_expandedBody": "BE0jCW_expandedBody",
+    "TXqvFW_fadeBottom": "BE0jCW_fadeBottom",
+    "TXqvFW_fadeTop": "BE0jCW_fadeTop",
+    "TXqvFW_label": "BE0jCW_label",
+    "TXqvFW_leading": "BE0jCW_leading",
+    "TXqvFW_root": "BE0jCW_root",
+    "TXqvFW_title": "BE0jCW_title",
+    "IzP3Va_attachmentRow": "LOmM4q_attachmentRow",
+    "IzP3Va_compactionBody": "LOmM4q_compactionBody",
+    "IzP3Va_compactionButton": "LOmM4q_compactionButton",
+    "IzP3Va_compactionContextIcon": "LOmM4q_compactionContextIcon",
+    "IzP3Va_compactionDisclosureIcon": "LOmM4q_compactionDisclosureIcon",
+    "IzP3Va_compactionLeading": "LOmM4q_compactionLeading",
+    "IzP3Va_compactionRow": "LOmM4q_compactionRow",
+    "IzP3Va_compactionSep": "LOmM4q_compactionSep",
+    "IzP3Va_compactionSummary": "LOmM4q_compactionSummary",
+    "IzP3Va_compactionTitle": "LOmM4q_compactionTitle",
+    "IzP3Va_contextRow": "LOmM4q_contextRow",
+    "IzP3Va_fileCard": "LOmM4q_fileCard",
+    "IzP3Va_fileContent": "LOmM4q_fileContent",
+    "IzP3Va_fileIcon": "LOmM4q_fileIcon",
+    "IzP3Va_fileMeta": "LOmM4q_fileMeta",
+    "IzP3Va_fileName": "LOmM4q_fileName",
+    "IzP3Va_maxTokensTitle": "LOmM4q_maxTokensTitle",
+    "IzP3Va_referenceSummary": "LOmM4q_referenceSummary",
+    "IzP3Va_retryDetailLabel": "LOmM4q_retryDetailLabel",
+    "IzP3Va_retryDetails": "LOmM4q_retryDetails",
+    "IzP3Va_retryRow": "LOmM4q_retryRow",
+    "IzP3Va_retrySummary": "LOmM4q_retrySummary",
+    "IzP3Va_retryText": "LOmM4q_retryText",
+    "IzP3Va_turnErrorCode": "LOmM4q_turnErrorCode",
+    "IzP3Va_turnErrorCopy": "LOmM4q_turnErrorCopy",
+    "IzP3Va_turnErrorDot": "LOmM4q_turnErrorDot",
+    "IzP3Va_turnErrorMessage": "LOmM4q_turnErrorMessage",
+    "IzP3Va_turnErrorRow": "LOmM4q_turnErrorRow",
+    "IzP3Va_turnErrorTitle": "LOmM4q_turnErrorTitle",
+    "IzP3Va_userRow": "LOmM4q_userRow",
+    "IzP3Va_userStack": "LOmM4q_userStack",
+    "npkFxW_catalogNotice": "w30fQq_catalogNotice",
+    "npkFxW_entries": "w30fQq_entries",
+    "npkFxW_entry": "w30fQq_entry",
+    "npkFxW_entryDescription": "w30fQq_entryDescription",
+    "npkFxW_entryName": "w30fQq_entryName",
+    "npkFxW_field": "w30fQq_field",
+    "npkFxW_fieldKey": "w30fQq_fieldKey",
+    "npkFxW_fieldValue": "w30fQq_fieldValue",
+    "npkFxW_fields": "w30fQq_fields",
+    "npkFxW_file": "w30fQq_file",
+    "npkFxW_fileAction": "w30fQq_fileAction",
+    "npkFxW_filePath": "w30fQq_filePath",
+    "npkFxW_files": "w30fQq_files",
+    "npkFxW_recall": "w30fQq_recall",
+    "npkFxW_recallCounts": "w30fQq_recallCounts",
+    "npkFxW_recallLabel": "w30fQq_recallLabel",
+    "npkFxW_recalls": "w30fQq_recalls",
+    "npkFxW_relaySender": "w30fQq_relaySender",
+    "npkFxW_section": "w30fQq_section",
+    "npkFxW_sectionName": "w30fQq_sectionName",
+    "npkFxW_sectionText": "w30fQq_sectionText",
+    "npkFxW_sections": "w30fQq_sections",
+    "npkFxW_text": "w30fQq_text",
+    "Bpi2Dq_body": "iFrn8G_body",
+    "Bpi2Dq_chevron": "iFrn8G_chevron",
+    "Bpi2Dq_root": "iFrn8G_root",
+    "Bpi2Dq_sep": "iFrn8G_sep",
+    "Bpi2Dq_source": "iFrn8G_source",
+    "Bpi2Dq_summary": "iFrn8G_summary",
+    "Bpi2Dq_toolChanges": "iFrn8G_toolChanges",
+    "ppByMG_action": "_1KfHza_action",
+    "ppByMG_actions": "_1KfHza_actions",
+    "ppByMG_endInfo": "_1KfHza_endInfo",
+    "ppByMG_timeEnd": "_1KfHza_timeEnd",
+    "ppByMG_timeStart": "_1KfHza_timeStart",
+    "ppByMG_visuallyHidden": "_1KfHza_visuallyHidden",
+    "z7mQLa_visuallyHidden": "BpRApG_visuallyHidden",
+    "HiSsxa_leading": "VJlF5q_leading",
+    "HiSsxa_root": "VJlF5q_root",
+    "HiSsxa_row": "VJlF5q_row",
+    "HiSsxa_separator": "VJlF5q_separator",
+    "HiSsxa_summary": "VJlF5q_summary",
+    "HiSsxa_summaryText": "VJlF5q_summaryText",
+    "HiSsxa_thinkBody": "VJlF5q_thinkBody",
+    "HiSsxa_title": "VJlF5q_title",
+    "gKv1-q_actions": "xMeOpW_actions",
+    "gKv1-q_body": "xMeOpW_body",
+    "gKv1-q_root": "xMeOpW_root",
+    "gKv1-q_stopped": "xMeOpW_stopped",
+    "YS3v9W_body": "EqXNNG_body",
+    "YS3v9W_leading": "EqXNNG_leading",
+    "YS3v9W_root": "EqXNNG_root",
+    "YS3v9W_separator": "EqXNNG_separator",
+    "YS3v9W_summary": "EqXNNG_summary",
+    "YS3v9W_title": "EqXNNG_title",
+    "_PaunW_chevron": "hE4tRW_chevron",
+    "_PaunW_durationNumber": "hE4tRW_durationNumber",
+    "_PaunW_label": "hE4tRW_label",
+    "_PaunW_root": "hE4tRW_root",
+    "sZXytW_label": "BI5uFG_label",
+    "sZXytW_root": "BI5uFG_root",
+    "sZXytW_trigger": "BI5uFG_trigger",
+    "-Fl-UW_details": "xXe6ja_details",
+    "-Fl-UW_panel": "xXe6ja_panel",
+    "-Fl-UW_reasoning": "xXe6ja_reasoning",
+    "-Fl-UW_route": "xXe6ja_route",
+    "-Fl-UW_title": "xXe6ja_title",
+    "-Fl-UW_titleLabel": "xXe6ja_titleLabel",
+    "-Fl-UW_titleRule": "xXe6ja_titleRule",
+    "-Fl-UW_titleValue": "xXe6ja_titleValue",
+    "d1vkyW_actions": "cVfUIq_actions",
+    "d1vkyW_root": "cVfUIq_root",
+    "nqfepW_body": "hSzSIW_body",
+    "nqfepW_chevron": "hSzSIW_chevron",
+    "nqfepW_content": "hSzSIW_content",
+    "nqfepW_explanation": "hSzSIW_explanation",
+    "nqfepW_header": "hSzSIW_header",
+    "nqfepW_icon": "hSzSIW_icon",
+    "nqfepW_openChevron": "hSzSIW_openChevron",
+    "nqfepW_root": "hSzSIW_root",
+    "nqfepW_time": "hSzSIW_time",
+    "nqfepW_title": "hSzSIW_title",
+    "OpZ85W_anchor": "hNGZaa_anchor",
+    "OpZ85W_label": "hNGZaa_label",
+    "OpZ85W_pill": "hNGZaa_pill",
+    "OpZ85W_sep": "hNGZaa_sep",
+    "_28qALa_chevron": "-TO4SG_chevron",
+    "_28qALa_desc": "-TO4SG_desc",
+    "_28qALa_row": "-TO4SG_row",
+    "_28qALa_rowText": "-TO4SG_rowText",
+    "_28qALa_selector": "-TO4SG_selector",
+    "_28qALa_title": "-TO4SG_title",
+    "B0oWoG_ellipsis": "_2STzOG_ellipsis",
+    "B0oWoG_root": "_2STzOG_root",
+    "pO-u3q_chip": "NOA9Ua_chip",
+    "pO-u3q_icon": "NOA9Ua_icon",
+    "pO-u3q_invalid": "NOA9Ua_invalid",
+    "pO-u3q_label": "NOA9Ua_label",
+    "pO-u3q_marker": "NOA9Ua_marker",
+    "f30p-W_openable": "_6XhDDa_openable",
+    "f30p-W_reference": "_6XhDDa_reference",
+    "f30p-W_textRef": "_6XhDDa_textRef",
+    "_0TPaqG_action": "F07MqG_action",
+    "_0TPaqG_actions": "F07MqG_actions",
+    "_0TPaqG_attachments": "F07MqG_attachments",
+    "_0TPaqG_chevron": "F07MqG_chevron",
+    "_0TPaqG_count": "F07MqG_count",
+    "_0TPaqG_dock": "F07MqG_dock",
+    "_0TPaqG_file": "F07MqG_file",
+    "_0TPaqG_fileIcon": "F07MqG_fileIcon",
+    "_0TPaqG_fileName": "F07MqG_fileName",
+    "_0TPaqG_fileSize": "F07MqG_fileSize",
+    "_0TPaqG_header": "F07MqG_header",
+    "_0TPaqG_lead": "F07MqG_lead",
+    "_0TPaqG_list": "F07MqG_list",
+    "_0TPaqG_panel": "F07MqG_panel",
+    "_0TPaqG_pendingRow": "F07MqG_pendingRow",
+    "_0TPaqG_preview": "F07MqG_preview",
+    "_0TPaqG_row": "F07MqG_row",
+    "_0TPaqG_status": "F07MqG_status",
+    "_0TPaqG_thumb": "F07MqG_thumb",
+    "WW8u-a_chevron": "V68kMG_chevron",
+    "WW8u-a_desc": "V68kMG_desc",
+    "WW8u-a_row": "V68kMG_row",
+    "WW8u-a_rowText": "V68kMG_rowText",
+    "WW8u-a_selector": "V68kMG_selector",
+    "WW8u-a_title": "V68kMG_title",
+    "ST7X_W_body": "an3WzG_body",
+    "ST7X_W_composerHero": "an3WzG_composerHero",
+    "ST7X_W_composerSeat": "an3WzG_composerSeat",
+    "ST7X_W_composerStack": "an3WzG_composerStack",
+    "ST7X_W_crumb": "an3WzG_crumb",
+    "ST7X_W_crumbCurrent": "an3WzG_crumbCurrent",
+    "ST7X_W_crumbSeg": "an3WzG_crumbSeg",
+    "ST7X_W_crumbSep": "an3WzG_crumbSep",
+    "ST7X_W_crumbs": "an3WzG_crumbs",
+    "ST7X_W_embeddedBody": "an3WzG_embeddedBody",
+    "ST7X_W_header": "an3WzG_header",
+    "ST7X_W_headerActions": "an3WzG_headerActions",
+    "ST7X_W_headerBlank": "an3WzG_headerBlank",
+    "ST7X_W_headerCorner": "an3WzG_headerCorner",
+    "ST7X_W_headerLeading": "an3WzG_headerLeading",
+    "ST7X_W_headerUtilities": "an3WzG_headerUtilities",
+    "ST7X_W_heroOptions": "an3WzG_heroOptions",
+    "ST7X_W_heroWorkspaceRow": "an3WzG_heroWorkspaceRow",
+    "ST7X_W_root": "an3WzG_root",
+    "ST7X_W_scrollBody": "an3WzG_scrollBody",
+    "ST7X_W_tab": "an3WzG_tab",
+    "ST7X_W_tabActive": "an3WzG_tabActive",
+    "ST7X_W_tabs": "an3WzG_tabs",
+    "ST7X_W_titleCluster": "an3WzG_titleCluster",
+    "ST7X_W_titleRow": "an3WzG_titleRow",
+    "ST7X_W_viewArea": "an3WzG_viewArea",
+    "ST7X_W_widthHandle": "an3WzG_widthHandle",
+    "bocITq_body": "WOwLGG_body",
+    "bocITq_chevron": "WOwLGG_chevron",
+    "bocITq_fish": "WOwLGG_fish",
+    "bocITq_fishHitbox": "WOwLGG_fishHitbox",
+    "bocITq_folder": "WOwLGG_folder",
+    "bocITq_headline": "WOwLGG_headline",
+    "bocITq_hero-fish-swim": "WOwLGG_hero-fish-swim",
+    "bocITq_modalAction": "WOwLGG_modalAction",
+    "bocITq_modalError": "WOwLGG_modalError",
+    "bocITq_modalInput": "WOwLGG_modalInput",
+    "bocITq_previewBadge": "WOwLGG_previewBadge",
+    "bocITq_root": "WOwLGG_root",
+    "bocITq_stack": "WOwLGG_stack",
+    "bocITq_titleGroup": "WOwLGG_titleGroup",
+    "bocITq_workspace": "WOwLGG_workspace",
+    "bocITq_workspaceLabel": "WOwLGG_workspaceLabel",
+    "bocITq_workspaceRow": "WOwLGG_workspaceRow",
+    "y0jqnG_bar": "A6Bq1a_bar",
+    "y0jqnG_colorMessages": "A6Bq1a_colorMessages",
+    "y0jqnG_colorSystem": "A6Bq1a_colorSystem",
+    "y0jqnG_colorTools": "A6Bq1a_colorTools",
+    "y0jqnG_figures": "A6Bq1a_figures",
+    "y0jqnG_fill": "A6Bq1a_fill",
+    "y0jqnG_header": "A6Bq1a_header",
+    "y0jqnG_headline": "A6Bq1a_headline",
+    "y0jqnG_panel": "A6Bq1a_panel",
+    "y0jqnG_percent": "A6Bq1a_percent",
+    "y0jqnG_root": "A6Bq1a_root",
+    "y0jqnG_row": "A6Bq1a_row",
+    "y0jqnG_rows": "A6Bq1a_rows",
+    "y0jqnG_segment": "A6Bq1a_segment",
+    "y0jqnG_swatch": "A6Bq1a_swatch",
+    "y0jqnG_track": "A6Bq1a_track",
+    "y0jqnG_trigger": "A6Bq1a_trigger",
+    "yhfFVG_accessory": "GRgSLq_accessory",
+    "yhfFVG_activity": "GRgSLq_activity",
+    "yhfFVG_activityExpanded": "GRgSLq_activityExpanded",
+    "yhfFVG_add": "GRgSLq_add",
+    "yhfFVG_card": "GRgSLq_card",
+    "yhfFVG_cardWorkspaceTrigger": "GRgSLq_cardWorkspaceTrigger",
+    "yhfFVG_dock": "GRgSLq_dock",
+    "yhfFVG_grow": "GRgSLq_grow",
+    "yhfFVG_hero": "GRgSLq_hero",
+    "yhfFVG_input": "GRgSLq_input",
+    "yhfFVG_input-pending": "GRgSLq_input-pending",
+    "yhfFVG_inputDisabled": "GRgSLq_inputDisabled",
+    "yhfFVG_modes": "GRgSLq_modes",
+    "yhfFVG_notice": "GRgSLq_notice",
+    "yhfFVG_overlayAnchor": "GRgSLq_overlayAnchor",
+    "yhfFVG_pending": "GRgSLq_pending",
+    "yhfFVG_placeholder": "GRgSLq_placeholder",
+    "yhfFVG_primary": "GRgSLq_primary",
+    "yhfFVG_retry": "GRgSLq_retry",
+    "yhfFVG_root": "GRgSLq_root",
+    "yhfFVG_row": "GRgSLq_row",
+    "yhfFVG_scroll": "GRgSLq_scroll",
+    "yhfFVG_select": "GRgSLq_select",
+    "yhfFVG_standardControls": "GRgSLq_standardControls",
+    "yhfFVG_tools": "GRgSLq_tools",
+    "yhfFVG_trailing": "GRgSLq_trailing",
+    "yhfFVG_trailingActive": "GRgSLq_trailingActive",
+    "w9rwOa_body": "DXuOLW_body",
+    "w9rwOa_chevron": "DXuOLW_chevron",
+    "w9rwOa_content": "DXuOLW_content",
+    "w9rwOa_glyph": "DXuOLW_glyph",
+    "w9rwOa_header": "DXuOLW_header",
+    "w9rwOa_item": "DXuOLW_item",
+    "w9rwOa_lead": "DXuOLW_lead",
+    "w9rwOa_list": "DXuOLW_list",
+    "w9rwOa_progress": "DXuOLW_progress",
+    "w9rwOa_root": "DXuOLW_root",
+    "w9rwOa_title": "DXuOLW_title",
+    "_6Qf49G_bottomRow": "mP3x-q_bottomRow",
+    "_6Qf49G_centerCol": "mP3x-q_centerCol",
+    "_6Qf49G_frame": "mP3x-q_frame",
+    "_6Qf49G_handle": "mP3x-q_handle",
+    "_6Qf49G_leadingSeat": "mP3x-q_leadingSeat",
+    "_6Qf49G_overlayLayer": "mP3x-q_overlayLayer",
+    "_6Qf49G_rightbarCol": "mP3x-q_rightbarCol",
+    "_6Qf49G_sidebarCol": "mP3x-q_sidebarCol",
+    "-w4Aka_entry": "p2k40q_entry",
+    "-w4Aka_entryCell": "p2k40q_entryCell",
+    "-w4Aka_entryDescription": "p2k40q_entryDescription",
+    "-w4Aka_entryIcon": "p2k40q_entryIcon",
+    "-w4Aka_entryText": "p2k40q_entryText",
+    "-w4Aka_entryTitle": "p2k40q_entryTitle",
+    "-w4Aka_guide": "p2k40q_guide",
+    "-w4Aka_hero": "p2k40q_hero",
+    "-w4Aka_placeholderInk": "p2k40q_placeholderInk",
+    "-w4Aka_titleIcon": "p2k40q_titleIcon",
+    "wmirxG_button": "RwosdG_button",
+    "wmirxG_icon": "RwosdG_icon",
+    "irMxjq_collapseGlyph": "acoR2W_collapseGlyph",
+    "irMxjq_iconButton": "acoR2W_iconButton",
+    "irMxjq_panel": "acoR2W_panel",
+    "irMxjq_panelBody": "acoR2W_panelBody",
+    "irMxjq_session": "acoR2W_session",
+    "irMxjq_tabBody": "acoR2W_tabBody",
+    "irMxjq_tabTitle": "acoR2W_tabTitle",
+    "irMxjq_unavailable": "acoR2W_unavailable"
+  },
+  "modules": [
+    {
+      "package": "@deepseek-ai/dsh-client-ui-chat",
+      "file": "lib/client.js",
+      "macSha256": "f817e5d53f872cba796fa9cf3157b167112755411b141a639a6a3dbbd500b732",
+      "windowsSha256": "8f2ed1c092f54fa720424c65fbf18b838d12edc6e73f4fa1e212a1b688934105",
+      "cssModules": [
+        {
+          "path": "packages/client/ui-chat/src/client/chat/TurnNavigator.module.css.mjs",
+          "exports": {
+            "dsh-turn-mark-busy": {
+              "mac": "JXrxFq_dsh-turn-mark-busy",
+              "windows": "SNx2jG_dsh-turn-mark-busy",
+              "themeReferences": false
+            },
+            "dsh-turn-preview-enter": {
+              "mac": "JXrxFq_dsh-turn-preview-enter",
+              "windows": "SNx2jG_dsh-turn-preview-enter",
+              "themeReferences": false
+            },
+            "fadeBottom": {
+              "mac": "JXrxFq_fadeBottom",
+              "windows": "SNx2jG_fadeBottom",
+              "themeReferences": false
+            },
+            "fadeTop": {
+              "mac": "JXrxFq_fadeTop",
+              "windows": "SNx2jG_fadeTop",
+              "themeReferences": false
+            },
+            "frame": {
+              "mac": "JXrxFq_frame",
+              "windows": "SNx2jG_frame",
+              "themeReferences": false
+            },
+            "mark": {
+              "mac": "JXrxFq_mark",
+              "windows": "SNx2jG_mark",
+              "themeReferences": false
+            },
+            "markActive": {
+              "mac": "JXrxFq_markActive",
+              "windows": "SNx2jG_markActive",
+              "themeReferences": false
+            },
+            "markBusy": {
+              "mac": "JXrxFq_markBusy",
+              "windows": "SNx2jG_markBusy",
+              "themeReferences": false
+            },
+            "markPreview": {
+              "mac": "JXrxFq_markPreview",
+              "windows": "SNx2jG_markPreview",
+              "themeReferences": false
+            },
+            "markUnloaded": {
+              "mac": "JXrxFq_markUnloaded",
+              "windows": "SNx2jG_markUnloaded",
+              "themeReferences": false
+            },
+            "marks": {
+              "mac": "JXrxFq_marks",
+              "windows": "SNx2jG_marks",
+              "themeReferences": false
+            },
+            "preview": {
+              "mac": "JXrxFq_preview",
+              "windows": "SNx2jG_preview",
+              "themeReferences": true
+            },
+            "previewPrompt": {
+              "mac": "JXrxFq_previewPrompt",
+              "windows": "SNx2jG_previewPrompt",
+              "themeReferences": false
+            },
+            "previewResponse": {
+              "mac": "JXrxFq_previewResponse",
+              "windows": "SNx2jG_previewResponse",
+              "themeReferences": false
+            },
+            "scroller": {
+              "mac": "JXrxFq_scroller",
+              "windows": "SNx2jG_scroller",
+              "themeReferences": false
+            },
+            "slot": {
+              "mac": "JXrxFq_slot",
+              "windows": "SNx2jG_slot",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/ChatView.module.css.mjs",
+          "exports": {
+            "callRow": {
+              "mac": "icaHSq_callRow",
+              "windows": "V4vHZW_callRow",
+              "themeReferences": false
+            },
+            "column": {
+              "mac": "icaHSq_column",
+              "windows": "V4vHZW_column",
+              "themeReferences": false
+            },
+            "flowItem": {
+              "mac": "icaHSq_flowItem",
+              "windows": "V4vHZW_flowItem",
+              "themeReferences": false
+            },
+            "frame": {
+              "mac": "icaHSq_frame",
+              "windows": "V4vHZW_frame",
+              "themeReferences": true
+            },
+            "hint": {
+              "mac": "icaHSq_hint",
+              "windows": "V4vHZW_hint",
+              "themeReferences": false
+            },
+            "modalAction": {
+              "mac": "icaHSq_modalAction",
+              "windows": "V4vHZW_modalAction",
+              "themeReferences": false
+            },
+            "older": {
+              "mac": "icaHSq_older",
+              "windows": "V4vHZW_older",
+              "themeReferences": false
+            },
+            "openError": {
+              "mac": "icaHSq_openError",
+              "windows": "V4vHZW_openError",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "icaHSq_root",
+              "windows": "V4vHZW_root",
+              "themeReferences": true
+            },
+            "running": {
+              "mac": "icaHSq_running",
+              "windows": "V4vHZW_running",
+              "themeReferences": false
+            },
+            "runningContent": {
+              "mac": "icaHSq_runningContent",
+              "windows": "V4vHZW_runningContent",
+              "themeReferences": false
+            },
+            "runningDivider": {
+              "mac": "icaHSq_runningDivider",
+              "windows": "V4vHZW_runningDivider",
+              "themeReferences": false
+            },
+            "runningIcon": {
+              "mac": "icaHSq_runningIcon",
+              "windows": "V4vHZW_runningIcon",
+              "themeReferences": false
+            },
+            "runningText": {
+              "mac": "icaHSq_runningText",
+              "windows": "V4vHZW_runningText",
+              "themeReferences": false
+            },
+            "runningWhaleAnimated": {
+              "mac": "icaHSq_runningWhaleAnimated",
+              "windows": "V4vHZW_runningWhaleAnimated",
+              "themeReferences": false
+            },
+            "runningWhaleStill": {
+              "mac": "icaHSq_runningWhaleStill",
+              "windows": "V4vHZW_runningWhaleStill",
+              "themeReferences": false
+            },
+            "scroll": {
+              "mac": "icaHSq_scroll",
+              "windows": "V4vHZW_scroll",
+              "themeReferences": false
+            },
+            "toBottom": {
+              "mac": "icaHSq_toBottom",
+              "windows": "V4vHZW_toBottom",
+              "themeReferences": false
+            },
+            "toBottomSlot": {
+              "mac": "icaHSq_toBottomSlot",
+              "windows": "V4vHZW_toBottomSlot",
+              "themeReferences": false
+            },
+            "turnSpacer": {
+              "mac": "icaHSq_turnSpacer",
+              "windows": "V4vHZW_turnSpacer",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/ChatGroupSeat.module.css.mjs",
+          "exports": {
+            "activityIcon": {
+              "mac": "TXqvFW_activityIcon",
+              "windows": "BE0jCW_activityIcon",
+              "themeReferences": false
+            },
+            "body": {
+              "mac": "TXqvFW_body",
+              "windows": "BE0jCW_body",
+              "themeReferences": false
+            },
+            "chevron": {
+              "mac": "TXqvFW_chevron",
+              "windows": "BE0jCW_chevron",
+              "themeReferences": false
+            },
+            "content": {
+              "mac": "TXqvFW_content",
+              "windows": "BE0jCW_content",
+              "themeReferences": false
+            },
+            "expandedBody": {
+              "mac": "TXqvFW_expandedBody",
+              "windows": "BE0jCW_expandedBody",
+              "themeReferences": false
+            },
+            "fadeBottom": {
+              "mac": "TXqvFW_fadeBottom",
+              "windows": "BE0jCW_fadeBottom",
+              "themeReferences": false
+            },
+            "fadeTop": {
+              "mac": "TXqvFW_fadeTop",
+              "windows": "BE0jCW_fadeTop",
+              "themeReferences": false
+            },
+            "label": {
+              "mac": "TXqvFW_label",
+              "windows": "BE0jCW_label",
+              "themeReferences": false
+            },
+            "leading": {
+              "mac": "TXqvFW_leading",
+              "windows": "BE0jCW_leading",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "TXqvFW_root",
+              "windows": "BE0jCW_root",
+              "themeReferences": false
+            },
+            "title": {
+              "mac": "TXqvFW_title",
+              "windows": "BE0jCW_title",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/MessageItem.module.css.mjs",
+          "exports": {
+            "attachmentRow": {
+              "mac": "IzP3Va_attachmentRow",
+              "windows": "LOmM4q_attachmentRow",
+              "themeReferences": false
+            },
+            "compactionBody": {
+              "mac": "IzP3Va_compactionBody",
+              "windows": "LOmM4q_compactionBody",
+              "themeReferences": false
+            },
+            "compactionButton": {
+              "mac": "IzP3Va_compactionButton",
+              "windows": "LOmM4q_compactionButton",
+              "themeReferences": false
+            },
+            "compactionContextIcon": {
+              "mac": "IzP3Va_compactionContextIcon",
+              "windows": "LOmM4q_compactionContextIcon",
+              "themeReferences": false
+            },
+            "compactionDisclosureIcon": {
+              "mac": "IzP3Va_compactionDisclosureIcon",
+              "windows": "LOmM4q_compactionDisclosureIcon",
+              "themeReferences": false
+            },
+            "compactionLeading": {
+              "mac": "IzP3Va_compactionLeading",
+              "windows": "LOmM4q_compactionLeading",
+              "themeReferences": false
+            },
+            "compactionRow": {
+              "mac": "IzP3Va_compactionRow",
+              "windows": "LOmM4q_compactionRow",
+              "themeReferences": false
+            },
+            "compactionSep": {
+              "mac": "IzP3Va_compactionSep",
+              "windows": "LOmM4q_compactionSep",
+              "themeReferences": false
+            },
+            "compactionSummary": {
+              "mac": "IzP3Va_compactionSummary",
+              "windows": "LOmM4q_compactionSummary",
+              "themeReferences": false
+            },
+            "compactionTitle": {
+              "mac": "IzP3Va_compactionTitle",
+              "windows": "LOmM4q_compactionTitle",
+              "themeReferences": false
+            },
+            "contextRow": {
+              "mac": "IzP3Va_contextRow",
+              "windows": "LOmM4q_contextRow",
+              "themeReferences": false
+            },
+            "fileCard": {
+              "mac": "IzP3Va_fileCard",
+              "windows": "LOmM4q_fileCard",
+              "themeReferences": true
+            },
+            "fileContent": {
+              "mac": "IzP3Va_fileContent",
+              "windows": "LOmM4q_fileContent",
+              "themeReferences": false
+            },
+            "fileIcon": {
+              "mac": "IzP3Va_fileIcon",
+              "windows": "LOmM4q_fileIcon",
+              "themeReferences": false
+            },
+            "fileMeta": {
+              "mac": "IzP3Va_fileMeta",
+              "windows": "LOmM4q_fileMeta",
+              "themeReferences": false
+            },
+            "fileName": {
+              "mac": "IzP3Va_fileName",
+              "windows": "LOmM4q_fileName",
+              "themeReferences": false
+            },
+            "maxTokensTitle": {
+              "mac": "IzP3Va_maxTokensTitle",
+              "windows": "LOmM4q_maxTokensTitle",
+              "themeReferences": false
+            },
+            "referenceSummary": {
+              "mac": "IzP3Va_referenceSummary",
+              "windows": "LOmM4q_referenceSummary",
+              "themeReferences": false
+            },
+            "retryDetailLabel": {
+              "mac": "IzP3Va_retryDetailLabel",
+              "windows": "LOmM4q_retryDetailLabel",
+              "themeReferences": false
+            },
+            "retryDetails": {
+              "mac": "IzP3Va_retryDetails",
+              "windows": "LOmM4q_retryDetails",
+              "themeReferences": false
+            },
+            "retryRow": {
+              "mac": "IzP3Va_retryRow",
+              "windows": "LOmM4q_retryRow",
+              "themeReferences": false
+            },
+            "retrySummary": {
+              "mac": "IzP3Va_retrySummary",
+              "windows": "LOmM4q_retrySummary",
+              "themeReferences": false
+            },
+            "retryText": {
+              "mac": "IzP3Va_retryText",
+              "windows": "LOmM4q_retryText",
+              "themeReferences": false
+            },
+            "turnErrorCode": {
+              "mac": "IzP3Va_turnErrorCode",
+              "windows": "LOmM4q_turnErrorCode",
+              "themeReferences": false
+            },
+            "turnErrorCopy": {
+              "mac": "IzP3Va_turnErrorCopy",
+              "windows": "LOmM4q_turnErrorCopy",
+              "themeReferences": false
+            },
+            "turnErrorDot": {
+              "mac": "IzP3Va_turnErrorDot",
+              "windows": "LOmM4q_turnErrorDot",
+              "themeReferences": false
+            },
+            "turnErrorMessage": {
+              "mac": "IzP3Va_turnErrorMessage",
+              "windows": "LOmM4q_turnErrorMessage",
+              "themeReferences": false
+            },
+            "turnErrorRow": {
+              "mac": "IzP3Va_turnErrorRow",
+              "windows": "LOmM4q_turnErrorRow",
+              "themeReferences": false
+            },
+            "turnErrorTitle": {
+              "mac": "IzP3Va_turnErrorTitle",
+              "windows": "LOmM4q_turnErrorTitle",
+              "themeReferences": false
+            },
+            "userRow": {
+              "mac": "IzP3Va_userRow",
+              "windows": "LOmM4q_userRow",
+              "themeReferences": false
+            },
+            "userStack": {
+              "mac": "IzP3Va_userStack",
+              "windows": "LOmM4q_userStack",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/ContextBody.module.css.mjs",
+          "exports": {
+            "catalogNotice": {
+              "mac": "npkFxW_catalogNotice",
+              "windows": "w30fQq_catalogNotice",
+              "themeReferences": false
+            },
+            "entries": {
+              "mac": "npkFxW_entries",
+              "windows": "w30fQq_entries",
+              "themeReferences": false
+            },
+            "entry": {
+              "mac": "npkFxW_entry",
+              "windows": "w30fQq_entry",
+              "themeReferences": false
+            },
+            "entryDescription": {
+              "mac": "npkFxW_entryDescription",
+              "windows": "w30fQq_entryDescription",
+              "themeReferences": false
+            },
+            "entryName": {
+              "mac": "npkFxW_entryName",
+              "windows": "w30fQq_entryName",
+              "themeReferences": false
+            },
+            "field": {
+              "mac": "npkFxW_field",
+              "windows": "w30fQq_field",
+              "themeReferences": false
+            },
+            "fieldKey": {
+              "mac": "npkFxW_fieldKey",
+              "windows": "w30fQq_fieldKey",
+              "themeReferences": false
+            },
+            "fieldValue": {
+              "mac": "npkFxW_fieldValue",
+              "windows": "w30fQq_fieldValue",
+              "themeReferences": false
+            },
+            "fields": {
+              "mac": "npkFxW_fields",
+              "windows": "w30fQq_fields",
+              "themeReferences": false
+            },
+            "file": {
+              "mac": "npkFxW_file",
+              "windows": "w30fQq_file",
+              "themeReferences": false
+            },
+            "fileAction": {
+              "mac": "npkFxW_fileAction",
+              "windows": "w30fQq_fileAction",
+              "themeReferences": false
+            },
+            "filePath": {
+              "mac": "npkFxW_filePath",
+              "windows": "w30fQq_filePath",
+              "themeReferences": false
+            },
+            "files": {
+              "mac": "npkFxW_files",
+              "windows": "w30fQq_files",
+              "themeReferences": false
+            },
+            "recall": {
+              "mac": "npkFxW_recall",
+              "windows": "w30fQq_recall",
+              "themeReferences": false
+            },
+            "recallCounts": {
+              "mac": "npkFxW_recallCounts",
+              "windows": "w30fQq_recallCounts",
+              "themeReferences": false
+            },
+            "recallLabel": {
+              "mac": "npkFxW_recallLabel",
+              "windows": "w30fQq_recallLabel",
+              "themeReferences": false
+            },
+            "recalls": {
+              "mac": "npkFxW_recalls",
+              "windows": "w30fQq_recalls",
+              "themeReferences": false
+            },
+            "relaySender": {
+              "mac": "npkFxW_relaySender",
+              "windows": "w30fQq_relaySender",
+              "themeReferences": false
+            },
+            "section": {
+              "mac": "npkFxW_section",
+              "windows": "w30fQq_section",
+              "themeReferences": false
+            },
+            "sectionName": {
+              "mac": "npkFxW_sectionName",
+              "windows": "w30fQq_sectionName",
+              "themeReferences": false
+            },
+            "sectionText": {
+              "mac": "npkFxW_sectionText",
+              "windows": "w30fQq_sectionText",
+              "themeReferences": false
+            },
+            "sections": {
+              "mac": "npkFxW_sections",
+              "windows": "w30fQq_sections",
+              "themeReferences": false
+            },
+            "text": {
+              "mac": "npkFxW_text",
+              "windows": "w30fQq_text",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/ContextInjectionRow.module.css.mjs",
+          "exports": {
+            "body": {
+              "mac": "Bpi2Dq_body",
+              "windows": "iFrn8G_body",
+              "themeReferences": false
+            },
+            "chevron": {
+              "mac": "Bpi2Dq_chevron",
+              "windows": "iFrn8G_chevron",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "Bpi2Dq_root",
+              "windows": "iFrn8G_root",
+              "themeReferences": false
+            },
+            "sep": {
+              "mac": "Bpi2Dq_sep",
+              "windows": "iFrn8G_sep",
+              "themeReferences": false
+            },
+            "source": {
+              "mac": "Bpi2Dq_source",
+              "windows": "iFrn8G_source",
+              "themeReferences": false
+            },
+            "summary": {
+              "mac": "Bpi2Dq_summary",
+              "windows": "iFrn8G_summary",
+              "themeReferences": false
+            },
+            "toolChanges": {
+              "mac": "Bpi2Dq_toolChanges",
+              "windows": "iFrn8G_toolChanges",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/MessageIconActions.module.css.mjs",
+          "exports": {
+            "action": {
+              "mac": "ppByMG_action",
+              "windows": "_1KfHza_action",
+              "themeReferences": false
+            },
+            "actions": {
+              "mac": "ppByMG_actions",
+              "windows": "_1KfHza_actions",
+              "themeReferences": false
+            },
+            "endInfo": {
+              "mac": "ppByMG_endInfo",
+              "windows": "_1KfHza_endInfo",
+              "themeReferences": false
+            },
+            "timeEnd": {
+              "mac": "ppByMG_timeEnd",
+              "windows": "_1KfHza_timeEnd",
+              "themeReferences": false
+            },
+            "timeStart": {
+              "mac": "ppByMG_timeStart",
+              "windows": "_1KfHza_timeStart",
+              "themeReferences": false
+            },
+            "visuallyHidden": {
+              "mac": "ppByMG_visuallyHidden",
+              "windows": "_1KfHza_visuallyHidden",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/accessibility.module.css.mjs",
+          "exports": {
+            "visuallyHidden": {
+              "mac": "z7mQLa_visuallyHidden",
+              "windows": "BpRApG_visuallyHidden",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/ReasoningRow.module.css.mjs",
+          "exports": {
+            "leading": {
+              "mac": "HiSsxa_leading",
+              "windows": "VJlF5q_leading",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "HiSsxa_root",
+              "windows": "VJlF5q_root",
+              "themeReferences": false
+            },
+            "row": {
+              "mac": "HiSsxa_row",
+              "windows": "VJlF5q_row",
+              "themeReferences": false
+            },
+            "separator": {
+              "mac": "HiSsxa_separator",
+              "windows": "VJlF5q_separator",
+              "themeReferences": false
+            },
+            "summary": {
+              "mac": "HiSsxa_summary",
+              "windows": "VJlF5q_summary",
+              "themeReferences": false
+            },
+            "summaryText": {
+              "mac": "HiSsxa_summaryText",
+              "windows": "VJlF5q_summaryText",
+              "themeReferences": false
+            },
+            "thinkBody": {
+              "mac": "HiSsxa_thinkBody",
+              "windows": "VJlF5q_thinkBody",
+              "themeReferences": false
+            },
+            "title": {
+              "mac": "HiSsxa_title",
+              "windows": "VJlF5q_title",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/AssistantMarkdown.module.css.mjs",
+          "exports": {
+            "actions": {
+              "mac": "gKv1-q_actions",
+              "windows": "xMeOpW_actions",
+              "themeReferences": false
+            },
+            "body": {
+              "mac": "gKv1-q_body",
+              "windows": "xMeOpW_body",
+              "themeReferences": true
+            },
+            "root": {
+              "mac": "gKv1-q_root",
+              "windows": "xMeOpW_root",
+              "themeReferences": false
+            },
+            "stopped": {
+              "mac": "gKv1-q_stopped",
+              "windows": "xMeOpW_stopped",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/GenericCommandCard.module.css.mjs",
+          "exports": {
+            "body": {
+              "mac": "YS3v9W_body",
+              "windows": "EqXNNG_body",
+              "themeReferences": false
+            },
+            "leading": {
+              "mac": "YS3v9W_leading",
+              "windows": "EqXNNG_leading",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "YS3v9W_root",
+              "windows": "EqXNNG_root",
+              "themeReferences": true
+            },
+            "separator": {
+              "mac": "YS3v9W_separator",
+              "windows": "EqXNNG_separator",
+              "themeReferences": false
+            },
+            "summary": {
+              "mac": "YS3v9W_summary",
+              "windows": "EqXNNG_summary",
+              "themeReferences": false
+            },
+            "title": {
+              "mac": "YS3v9W_title",
+              "windows": "EqXNNG_title",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/TurnProcessNodeView.module.css.mjs",
+          "exports": {
+            "chevron": {
+              "mac": "_PaunW_chevron",
+              "windows": "hE4tRW_chevron",
+              "themeReferences": false
+            },
+            "durationNumber": {
+              "mac": "_PaunW_durationNumber",
+              "windows": "hE4tRW_durationNumber",
+              "themeReferences": false
+            },
+            "label": {
+              "mac": "_PaunW_label",
+              "windows": "hE4tRW_label",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "_PaunW_root",
+              "windows": "hE4tRW_root",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/TurnUsagePanel.module.css.mjs",
+          "exports": {
+            "label": {
+              "mac": "sZXytW_label",
+              "windows": "BI5uFG_label",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "sZXytW_root",
+              "windows": "BI5uFG_root",
+              "themeReferences": false
+            },
+            "trigger": {
+              "mac": "sZXytW_trigger",
+              "windows": "BI5uFG_trigger",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/stat-dialog.module.css.mjs",
+          "exports": {
+            "details": {
+              "mac": "-Fl-UW_details",
+              "windows": "xXe6ja_details",
+              "themeReferences": false
+            },
+            "panel": {
+              "mac": "-Fl-UW_panel",
+              "windows": "xXe6ja_panel",
+              "themeReferences": true
+            },
+            "reasoning": {
+              "mac": "-Fl-UW_reasoning",
+              "windows": "xXe6ja_reasoning",
+              "themeReferences": false
+            },
+            "route": {
+              "mac": "-Fl-UW_route",
+              "windows": "xXe6ja_route",
+              "themeReferences": false
+            },
+            "title": {
+              "mac": "-Fl-UW_title",
+              "windows": "xXe6ja_title",
+              "themeReferences": false
+            },
+            "titleLabel": {
+              "mac": "-Fl-UW_titleLabel",
+              "windows": "xXe6ja_titleLabel",
+              "themeReferences": false
+            },
+            "titleRule": {
+              "mac": "-Fl-UW_titleRule",
+              "windows": "xXe6ja_titleRule",
+              "themeReferences": false
+            },
+            "titleValue": {
+              "mac": "-Fl-UW_titleValue",
+              "windows": "xXe6ja_titleValue",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/TurnTailNodeView.module.css.mjs",
+          "exports": {
+            "actions": {
+              "mac": "d1vkyW_actions",
+              "windows": "cVfUIq_actions",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "d1vkyW_root",
+              "windows": "cVfUIq_root",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/TurnTriggerNodeView.module.css.mjs",
+          "exports": {
+            "body": {
+              "mac": "nqfepW_body",
+              "windows": "hSzSIW_body",
+              "themeReferences": false
+            },
+            "chevron": {
+              "mac": "nqfepW_chevron",
+              "windows": "hSzSIW_chevron",
+              "themeReferences": false
+            },
+            "content": {
+              "mac": "nqfepW_content",
+              "windows": "hSzSIW_content",
+              "themeReferences": false
+            },
+            "explanation": {
+              "mac": "nqfepW_explanation",
+              "windows": "hSzSIW_explanation",
+              "themeReferences": false
+            },
+            "header": {
+              "mac": "nqfepW_header",
+              "windows": "hSzSIW_header",
+              "themeReferences": false
+            },
+            "icon": {
+              "mac": "nqfepW_icon",
+              "windows": "hSzSIW_icon",
+              "themeReferences": false
+            },
+            "openChevron": {
+              "mac": "nqfepW_openChevron",
+              "windows": "hSzSIW_openChevron",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "nqfepW_root",
+              "windows": "hSzSIW_root",
+              "themeReferences": false
+            },
+            "time": {
+              "mac": "nqfepW_time",
+              "windows": "hSzSIW_time",
+              "themeReferences": false
+            },
+            "title": {
+              "mac": "nqfepW_title",
+              "windows": "hSzSIW_title",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/chat/StatsPills.module.css.mjs",
+          "exports": {
+            "anchor": {
+              "mac": "OpZ85W_anchor",
+              "windows": "hNGZaa_anchor",
+              "themeReferences": false
+            },
+            "label": {
+              "mac": "OpZ85W_label",
+              "windows": "hNGZaa_label",
+              "themeReferences": false
+            },
+            "pill": {
+              "mac": "OpZ85W_pill",
+              "windows": "hNGZaa_pill",
+              "themeReferences": false
+            },
+            "sep": {
+              "mac": "OpZ85W_sep",
+              "windows": "hNGZaa_sep",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-chat/src/client/settings/PreferenceRow.module.css.mjs",
+          "exports": {
+            "chevron": {
+              "mac": "_28qALa_chevron",
+              "windows": "-TO4SG_chevron",
+              "themeReferences": false
+            },
+            "desc": {
+              "mac": "_28qALa_desc",
+              "windows": "-TO4SG_desc",
+              "themeReferences": false
+            },
+            "row": {
+              "mac": "_28qALa_row",
+              "windows": "-TO4SG_row",
+              "themeReferences": false
+            },
+            "rowText": {
+              "mac": "_28qALa_rowText",
+              "windows": "-TO4SG_rowText",
+              "themeReferences": false
+            },
+            "selector": {
+              "mac": "_28qALa_selector",
+              "windows": "-TO4SG_selector",
+              "themeReferences": false
+            },
+            "title": {
+              "mac": "_28qALa_title",
+              "windows": "-TO4SG_title",
+              "themeReferences": false
+            }
+          }
+        }
+      ]
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-conversation",
+      "file": "lib/client.js",
+      "macSha256": "48d308ca86c9350986982e113bb775696719a958415f436ce7b977de1eace0b6",
+      "windowsSha256": "2c3c39fddb37df9ee1168c279259aebb7cf484651a7e978ce9baaaf24d142a60",
+      "cssModules": [
+        {
+          "path": "packages/client/ui-conversation/src/client/user-text/UserText.module.css.mjs",
+          "exports": {
+            "ellipsis": {
+              "mac": "B0oWoG_ellipsis",
+              "windows": "_2STzOG_ellipsis",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "B0oWoG_root",
+              "windows": "_2STzOG_root",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-conversation/src/client/input/editor/ReferenceChip.module.css.mjs",
+          "exports": {
+            "chip": {
+              "mac": "pO-u3q_chip",
+              "windows": "NOA9Ua_chip",
+              "themeReferences": false
+            },
+            "icon": {
+              "mac": "pO-u3q_icon",
+              "windows": "NOA9Ua_icon",
+              "themeReferences": false
+            },
+            "invalid": {
+              "mac": "pO-u3q_invalid",
+              "windows": "NOA9Ua_invalid",
+              "themeReferences": false
+            },
+            "label": {
+              "mac": "pO-u3q_label",
+              "windows": "NOA9Ua_label",
+              "themeReferences": false
+            },
+            "marker": {
+              "mac": "pO-u3q_marker",
+              "windows": "NOA9Ua_marker",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-conversation/src/client/input/editor/composer-editor.module.css.mjs",
+          "exports": {
+            "openable": {
+              "mac": "f30p-W_openable",
+              "windows": "_6XhDDa_openable",
+              "themeReferences": false
+            },
+            "reference": {
+              "mac": "f30p-W_reference",
+              "windows": "_6XhDDa_reference",
+              "themeReferences": false
+            },
+            "textRef": {
+              "mac": "f30p-W_textRef",
+              "windows": "_6XhDDa_textRef",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-conversation/src/client/queue/QueueDock.module.css.mjs",
+          "exports": {
+            "action": {
+              "mac": "_0TPaqG_action",
+              "windows": "F07MqG_action",
+              "themeReferences": false
+            },
+            "actions": {
+              "mac": "_0TPaqG_actions",
+              "windows": "F07MqG_actions",
+              "themeReferences": false
+            },
+            "attachments": {
+              "mac": "_0TPaqG_attachments",
+              "windows": "F07MqG_attachments",
+              "themeReferences": false
+            },
+            "chevron": {
+              "mac": "_0TPaqG_chevron",
+              "windows": "F07MqG_chevron",
+              "themeReferences": false
+            },
+            "count": {
+              "mac": "_0TPaqG_count",
+              "windows": "F07MqG_count",
+              "themeReferences": false
+            },
+            "dock": {
+              "mac": "_0TPaqG_dock",
+              "windows": "F07MqG_dock",
+              "themeReferences": false
+            },
+            "file": {
+              "mac": "_0TPaqG_file",
+              "windows": "F07MqG_file",
+              "themeReferences": false
+            },
+            "fileIcon": {
+              "mac": "_0TPaqG_fileIcon",
+              "windows": "F07MqG_fileIcon",
+              "themeReferences": false
+            },
+            "fileName": {
+              "mac": "_0TPaqG_fileName",
+              "windows": "F07MqG_fileName",
+              "themeReferences": false
+            },
+            "fileSize": {
+              "mac": "_0TPaqG_fileSize",
+              "windows": "F07MqG_fileSize",
+              "themeReferences": false
+            },
+            "header": {
+              "mac": "_0TPaqG_header",
+              "windows": "F07MqG_header",
+              "themeReferences": false
+            },
+            "lead": {
+              "mac": "_0TPaqG_lead",
+              "windows": "F07MqG_lead",
+              "themeReferences": false
+            },
+            "list": {
+              "mac": "_0TPaqG_list",
+              "windows": "F07MqG_list",
+              "themeReferences": false
+            },
+            "panel": {
+              "mac": "_0TPaqG_panel",
+              "windows": "F07MqG_panel",
+              "themeReferences": true
+            },
+            "pendingRow": {
+              "mac": "_0TPaqG_pendingRow",
+              "windows": "F07MqG_pendingRow",
+              "themeReferences": false
+            },
+            "preview": {
+              "mac": "_0TPaqG_preview",
+              "windows": "F07MqG_preview",
+              "themeReferences": false
+            },
+            "row": {
+              "mac": "_0TPaqG_row",
+              "windows": "F07MqG_row",
+              "themeReferences": false
+            },
+            "status": {
+              "mac": "_0TPaqG_status",
+              "windows": "F07MqG_status",
+              "themeReferences": false
+            },
+            "thumb": {
+              "mac": "_0TPaqG_thumb",
+              "windows": "F07MqG_thumb",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-conversation/src/client/settings/EnterBehaviorRow.module.css.mjs",
+          "exports": {
+            "chevron": {
+              "mac": "WW8u-a_chevron",
+              "windows": "V68kMG_chevron",
+              "themeReferences": false
+            },
+            "desc": {
+              "mac": "WW8u-a_desc",
+              "windows": "V68kMG_desc",
+              "themeReferences": false
+            },
+            "row": {
+              "mac": "WW8u-a_row",
+              "windows": "V68kMG_row",
+              "themeReferences": false
+            },
+            "rowText": {
+              "mac": "WW8u-a_rowText",
+              "windows": "V68kMG_rowText",
+              "themeReferences": false
+            },
+            "selector": {
+              "mac": "WW8u-a_selector",
+              "windows": "V68kMG_selector",
+              "themeReferences": false
+            },
+            "title": {
+              "mac": "WW8u-a_title",
+              "windows": "V68kMG_title",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-conversation/src/client/skeleton/ConversationRoot.module.css.mjs",
+          "exports": {
+            "body": {
+              "mac": "ST7X_W_body",
+              "windows": "an3WzG_body",
+              "themeReferences": false
+            },
+            "composerHero": {
+              "mac": "ST7X_W_composerHero",
+              "windows": "an3WzG_composerHero",
+              "themeReferences": false
+            },
+            "composerSeat": {
+              "mac": "ST7X_W_composerSeat",
+              "windows": "an3WzG_composerSeat",
+              "themeReferences": true
+            },
+            "composerStack": {
+              "mac": "ST7X_W_composerStack",
+              "windows": "an3WzG_composerStack",
+              "themeReferences": true
+            },
+            "crumb": {
+              "mac": "ST7X_W_crumb",
+              "windows": "an3WzG_crumb",
+              "themeReferences": false
+            },
+            "crumbCurrent": {
+              "mac": "ST7X_W_crumbCurrent",
+              "windows": "an3WzG_crumbCurrent",
+              "themeReferences": false
+            },
+            "crumbSeg": {
+              "mac": "ST7X_W_crumbSeg",
+              "windows": "an3WzG_crumbSeg",
+              "themeReferences": false
+            },
+            "crumbSep": {
+              "mac": "ST7X_W_crumbSep",
+              "windows": "an3WzG_crumbSep",
+              "themeReferences": false
+            },
+            "crumbs": {
+              "mac": "ST7X_W_crumbs",
+              "windows": "an3WzG_crumbs",
+              "themeReferences": false
+            },
+            "embeddedBody": {
+              "mac": "ST7X_W_embeddedBody",
+              "windows": "an3WzG_embeddedBody",
+              "themeReferences": true
+            },
+            "header": {
+              "mac": "ST7X_W_header",
+              "windows": "an3WzG_header",
+              "themeReferences": true
+            },
+            "headerActions": {
+              "mac": "ST7X_W_headerActions",
+              "windows": "an3WzG_headerActions",
+              "themeReferences": false
+            },
+            "headerBlank": {
+              "mac": "ST7X_W_headerBlank",
+              "windows": "an3WzG_headerBlank",
+              "themeReferences": false
+            },
+            "headerCorner": {
+              "mac": "ST7X_W_headerCorner",
+              "windows": "an3WzG_headerCorner",
+              "themeReferences": false
+            },
+            "headerLeading": {
+              "mac": "ST7X_W_headerLeading",
+              "windows": "an3WzG_headerLeading",
+              "themeReferences": false
+            },
+            "headerUtilities": {
+              "mac": "ST7X_W_headerUtilities",
+              "windows": "an3WzG_headerUtilities",
+              "themeReferences": false
+            },
+            "heroOptions": {
+              "mac": "ST7X_W_heroOptions",
+              "windows": "an3WzG_heroOptions",
+              "themeReferences": false
+            },
+            "heroWorkspaceRow": {
+              "mac": "ST7X_W_heroWorkspaceRow",
+              "windows": "an3WzG_heroWorkspaceRow",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "ST7X_W_root",
+              "windows": "an3WzG_root",
+              "themeReferences": true
+            },
+            "scrollBody": {
+              "mac": "ST7X_W_scrollBody",
+              "windows": "an3WzG_scrollBody",
+              "themeReferences": false
+            },
+            "tab": {
+              "mac": "ST7X_W_tab",
+              "windows": "an3WzG_tab",
+              "themeReferences": true
+            },
+            "tabActive": {
+              "mac": "ST7X_W_tabActive",
+              "windows": "an3WzG_tabActive",
+              "themeReferences": true
+            },
+            "tabs": {
+              "mac": "ST7X_W_tabs",
+              "windows": "an3WzG_tabs",
+              "themeReferences": false
+            },
+            "titleCluster": {
+              "mac": "ST7X_W_titleCluster",
+              "windows": "an3WzG_titleCluster",
+              "themeReferences": false
+            },
+            "titleRow": {
+              "mac": "ST7X_W_titleRow",
+              "windows": "an3WzG_titleRow",
+              "themeReferences": false
+            },
+            "viewArea": {
+              "mac": "ST7X_W_viewArea",
+              "windows": "an3WzG_viewArea",
+              "themeReferences": false
+            },
+            "widthHandle": {
+              "mac": "ST7X_W_widthHandle",
+              "windows": "an3WzG_widthHandle",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-conversation/src/client/skeleton/HeroShell.module.css.mjs",
+          "exports": {
+            "body": {
+              "mac": "bocITq_body",
+              "windows": "WOwLGG_body",
+              "themeReferences": false
+            },
+            "chevron": {
+              "mac": "bocITq_chevron",
+              "windows": "WOwLGG_chevron",
+              "themeReferences": false
+            },
+            "fish": {
+              "mac": "bocITq_fish",
+              "windows": "WOwLGG_fish",
+              "themeReferences": false
+            },
+            "fishHitbox": {
+              "mac": "bocITq_fishHitbox",
+              "windows": "WOwLGG_fishHitbox",
+              "themeReferences": false
+            },
+            "folder": {
+              "mac": "bocITq_folder",
+              "windows": "WOwLGG_folder",
+              "themeReferences": false
+            },
+            "headline": {
+              "mac": "bocITq_headline",
+              "windows": "WOwLGG_headline",
+              "themeReferences": false
+            },
+            "hero-fish-swim": {
+              "mac": "bocITq_hero-fish-swim",
+              "windows": "WOwLGG_hero-fish-swim",
+              "themeReferences": false
+            },
+            "modalAction": {
+              "mac": "bocITq_modalAction",
+              "windows": "WOwLGG_modalAction",
+              "themeReferences": false
+            },
+            "modalError": {
+              "mac": "bocITq_modalError",
+              "windows": "WOwLGG_modalError",
+              "themeReferences": false
+            },
+            "modalInput": {
+              "mac": "bocITq_modalInput",
+              "windows": "WOwLGG_modalInput",
+              "themeReferences": false
+            },
+            "previewBadge": {
+              "mac": "bocITq_previewBadge",
+              "windows": "WOwLGG_previewBadge",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "bocITq_root",
+              "windows": "WOwLGG_root",
+              "themeReferences": false
+            },
+            "stack": {
+              "mac": "bocITq_stack",
+              "windows": "WOwLGG_stack",
+              "themeReferences": false
+            },
+            "titleGroup": {
+              "mac": "bocITq_titleGroup",
+              "windows": "WOwLGG_titleGroup",
+              "themeReferences": false
+            },
+            "workspace": {
+              "mac": "bocITq_workspace",
+              "windows": "WOwLGG_workspace",
+              "themeReferences": false
+            },
+            "workspaceLabel": {
+              "mac": "bocITq_workspaceLabel",
+              "windows": "WOwLGG_workspaceLabel",
+              "themeReferences": false
+            },
+            "workspaceRow": {
+              "mac": "bocITq_workspaceRow",
+              "windows": "WOwLGG_workspaceRow",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-conversation/src/client/skeleton/ContextMeter.module.css.mjs",
+          "exports": {
+            "bar": {
+              "mac": "y0jqnG_bar",
+              "windows": "A6Bq1a_bar",
+              "themeReferences": false
+            },
+            "colorMessages": {
+              "mac": "y0jqnG_colorMessages",
+              "windows": "A6Bq1a_colorMessages",
+              "themeReferences": false
+            },
+            "colorSystem": {
+              "mac": "y0jqnG_colorSystem",
+              "windows": "A6Bq1a_colorSystem",
+              "themeReferences": false
+            },
+            "colorTools": {
+              "mac": "y0jqnG_colorTools",
+              "windows": "A6Bq1a_colorTools",
+              "themeReferences": false
+            },
+            "figures": {
+              "mac": "y0jqnG_figures",
+              "windows": "A6Bq1a_figures",
+              "themeReferences": false
+            },
+            "fill": {
+              "mac": "y0jqnG_fill",
+              "windows": "A6Bq1a_fill",
+              "themeReferences": false
+            },
+            "header": {
+              "mac": "y0jqnG_header",
+              "windows": "A6Bq1a_header",
+              "themeReferences": false
+            },
+            "headline": {
+              "mac": "y0jqnG_headline",
+              "windows": "A6Bq1a_headline",
+              "themeReferences": false
+            },
+            "panel": {
+              "mac": "y0jqnG_panel",
+              "windows": "A6Bq1a_panel",
+              "themeReferences": true
+            },
+            "percent": {
+              "mac": "y0jqnG_percent",
+              "windows": "A6Bq1a_percent",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "y0jqnG_root",
+              "windows": "A6Bq1a_root",
+              "themeReferences": false
+            },
+            "row": {
+              "mac": "y0jqnG_row",
+              "windows": "A6Bq1a_row",
+              "themeReferences": false
+            },
+            "rows": {
+              "mac": "y0jqnG_rows",
+              "windows": "A6Bq1a_rows",
+              "themeReferences": false
+            },
+            "segment": {
+              "mac": "y0jqnG_segment",
+              "windows": "A6Bq1a_segment",
+              "themeReferences": false
+            },
+            "swatch": {
+              "mac": "y0jqnG_swatch",
+              "windows": "A6Bq1a_swatch",
+              "themeReferences": false
+            },
+            "track": {
+              "mac": "y0jqnG_track",
+              "windows": "A6Bq1a_track",
+              "themeReferences": false
+            },
+            "trigger": {
+              "mac": "y0jqnG_trigger",
+              "windows": "A6Bq1a_trigger",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-conversation/src/client/skeleton/InputBar.module.css.mjs",
+          "exports": {
+            "accessory": {
+              "mac": "yhfFVG_accessory",
+              "windows": "GRgSLq_accessory",
+              "themeReferences": false
+            },
+            "activity": {
+              "mac": "yhfFVG_activity",
+              "windows": "GRgSLq_activity",
+              "themeReferences": false
+            },
+            "activityExpanded": {
+              "mac": "yhfFVG_activityExpanded",
+              "windows": "GRgSLq_activityExpanded",
+              "themeReferences": false
+            },
+            "add": {
+              "mac": "yhfFVG_add",
+              "windows": "GRgSLq_add",
+              "themeReferences": true
+            },
+            "card": {
+              "mac": "yhfFVG_card",
+              "windows": "GRgSLq_card",
+              "themeReferences": true
+            },
+            "cardWorkspaceTrigger": {
+              "mac": "yhfFVG_cardWorkspaceTrigger",
+              "windows": "GRgSLq_cardWorkspaceTrigger",
+              "themeReferences": false
+            },
+            "dock": {
+              "mac": "yhfFVG_dock",
+              "windows": "GRgSLq_dock",
+              "themeReferences": false
+            },
+            "grow": {
+              "mac": "yhfFVG_grow",
+              "windows": "GRgSLq_grow",
+              "themeReferences": false
+            },
+            "hero": {
+              "mac": "yhfFVG_hero",
+              "windows": "GRgSLq_hero",
+              "themeReferences": false
+            },
+            "input": {
+              "mac": "yhfFVG_input",
+              "windows": "GRgSLq_input",
+              "themeReferences": true
+            },
+            "input-pending": {
+              "mac": "yhfFVG_input-pending",
+              "windows": "GRgSLq_input-pending",
+              "themeReferences": false
+            },
+            "inputDisabled": {
+              "mac": "yhfFVG_inputDisabled",
+              "windows": "GRgSLq_inputDisabled",
+              "themeReferences": false
+            },
+            "modes": {
+              "mac": "yhfFVG_modes",
+              "windows": "GRgSLq_modes",
+              "themeReferences": false
+            },
+            "notice": {
+              "mac": "yhfFVG_notice",
+              "windows": "GRgSLq_notice",
+              "themeReferences": false
+            },
+            "overlayAnchor": {
+              "mac": "yhfFVG_overlayAnchor",
+              "windows": "GRgSLq_overlayAnchor",
+              "themeReferences": false
+            },
+            "pending": {
+              "mac": "yhfFVG_pending",
+              "windows": "GRgSLq_pending",
+              "themeReferences": false
+            },
+            "placeholder": {
+              "mac": "yhfFVG_placeholder",
+              "windows": "GRgSLq_placeholder",
+              "themeReferences": true
+            },
+            "primary": {
+              "mac": "yhfFVG_primary",
+              "windows": "GRgSLq_primary",
+              "themeReferences": false
+            },
+            "retry": {
+              "mac": "yhfFVG_retry",
+              "windows": "GRgSLq_retry",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "yhfFVG_root",
+              "windows": "GRgSLq_root",
+              "themeReferences": false
+            },
+            "row": {
+              "mac": "yhfFVG_row",
+              "windows": "GRgSLq_row",
+              "themeReferences": false
+            },
+            "scroll": {
+              "mac": "yhfFVG_scroll",
+              "windows": "GRgSLq_scroll",
+              "themeReferences": false
+            },
+            "select": {
+              "mac": "yhfFVG_select",
+              "windows": "GRgSLq_select",
+              "themeReferences": true
+            },
+            "standardControls": {
+              "mac": "yhfFVG_standardControls",
+              "windows": "GRgSLq_standardControls",
+              "themeReferences": false
+            },
+            "tools": {
+              "mac": "yhfFVG_tools",
+              "windows": "GRgSLq_tools",
+              "themeReferences": false
+            },
+            "trailing": {
+              "mac": "yhfFVG_trailing",
+              "windows": "GRgSLq_trailing",
+              "themeReferences": false
+            },
+            "trailingActive": {
+              "mac": "yhfFVG_trailingActive",
+              "windows": "GRgSLq_trailingActive",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-conversation/src/client/skeleton/TodoPanel.module.css.mjs",
+          "exports": {
+            "body": {
+              "mac": "w9rwOa_body",
+              "windows": "DXuOLW_body",
+              "themeReferences": false
+            },
+            "chevron": {
+              "mac": "w9rwOa_chevron",
+              "windows": "DXuOLW_chevron",
+              "themeReferences": false
+            },
+            "content": {
+              "mac": "w9rwOa_content",
+              "windows": "DXuOLW_content",
+              "themeReferences": false
+            },
+            "glyph": {
+              "mac": "w9rwOa_glyph",
+              "windows": "DXuOLW_glyph",
+              "themeReferences": false
+            },
+            "header": {
+              "mac": "w9rwOa_header",
+              "windows": "DXuOLW_header",
+              "themeReferences": false
+            },
+            "item": {
+              "mac": "w9rwOa_item",
+              "windows": "DXuOLW_item",
+              "themeReferences": false
+            },
+            "lead": {
+              "mac": "w9rwOa_lead",
+              "windows": "DXuOLW_lead",
+              "themeReferences": false
+            },
+            "list": {
+              "mac": "w9rwOa_list",
+              "windows": "DXuOLW_list",
+              "themeReferences": false
+            },
+            "progress": {
+              "mac": "w9rwOa_progress",
+              "windows": "DXuOLW_progress",
+              "themeReferences": false
+            },
+            "root": {
+              "mac": "w9rwOa_root",
+              "windows": "DXuOLW_root",
+              "themeReferences": true
+            },
+            "title": {
+              "mac": "w9rwOa_title",
+              "windows": "DXuOLW_title",
+              "themeReferences": false
+            }
+          }
+        }
+      ]
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-layout",
+      "file": "lib/client.js",
+      "macSha256": "355628eb82b799fb19b7f85b7ca49c538eee309f399733d719257643286c3c56",
+      "windowsSha256": "814486863a32f73e7184a66312ec2d7f5884766000af21f60891a0c01b592630",
+      "cssModules": [
+        {
+          "path": "packages/client/ui-layout/src/client/AppFrame.module.css.mjs",
+          "exports": {
+            "bottomRow": {
+              "mac": "_6Qf49G_bottomRow",
+              "windows": "mP3x-q_bottomRow",
+              "themeReferences": false
+            },
+            "centerCol": {
+              "mac": "_6Qf49G_centerCol",
+              "windows": "mP3x-q_centerCol",
+              "themeReferences": true
+            },
+            "frame": {
+              "mac": "_6Qf49G_frame",
+              "windows": "mP3x-q_frame",
+              "themeReferences": true
+            },
+            "handle": {
+              "mac": "_6Qf49G_handle",
+              "windows": "mP3x-q_handle",
+              "themeReferences": false
+            },
+            "leadingSeat": {
+              "mac": "_6Qf49G_leadingSeat",
+              "windows": "mP3x-q_leadingSeat",
+              "themeReferences": false
+            },
+            "overlayLayer": {
+              "mac": "_6Qf49G_overlayLayer",
+              "windows": "mP3x-q_overlayLayer",
+              "themeReferences": false
+            },
+            "rightbarCol": {
+              "mac": "_6Qf49G_rightbarCol",
+              "windows": "mP3x-q_rightbarCol",
+              "themeReferences": true
+            },
+            "sidebarCol": {
+              "mac": "_6Qf49G_sidebarCol",
+              "windows": "mP3x-q_sidebarCol",
+              "themeReferences": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-sidebar-right",
+      "file": "lib/client.js",
+      "macSha256": "66c175e34715db2a4c776081d08fbe5c004d8d7fe9719f044cc92aba7bbbe15f",
+      "windowsSha256": "59fb20072c4287307a17238faf25c8a593b02d718897a5542b958c922f0df9a7",
+      "cssModules": [
+        {
+          "path": "packages/client/ui-sidebar-right/src/client/tabs/guide/GuideBody.module.css.mjs",
+          "exports": {
+            "entry": {
+              "mac": "-w4Aka_entry",
+              "windows": "p2k40q_entry",
+              "themeReferences": false
+            },
+            "entryCell": {
+              "mac": "-w4Aka_entryCell",
+              "windows": "p2k40q_entryCell",
+              "themeReferences": false
+            },
+            "entryDescription": {
+              "mac": "-w4Aka_entryDescription",
+              "windows": "p2k40q_entryDescription",
+              "themeReferences": false
+            },
+            "entryIcon": {
+              "mac": "-w4Aka_entryIcon",
+              "windows": "p2k40q_entryIcon",
+              "themeReferences": false
+            },
+            "entryText": {
+              "mac": "-w4Aka_entryText",
+              "windows": "p2k40q_entryText",
+              "themeReferences": false
+            },
+            "entryTitle": {
+              "mac": "-w4Aka_entryTitle",
+              "windows": "p2k40q_entryTitle",
+              "themeReferences": false
+            },
+            "guide": {
+              "mac": "-w4Aka_guide",
+              "windows": "p2k40q_guide",
+              "themeReferences": false
+            },
+            "hero": {
+              "mac": "-w4Aka_hero",
+              "windows": "p2k40q_hero",
+              "themeReferences": false
+            },
+            "placeholderInk": {
+              "mac": "-w4Aka_placeholderInk",
+              "windows": "p2k40q_placeholderInk",
+              "themeReferences": false
+            },
+            "titleIcon": {
+              "mac": "-w4Aka_titleIcon",
+              "windows": "p2k40q_titleIcon",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-sidebar-right/src/client/shell/ExpandButton.module.css.mjs",
+          "exports": {
+            "button": {
+              "mac": "wmirxG_button",
+              "windows": "RwosdG_button",
+              "themeReferences": true
+            },
+            "icon": {
+              "mac": "wmirxG_icon",
+              "windows": "RwosdG_icon",
+              "themeReferences": false
+            }
+          }
+        },
+        {
+          "path": "packages/client/ui-sidebar-right/src/client/shell/SidebarRight.module.css.mjs",
+          "exports": {
+            "collapseGlyph": {
+              "mac": "irMxjq_collapseGlyph",
+              "windows": "acoR2W_collapseGlyph",
+              "themeReferences": false
+            },
+            "iconButton": {
+              "mac": "irMxjq_iconButton",
+              "windows": "acoR2W_iconButton",
+              "themeReferences": true
+            },
+            "panel": {
+              "mac": "irMxjq_panel",
+              "windows": "acoR2W_panel",
+              "themeReferences": true
+            },
+            "panelBody": {
+              "mac": "irMxjq_panelBody",
+              "windows": "acoR2W_panelBody",
+              "themeReferences": false
+            },
+            "session": {
+              "mac": "irMxjq_session",
+              "windows": "acoR2W_session",
+              "themeReferences": false
+            },
+            "tabBody": {
+              "mac": "irMxjq_tabBody",
+              "windows": "acoR2W_tabBody",
+              "themeReferences": true
+            },
+            "tabTitle": {
+              "mac": "irMxjq_tabTitle",
+              "windows": "acoR2W_tabTitle",
+              "themeReferences": false
+            },
+            "unavailable": {
+              "mac": "irMxjq_unavailable",
+              "windows": "acoR2W_unavailable",
+              "themeReferences": false
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "sourceThemeBaseline": "macOS arm64 0.2.1-rc.2 canonical theme selectors",
+  "migrationNotes": [
+    {
+      "package": "@deepseek-ai/dsh-client-ui-chat",
+      "path": "packages/client/ui-chat/src/client/chat/MessageItem.module.css.mjs",
+      "key": "bubble",
+      "source": "IzP3Va_bubble",
+      "themeReferences": true,
+      "reason": "User bubble moved to primitives.UserMessageBubble; use stable [data-message-bubble]. Shared theme adaptation is owned by the parent task."
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-conversation",
+      "path": "packages/client/ui-conversation/src/client/skeleton/ConversationRoot.module.css.mjs",
+      "key": "crumbSubagent",
+      "source": "ST7X_W_crumbSubagent",
+      "themeReferences": false,
+      "reason": "Export removed upstream; canonical theme did not reference it."
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-conversation",
+      "path": "packages/client/ui-conversation/src/client/skeleton/ConversationRoot.module.css.mjs",
+      "key": "headerSessionless",
+      "source": "ST7X_W_headerSessionless",
+      "themeReferences": false,
+      "reason": "Export removed upstream; canonical theme did not reference it."
+    }
+  ]
+}

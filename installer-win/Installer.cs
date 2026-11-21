@@ -14,8 +14,8 @@ using Microsoft.Win32;
 
 [assembly: System.Reflection.AssemblyTitle("AIYOUDSH 增强安装器")]
 [assembly: System.Reflection.AssemblyProduct("AIYOUDSH")]
-[assembly: System.Reflection.AssemblyVersion("0.8.6.0")]
-[assembly: System.Reflection.AssemblyFileVersion("0.8.6.0")]
+[assembly: System.Reflection.AssemblyVersion("0.8.7.0")]
+[assembly: System.Reflection.AssemblyFileVersion("0.8.7.0")]
 
 namespace AIYOUDSH.Installer
 {
@@ -155,7 +155,7 @@ namespace AIYOUDSH.Installer
             return values == null || values.Count > 0;
         }
 
-        internal static Outcome Failure(string action, string code)
+        internal static Outcome Failure(string action, string code, Dictionary<string, object> error = null)
         {
             string title = action == "uninstall" ? "卸载未完成" : "安装未完成";
             string detail;
@@ -163,7 +163,15 @@ namespace AIYOUDSH.Installer
                 case "APP_MISSING": case "APP_NOT_FOUND": case "ENOENT":
                     detail = "未找到所需文件。请确认官方应用已经安装，并重新下载完整增强安装包。"; break;
                 case "APP_VERSION": case "APP_HASH": case "APP_COMPATIBILITY": case "APP_FORMAT": case "APP_PLATFORM":
-                    detail = "当前官方应用与本安装包支持的版本不一致。请使用对应版本的增强安装包。"; break;
+                    detail = "当前官方应用与本安装包支持的版本不一致。请使用对应版本的增强安装包。";
+                    object installed, supported;
+                    if (code == "APP_VERSION" && error != null &&
+                        error.TryGetValue("installedVersion", out installed) && error.TryGetValue("supportedVersion", out supported) &&
+                        installed is string && supported is string &&
+                        System.Text.RegularExpressions.Regex.IsMatch((string)installed, @"\A[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.-]+)?\z") &&
+                        System.Text.RegularExpressions.Regex.IsMatch((string)supported, @"\A[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.-]+)?\z"))
+                        detail += "\n当前 DeepSeek：" + (string)installed + "\n此安装包支持：" + (string)supported;
+                    break;
                 case "PROFILE_FORMAT":
                     detail = "请先正常打开官方 DeepSeek Harness 一次，完成初始化后再安装增强。"; break;
                 case "INSTALLER_BUSY":
@@ -188,7 +196,7 @@ namespace AIYOUDSH.Installer
             if (output.ExitCode != 0) {
                 var error = Parse(output.Error);
                 object code;
-                return Failure(action, error != null && error.TryGetValue("code", out code) ? code as string : null);
+                return Failure(action, error != null && error.TryGetValue("code", out code) ? code as string : null, error);
             }
             object returnedAction, ok;
             if (output.Truncated || data == null || !data.TryGetValue("action", out returnedAction) ||
@@ -505,6 +513,12 @@ namespace AIYOUDSH.Installer
                 string sensitive = "do-not-display-private-value";
                 var failed = Results.Interpret("install", new CapturedOutput { ExitCode = 1, Error = "{\"code\":\"PROFILE_FORMAT\",\"message\":\"" + sensitive + "\"}" });
                 Assert(!failed.Succeeded && !failed.Detail.Contains(sensitive) && failed.Detail.Contains("初始化")); checks++;
+                var mismatch = Results.Failure("install", "APP_VERSION", new Dictionary<string, object> {
+                    { "installedVersion", "0.2.2-rc.5" }, { "supportedVersion", "0.2.1-rc.2" } });
+                Assert(!mismatch.Succeeded && mismatch.Detail.Contains("0.2.2-rc.5") && mismatch.Detail.Contains("0.2.1-rc.2")); checks++;
+                var invalidVersion = Results.Failure("install", "APP_VERSION", new Dictionary<string, object> {
+                    { "installedVersion", sensitive }, { "supportedVersion", "0.2.1-rc.2" } });
+                Assert(!invalidVersion.Detail.Contains(sensitive)); checks++;
                 string root = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "AIYOUDSH 中文目录"));
                 var args = Commands.InstallerArguments(root, "install", Path.Combine(root, "DeepSeek Harness.exe"));
                 Assert(args.Length == 6 && args[0] == Path.Combine(root, "installer", "installer.mjs") && args[3] == Path.Combine(root, "runtime") && args[5] == root); checks++;

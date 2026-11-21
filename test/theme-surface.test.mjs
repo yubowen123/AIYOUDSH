@@ -65,7 +65,7 @@ test('compiled materials cover native surfaces, with paired bubble geometry and 
   assert.match(css,new RegExp(`html\\[${attr}="${theme.id}"\\]\\{color-scheme:${theme.mode};`));
   assert.doesNotMatch(css,/undefined|NaN|@keyframes/u);
   assert.ok(css.includes(`url("/aiyoucodex-dsh/theme/media?id=${theme.id}")`));
-  const shared=/(:is\(\.IzP3Va_bubble,\.gKv1-q_body:has\([^\n]+?)\{([^}]+)\}/u.exec(css)?.[2];
+  const shared=/(:is\(\.IzP3Va_bubble,\[data-message-bubble\],\.gKv1-q_body:has\([^\n]+?)\{([^}]+)\}/u.exec(css)?.[2];
   assert.ok(shared,theme.id+' shared bubble rule is missing');
   for(const property of ['padding:','border:','border-radius:','box-shadow:'])assert.ok(shared.includes(property));
   assert.ok(!/(?:^|;)(?:width|max-width|height|overflow|position|opacity):/u.test(shared));

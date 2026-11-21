@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "platform": "win32-x64",
+  "os": "win32",
+  "arch": "x64",
+  "appVersion": "0.2.2-rc.5",
+  "buildCommit": "3f85d888b1297107937d9bd5b853f7e733e179a4",
+  "appAsarSha256": "5ec8acd9e72b93b6680c953c1be44a729fd3a5170e472e8025690a1713d20f69",
+  "compatibility": [
+    {
+      "package": "@deepseek-ai/dsh-client-ui-sidebar",
+      "file": "package.json",
+      "sha256": "aa736e268661ba5f41395ccc3da675fd07807222abd33b76d0ed49ccdd93493e"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-sidebar",
+      "file": "lib/client.js",
+      "sha256": "192051acc3018a89ee3bc1f3817d7f492a89e5a98baa23e86bdd23c3a0fdaa05"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-sidebar",
+      "file": "lib/index.js",
+      "sha256": "be323c589cda4dbb7714df563ebb66f581a3d37ed2ab6859fed85fcebf970aea"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-workspace",
+      "file": "package.json",
+      "sha256": "1977e425bda8a8e02b7f9386a7eff368fc68474dcd328c6e87054d0bb7f9bc04"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-workspace",
+      "file": "lib/client.js",
+      "sha256": "9695de66609c6fbe0857da1d1b4b7456a543b962bf1c19ab210ec5ef688cf9c7"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-workspace",
+      "file": "lib/index.js",
+      "sha256": "e6cdc4b725585354102a5c4598c9d8c79d6abac62d7979c09919821716370438"
+    }
+  ],
+  "sourceUrl": "https://download.deepseek.com/dsh-desk/bin/win-x64/deepseek-harness-0.2.2-rc.5-win-x64.exe",
+  "discoveryUrl": "https://www.deepseek.com/en/harness/",
+  "updateFeedUrl": "https://download.deepseek.com/dsh-desk/feeds/win-x64/nightly.yml",
+  "archiveSha256": "013e28bc8c714749331308386d814108336851914d243aa6bcfd14de1ab30923",
+  "archiveSize": 299593552,
+  "archiveSha512": "wWySRp7Hk5gcH324jBxAc7KV0mniHzQDofyQexOJMIAWXBkgHTsRCr3IrdwX1XO8OIhDZsLYmve4mLxskikYIg==",
+  "layout": {
+    "appAsar": "resources/app.asar",
+    "appAsarUnpacked": "resources/app.asar.unpacked",
+    "modules": "dsh/node_modules",
+    "desktopProfile": "${DSH_HOME}/profiles/desktop",
+    "dshHomeDefault": "${USERPROFILE}/.dsh"
+  },
+  "executable": "DeepSeek Harness.exe",
+  "embeddedRuntime": {
+    "electron": "44.7.0",
+    "node": "24.21.0",
+    "runAsNode": true,
+    "environment": {
+      "ELECTRON_RUN_AS_NODE": "1"
+    },
+    "verification": "Windows AMD64 PE strings and Electron fuse wire inspected read-only on macOS; Windows executable not run. Native Windows CI must verify the runtime by execution."
+  },
+  "selectorMapping": "platforms/builds/win32-x64/0.2.2-rc.5-selectors.json",
+  "compatibilityEvidence": {
+    "replacements": "Six compatibility hashes are from the exact official Windows ASAR. Sidebar/workspace package.json and host lib/index.js are byte-identical to the latest macOS arm64 host; client bundle normalization evidence is included below. Changes from 0.2.1 require the shared adapter updates.",
+    "clientNormalization": [
+      {
+        "package": "@deepseek-ai/dsh-client-ui-sidebar",
+        "file": "lib/client.js",
+        "sameAfterScopedClassNormalization": true,
+        "windowsScopedClassCount": 49,
+        "macScopedClassCount": 49,
+        "windowsNormalizedSha256": "d0b26c2e4b5dd29e0077d520f9600a04259113e9ce14a6e2f37a0bacd8ce7ce3",
+        "macNormalizedSha256": "d0b26c2e4b5dd29e0077d520f9600a04259113e9ce14a6e2f37a0bacd8ce7ce3",
+        "normalization": "Replace each CSS export value everywhere in the same bundle with a deterministic module-and-export-key token. All other bytes retained."
+      },
+      {
+        "package": "@deepseek-ai/dsh-client-ui-workspace",
+        "file": "lib/client.js",
+        "sameAfterScopedClassNormalization": true,
+        "windowsScopedClassCount": 91,
+        "macScopedClassCount": 91,
+        "windowsNormalizedSha256": "654fa282a0d76a86f2c519ff2f2c4db6862a36ef0ebc7369ceab6fc83058ccba",
+        "macNormalizedSha256": "654fa282a0d76a86f2c519ff2f2c4db6862a36ef0ebc7369ceab6fc83058ccba",
+        "normalization": "Replace each CSS export value everywhere in the same bundle with a deterministic module-and-export-key token. All other bytes retained."
+      }
+    ],
+    "nativeShell": "Untouched official chat, conversation, layout and sidebar-right modules use the versioned Windows selector map. Custom sidebar/workspace retain their bundled classes. MessageItem.bubble is migrated in the shared theme to [data-message-bubble].",
+    "sdk": [
+      {
+        "file": "dsh/node_modules/@deepseek-ai/dsh-web-frontend/dist/assets/index-Ciz7DZxv.js",
+        "windowsSha256": "65411dabad4de33466b12643cf30376d3d41ea1b7ce10ce329e97c89992d308b",
+        "macSha256": "65411dabad4de33466b12643cf30376d3d41ea1b7ce10ce329e97c89992d308b",
+        "size": 1093870,
+        "identicalToLatestMac": true,
+        "containsModuleLoader": true,
+        "containsPrimitivesSeed": true,
+        "containsStoreSeed": true,
+        "containsSlotsSeed": true
+      }
+    ],
+    "desktopSmokeVerified": false
+  },
+  "officialArchive": {
+    "sourceUrl": "https://download.deepseek.com/dsh-desk/bin/win-x64/deepseek-harness-0.2.2-rc.5-win-x64.exe",
+    "feedUrl": "https://download.deepseek.com/dsh-desk/feeds/win-x64/nightly.yml",
+    "discoveryUrl": "https://www.deepseek.com/en/harness/",
+    "releaseDate": "2026-11-18T11:35:49.720Z",
+    "size": 299593552,
+    "sha256": "013e28bc8c714749331308386d814108336851914d243aa6bcfd14de1ab30923",
+    "sha512": "wWySRp7Hk5gcH324jBxAc7KV0mniHzQDofyQexOJMIAWXBkgHTsRCr3IrdwX1XO8OIhDZsLYmve4mLxskikYIg==",
+    "officialSha512Verified": true,
+    "retrievalDate": "2026-11-21",
+    "extraction": "7zz extracted NSIS $PLUGINSDIR/app-64.7z, then resources/app.asar and DeepSeek Harness.exe; downloaded executables were never run."
+  },
+  "executableEvidence": {
+    "sha256": "96062a66a78baa8a4e8ddbf16f21057f9719043c37c8de8c05d04fa062d3029a",
+    "size": 246341104,
+    "peMachine": "0x8664",
+    "architecture": "x64",
+    "installerPeMachine": "0x014c (NSIS x86 launcher)",
+    "fuseWire": {
+      "sentinelOffset": 199416024,
+      "version": 1,
+      "length": 9,
+      "runAsNodeByte": 49,
+      "runAsNodeEnabled": true
+    }
+  }
+}

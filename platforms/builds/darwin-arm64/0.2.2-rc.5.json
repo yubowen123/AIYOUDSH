@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "platform": "darwin-arm64",
+  "os": "darwin",
+  "arch": "arm64",
+  "appVersion": "0.2.2-rc.5",
+  "buildCommit": "3f85d888b1297107937d9bd5b853f7e733e179a4",
+  "appAsarSha256": "6f019878f523428f452957dbaad601c6468051df4093eda8af751ec65226f88e",
+  "compatibility": [
+    {
+      "package": "@deepseek-ai/dsh-client-ui-sidebar",
+      "file": "lib/client.js",
+      "sha256": "6bcc501b0bba2e0a3b1c5090ddec6038e5d82a236315ffdff11a2cbef017f81a"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-sidebar",
+      "file": "lib/index.js",
+      "sha256": "be323c589cda4dbb7714df563ebb66f581a3d37ed2ab6859fed85fcebf970aea"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-workspace",
+      "file": "lib/client.js",
+      "sha256": "fff4925f33f7db85fa0a28d51d59f5a970af02a9058d2fe11deee75a5d549af6"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-workspace",
+      "file": "lib/index.js",
+      "sha256": "e6cdc4b725585354102a5c4598c9d8c79d6abac62d7979c09919821716370438"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-sidebar",
+      "file": "package.json",
+      "sha256": "aa736e268661ba5f41395ccc3da675fd07807222abd33b76d0ed49ccdd93493e"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-workspace",
+      "file": "package.json",
+      "sha256": "1977e425bda8a8e02b7f9386a7eff368fc68474dcd328c6e87054d0bb7f9bc04"
+    }
+  ],
+  "sourceUrl": "https://download.deepseek.com/dsh-desk/bin/mac-arm64/deepseek-harness-0.2.2-rc.5-mac-arm64.zip",
+  "layout": {
+    "appAsar": "Contents/Resources/app.asar",
+    "desktopProfile": "${DSH_HOME}/profiles/desktop",
+    "dshHomeDefault": "~/.dsh"
+  },
+  "executable": "Contents/MacOS/DeepSeek Harness",
+  "archiveSha256": "c169975831897ee0925dbc23a661893511eff29bf645a7842ae1c2d2b5d5b8a0",
+  "archiveSha512": "28C1+oaRcSjOwWvzqjXA4Cpic7bvTs++wOu3moAfRQMLhTPZv40G3GQTir0wuyuPGh/PsQH0ykb/qJD4pnWMxA==",
+  "archiveSize": 362852032,
+  "selectorMapping": "platforms/builds/darwin-arm64/0.2.2-rc.5-selectors.json",
+  "signingTeamIdentifier": "NAN929V4UM",
+  "embeddedRuntime": {
+    "electron": "44.7.0",
+    "node": "24.21.0",
+    "runAsNode": true
+  }
+}

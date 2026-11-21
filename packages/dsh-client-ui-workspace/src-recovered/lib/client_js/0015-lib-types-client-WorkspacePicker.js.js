@@ -6,6 +6,7 @@
 		* @returns menu + dialog elements.
 		*/
 		function WorkspacePickFlow({ t, open, anchorRef, useWorkspaces, createWorkspace, useDirectoryFlow, renderDirectoryFlow, onPick, onClose, addOnly = false, onBusyChange, side = "bottom", selectedId }) {
+			const absentAnchor = (0, react.useRef)(null);
 			const workspaceSnapshot = useWorkspaces((state) => state);
 			const workspaces = workspaceSnapshot.items;
 			const getAnchorRect = (0, react.useCallback)(() => anchorRef?.current?.getBoundingClientRect() ?? null, [anchorRef]);
@@ -101,6 +102,8 @@
 					onClose,
 					side,
 					portal: true,
+					// rc.2 reads getAnchorRect; rc.5 reads the live element ref.
+					anchorRef: anchorRef ?? absentAnchor,
 					getAnchorRect
 				}),
 				open && !addIsTheOnlyEntry && !menuIsEmpty && workspaceSnapshot.phase === "pending" && (0, react_jsx_runtime.jsx)("div", {

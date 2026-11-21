@@ -16,6 +16,8 @@ AIYOUDSH 是可安装、可卸载的桌面增强包：基于官方安装包的�
 
 ## 下载与兼容
 
+**官方新版适配 v0.8.7**：Windows / Mac Apple Silicon 支持官方 `0.2.2-rc.5`，Intel Mac 支持其独立官方 feed 的 `0.2.1-rc.4`。见[适配内容及验证边界](docs/releases/v0.8.7.md)和[三平台构建产物](https://github.com/yubowen123/AIYOUDSH/actions/workflows/verify.yml)。下表旧正式包仍对应旧官方基线，不能用于新版本。
+
 | 平台 | 安装包 | 条件 |
 | --- | --- | --- |
 | Windows 10 / 11 x64 | [AIYOUDSH-v0.8.6-windows-x64.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.6/AIYOUDSH-v0.8.6-windows-x64.zip) | 官方 x64 应用、.NET Framework 4.8；安装器与隔离事务验证，完整聊天界面仍待实机验收 |

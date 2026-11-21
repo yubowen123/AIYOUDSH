@@ -626,10 +626,10 @@ ${scope} :is(.ST7X_W_tab,.irMxjq_iconButton,.wmirxG_button){color:var(--dsw-alia
 ${scope} .ST7X_W_tabActive{color:var(--dsw-alias-label-primary);background:var(--aiyou-harness-accent-wash)}
 /* One shared shell rule for both roles, including pending/streaming content.
    :has skips an empty response and a body containing only hidden process rows. */
-${scope} :is(.IzP3Va_bubble,.gKv1-q_body:has(> :not([hidden]):not(:empty))){box-sizing:border-box;padding:var(--aiyou-harness-message-y) var(--aiyou-harness-message-x);border:var(--aiyou-harness-border-width) solid var(--aiyou-harness-border);border-radius:var(--aiyou-harness-message-radius);box-shadow:var(--aiyou-harness-shadow);background:var(--aiyou-harness-message-fill);color:var(--dsw-alias-label-primary);line-height:calc(24px + var(--dsh-content-font-delta,0px))}
-${scope} .IzP3Va_bubble{background:var(--aiyou-harness-user-fill)}
-${scope} :is(.IzP3Va_bubble,.gKv1-q_body)>:first-child{margin-block-start:0}
-${scope} :is(.IzP3Va_bubble,.gKv1-q_body)>:last-child{margin-block-end:0}
+${scope} :is(.IzP3Va_bubble,[data-message-bubble],.gKv1-q_body:has(> :not([hidden]):not(:empty))){box-sizing:border-box;padding:var(--aiyou-harness-message-y) var(--aiyou-harness-message-x);border:var(--aiyou-harness-border-width) solid var(--aiyou-harness-border);border-radius:var(--aiyou-harness-message-radius);box-shadow:var(--aiyou-harness-shadow);background:var(--aiyou-harness-message-fill);color:var(--dsw-alias-label-primary);line-height:calc(24px + var(--dsh-content-font-delta,0px))}
+${scope} :is(.IzP3Va_bubble,[data-message-bubble]){background:var(--aiyou-harness-user-fill)}
+${scope} :is(.IzP3Va_bubble,[data-message-bubble],.gKv1-q_body)>:first-child{margin-block-start:0}
+${scope} :is(.IzP3Va_bubble,[data-message-bubble],.gKv1-q_body)>:last-child{margin-block-end:0}
 ${scope} .gKv1-q_body a{color:var(--dsw-alias-link);overflow-wrap:anywhere}
 /* Native wide tables break out of plain prose. A material bubble owns its
    content, so keep the table's horizontal scroll inside that shell. */
@@ -668,7 +668,7 @@ ${scope} [data-aiyou-sidebar]{--aiyou-shortcut-fill:var(--aiyou-harness-card-fil
 ${scope} .aiyou-shortcut-card{background:var(--aiyou-harness-card-fill);border-color:var(--aiyou-harness-border);color:var(--dsw-alias-label-primary)}
 ${scope} .aiyou-shortcut-label{color:var(--dsw-alias-label-primary)}
 ${buildAssetLibraryThemeCss(theme,palette,scope,scope+' [data-dsh-asset-canvas-target]')}
-@media(prefers-reduced-motion:reduce){${scope} :is(.IzP3Va_bubble,.gKv1-q_body,.yhfFVG_card,.ST7X_W_header,[data-menu-material],.aiyou-shortcut-card){transition:none;animation:none}}
+@media(prefers-reduced-motion:reduce){${scope} :is(.IzP3Va_bubble,[data-message-bubble],.gKv1-q_body,.yhfFVG_card,.ST7X_W_header,[data-menu-material],.aiyou-shortcut-card){transition:none;animation:none}}
 `;
     }
 

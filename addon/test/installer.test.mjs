@@ -67,6 +67,15 @@ async function fixture(fn, patch = original) {
   finally { await rm(location, { recursive: true, force: true }); }
 }
 
+test('unsupported official versions report the exact pair before creating any installer state', async () => fixture(async ({ options, manifest }) => {
+  const file = join(options.runtime, 'manifest.json');
+  manifest.upstream.appVersion = '0.2.2-rc.5';
+  await writeFile(file, JSON.stringify(manifest));
+  await assert.rejects(install(options), { code: 'APP_VERSION', installedVersion: '0.2.1-rc.2', supportedVersion: '0.2.2-rc.5' });
+  await assert.rejects(access(options.enhancerHome));
+  assert.equal(await readFile(join(options.profile, 'cordis.patch.yml'), 'utf8'), original);
+}));
+
 test('install is idempotent, preserves user bytes/tags/credentials, and uninstalls exactly', async () => fixture(async ({ options, appHash }) => {
   const profilePackage = await readFile(join(options.profile, 'package.json'));
   const result = await install(options);

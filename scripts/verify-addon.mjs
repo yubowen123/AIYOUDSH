@@ -10,7 +10,7 @@ const args = process.argv.slice(2);
 if (args.length && (args.length !== 2 || args[0] !== '--runtime')) throw new Error('Use --runtime DIRECTORY');
 const runtime = args.length ? resolve(args[1]) : join(root, 'dist', 'addon', 'runtime');
 const manifest = JSON.parse(await readFile(join(runtime, 'manifest.json'), 'utf8'));
-const baseline = await platformBaseline(root, manifest.upstream.platform);
+const baseline = await platformBaseline(root, manifest.upstream.platform, { appVersion: manifest.upstream.appVersion });
 for (const field of ['appVersion','buildCommit','appAsarSha256']) if (manifest.upstream[field] !== baseline[field]) throw new Error('Runtime platform baseline mismatch: ' + field);
 if (JSON.stringify(manifest.upstream.compatibility) !== JSON.stringify(baseline.compatibility)) throw new Error('Runtime compatibility evidence was changed');
 if (baseline.selectorMapping) {
