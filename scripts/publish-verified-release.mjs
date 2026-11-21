@@ -123,7 +123,7 @@ export async function archiveFiles(directory, expectedNames) {
       const file = join(path, entry.name);
       if (entry.isSymbolicLink()) fail('Artifact contains a symbolic link.');
       if (entry.isDirectory()) await visit(file);
-      else if (entry.isFile() && entry.name.endsWith('.zip')) {
+      else if (entry.isFile() && entry.name.toLowerCase().endsWith('.zip')) {
         if (!expectedNames.includes(entry.name) || found.has(entry.name)) fail('Unexpected or duplicate archive in artifact: ' + entry.name);
         found.set(entry.name, file);
       }
@@ -136,8 +136,11 @@ export async function archiveFiles(directory, expectedNames) {
 
 const archiveVerifier = `
 import json, sys
+from struct import unpack_from
 from zipfile import ZipFile
 archive, version, platform = sys.argv[1:]
+if platform not in ('', 'darwin-arm64', 'darwin-x64', 'win32-x64'):
+    raise ValueError('Unsupported release runtime platform')
 # Native ditto stores UTF-8 filename bytes without consistently setting bit 11.
 # Python 3.11+ supports decoding those unflagged names without changing the ZIP.
 with ZipFile(archive, metadata_encoding='utf-8') as bundle:
@@ -147,7 +150,40 @@ with ZipFile(archive, metadata_encoding='utf-8') as bundle:
     if len(names) != len(set(names)):
         raise ValueError('Duplicate archive entry')
     paths = ['AIYOUDSH-source/package.json']
-    if platform:
+    if platform == 'win32-x64':
+        normalized = [name.replace(chr(92), '/').casefold() for name in names]
+        if len(normalized) != len(set(normalized)):
+            raise ValueError('Duplicate Windows archive path')
+        for name in normalized:
+            if name.startswith('/') or '..' in name.split('/') or ':' in name:
+                raise ValueError('Invalid Windows archive path')
+        for path in ['AIYOUDSH/AIYOUDSHInstaller.exe', 'AIYOUDSH/安装.cmd', 'AIYOUDSH/卸载.cmd',
+                     'AIYOUDSH/install.ps1', 'AIYOUDSH/uninstall.ps1', 'AIYOUDSH/installer/installer.mjs']:
+            if path not in names or bundle.getinfo(path).is_dir():
+                raise ValueError('Missing Windows installer resource: ' + path)
+        installer = bundle.getinfo('AIYOUDSH/AIYOUDSHInstaller.exe')
+        if installer.file_size <= 16000:
+            raise ValueError('Windows PE installer is incomplete')
+        with bundle.open(installer) as executable:
+            dos = executable.read(64)
+            if dos[:2] != b'MZ':
+                raise ValueError('Windows installer is not a PE executable')
+            offset = unpack_from('<I', dos, 60)[0]
+            if offset < 64 or offset > min(1024 * 1024, installer.file_size - 26):
+                raise ValueError('Windows PE header offset is invalid')
+            executable.seek(offset)
+            header = executable.read(26)
+            machine, sections, optional_size, characteristics, magic = [unpack_from('<H', header, at)[0] for at in (4, 6, 20, 22, 24)]
+            # The native installer is built /platform:anycpu: I386/PE32 is valid
+            # alongside AMD64/PE32+. Runtime architecture is locked separately.
+            if (header[:4] != b'PE' + bytes(2) or machine not in (0x14c, 0x8664)
+                    or magic != {0x14c: 0x10b, 0x8664: 0x20b}.get(machine)
+                    or not 1 <= sections <= 96 or optional_size < (96 if magic == 0x10b else 112)
+                    or offset + 24 + optional_size + sections * 40 > installer.file_size
+                    or not characteristics & 2 or characteristics & 0x2000):
+                raise ValueError('Windows PE installer header is invalid')
+        paths = ['AIYOUDSH/runtime/manifest.json']
+    elif platform:
         expected = 'AIYOUDSH/AIYOUDSH 增强安装器.app/Contents/Resources/runtime/manifest.json'
         embedded = [name for name in names if name.startswith('AIYOUDSH/') and name.endswith('.app/Contents/Resources/runtime/manifest.json')]
         if embedded != [expected]:
@@ -194,22 +230,24 @@ export async function publishVerifiedRelease({ env = process.env, root = rootDir
   const temporary = await mkdtemp(join(env.RUNNER_TEMP, 'aiyoudsh-verified-release-'));
   try {
     const archives = [];
-    for (const arch of ['arm64', 'x64']) {
-      const directory = join(temporary, arch);
-      await runCommand('gh', ['run', 'download', runId, '--repo', REPOSITORY, '--name', 'AIYOUDSH-darwin-' + arch, '--dir', directory], { cwd: root, env });
-      const archiveName = `AIYOUDSH-${tag}-macos-${arch}.zip`, sourceName = `AIYOUDSH-${tag}-source.zip`;
-      const files = await archiveFiles(directory, [archiveName, sourceName]);
-      await verifyArchive(files.get(archiveName), { version, platform: 'darwin-' + arch }, runCommand);
-      await verifyArchive(files.get(sourceName), { version }, runCommand);
+    for (const platform of ['darwin-arm64', 'darwin-x64', 'win32-x64']) {
+      const directory = join(temporary, platform);
+      await runCommand('gh', ['run', 'download', runId, '--repo', REPOSITORY, '--name', 'AIYOUDSH-' + platform, '--dir', directory], { cwd: root, env });
+      const mac = platform.startsWith('darwin-');
+      const suffix = mac ? 'macos-' + platform.slice(7) : 'windows-x64';
+      const archiveName = `AIYOUDSH-${tag}-${suffix}.zip`, sourceName = `AIYOUDSH-${tag}-source.zip`;
+      const files = await archiveFiles(directory, mac ? [archiveName, sourceName] : [archiveName]);
+      await verifyArchive(files.get(archiveName), { version, platform }, runCommand);
+      if (mac) await verifyArchive(files.get(sourceName), { version }, runCommand);
       archives.push(await localAsset(files.get(archiveName)));
-      if (arch === 'arm64') archives.push(await localAsset(files.get(sourceName)));
+      if (platform === 'darwin-arm64') archives.push(await localAsset(files.get(sourceName)));
     }
     archives.sort((left, right) => left.name.localeCompare(right.name));
     const sums = join(temporary, `AIYOUDSH-${tag}-SHA256SUMS.txt`);
     await writeFile(sums, archives.map(asset => `${asset.sha256}  ${asset.name}\n`).join(''));
     const attachments = [...archives, await localAsset(sums)];
     const runUrl = `https://github.com/${REPOSITORY}/actions/runs/${runId}`;
-    const notes = notesSource.trimEnd() + `\n\n---\n\n验证来源：[Verify run ${runId}](${runUrl})，提交 [\`${headSha}\`](https://github.com/${REPOSITORY}/commit/${headSha})。三个平台验证任务均已成功；附件仅包含本次 macOS ARM、Intel 与源码包及 \`${basename(sums)}\`。\n\nWindows 正式下载仍使用[历史 v0.5.0](https://github.com/${REPOSITORY}/releases/tag/v0.5.0)，本次不发布新的 Windows 安装包。\n`;
+    const notes = notesSource.trimEnd() + `\n\n---\n\n验证来源：[Verify run ${runId}](${runUrl})，提交 [\`${headSha}\`](https://github.com/${REPOSITORY}/commit/${headSha})。三个平台验证任务均已成功；附件包含本次 macOS ARM、Intel、Windows x64 与源码包及 \`${basename(sums)}\`。\n`;
 
     if (await remoteMain(client) !== headSha) fail('Remote main advanced before draft creation.');
     await assertTagTarget(client, tag, headSha);
