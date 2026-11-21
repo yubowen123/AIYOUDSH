@@ -82,8 +82,9 @@
             const tools = panels.filter(row => row.id.startsWith('aiyou-') && row.id !== 'aiyou-workbench');
             const settings = panels.filter(row => row.id === 'aiyou-workbench');
             const row = ({id,label}) => h(PanelRow,{...props,key:id,id,label,rail:true,wide:false});
+            const newSession = h('button', { type:'button',className:'aiyou-rail-item',title:'新对话','aria-label':'新建会话',onClick:() => startSession() }, h(AiyouShortcutIcon,{id:'new'}));
             return h('nav', { className:'aiyou-rail-menu', 'aria-label':'功能菜单', 'data-aiyou-shortcut-layout':'rail' },
-                h('button', { type:'button',className:'aiyou-rail-item',title:'新对话','aria-label':'新建会话',onClick:() => startSession() }, h(AiyouShortcutIcon,{id:'new'})),
+                typeof props.renderSlot === 'function' ? props.renderSlot('sidebar.session.action', { wide: false }, { children: newSession }) : newSession,
                 ...native.map(row),
                 h('span',{className:'aiyou-rail-divider','aria-hidden':true}),
                 ...tools.map(row),

@@ -73,8 +73,8 @@ jobs:
         if: matrix.target == 'win32-x64'
         shell: pwsh
         run: ./scripts/ci/windows-official-smoke.ps1
-      - name: Check the real official Intel Mac base in an isolated temporary profile
-        if: matrix.target == 'darwin-x64'
+      - name: Check the real official Mac base in an isolated temporary profile
+        if: startsWith(matrix.target, 'darwin-')
         run: node scripts/ci/macos-official-smoke.mjs
       - name: Upload macOS release and full source
         if: startsWith(matrix.target, 'darwin-') && success()

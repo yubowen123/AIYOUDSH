@@ -23,12 +23,28 @@ test('official Mac and Windows manifests lock distinct archives and exact compon
  await assert.rejects(platformBaseline(root,'win32-arm64'),/Unsupported/);
 });
 test('Intel Mac pins the real rc.1 archive independently of Apple Silicon rc.2',async()=>{
- const arm=await platformBaseline(root,'darwin-arm64'),intel=await platformBaseline(root,'darwin-x64');
+ const arm=await platformBaseline(root,'darwin-arm64',{appVersion:'0.2.1-rc.2'}),intel=await platformBaseline(root,'darwin-x64',{appVersion:'0.2.1-rc.1'});
  assert.equal(intel.os,'darwin');assert.equal(intel.arch,'x64');assert.equal(intel.appVersion,'0.2.1-rc.1');
  assert.equal(intel.buildCommit,'ed75efeffee65f9fe93625bbd76a68cb219aaaf9');assert.equal(intel.minimumMacOS,'13.0');
  assert.notEqual(intel.appAsarSha256,arm.appAsarSha256);assert.equal(intel.compatibility.length,6);
  assert.match(intel.sourceUrl,/^https:\/\/download\.deepseek\.com\/dsh-desk\/bin\/mac-x64\//);
  assert.equal(Buffer.from(intel.archiveSha512,'base64').length,64);
+});
+test('current platform baselines track separate official release channels and preserve older exact targets',async()=>{
+ const arm=await platformBaseline(root,'darwin-arm64'),intel=await platformBaseline(root,'darwin-x64'),win=await platformBaseline(root,'win32-x64');
+ assert.equal(arm.appVersion,'0.2.2-rc.5');assert.equal(win.appVersion,arm.appVersion);assert.equal(win.buildCommit,arm.buildCommit);
+ assert.equal(intel.appVersion,'0.2.1-rc.4');assert.notEqual(intel.buildCommit,arm.buildCommit);
+ for(const platform of ['darwin-arm64','darwin-x64','win32-x64']){
+  const baseline=await platformBaseline(root,platform);
+  const latest=JSON.parse(await readFile(new URL('../'+baseline.selectorMapping,import.meta.url),'utf8'));
+  const compiled=rewriteThemeSelectors(source,latest);
+  assert.equal(latest.buildCommit,baseline.buildCommit);
+  assert.equal(compiled.references.length,30);
+  assert.ok(compiled.source.includes('[data-message-bubble]'));
+  const bad=structuredClone(latest);const key=Object.keys(bad.mapping)[0];bad.mapping[key]='guessed_selector';
+  assert.throws(()=>rewriteThemeSelectors(source,bad),/evidence mismatch/);
+  await assert.rejects(platformBaseline(root,platform,{appVersion:'../../foreign'}),/Invalid/);
+ }
 });
 test('Intel theme maps only proven native CSS exports and retains custom ARM-source UI classes',async()=>{
  const intelDescriptor=JSON.parse(await readFile(new URL('../platforms/darwin-x64-selectors.json',import.meta.url),'utf8'));

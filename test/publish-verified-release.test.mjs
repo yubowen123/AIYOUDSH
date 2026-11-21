@@ -81,6 +81,9 @@ test('artifact archive selection rejects an incorrect version or duplicate archi
   await mkdir(join(temporary, 'nested'));
   await writeFile(join(temporary, 'nested', name), 'duplicate');
   await assert.rejects(archiveFiles(temporary, [name]), /duplicate/);
+  await rm(join(temporary, 'nested', name));
+  await writeFile(join(temporary, 'unexpected.ZIP'), 'unexpected archive');
+  await assert.rejects(archiveFiles(temporary, [name]), /Unexpected/);
 });
 
 test('real ZIP metadata verifies source and runtime versions without extracting files', { skip: process.platform === 'win32' }, async t => {
@@ -124,6 +127,48 @@ test('native ditto archives retain both outer and Chinese app runtime manifest c
   await assert.rejects(verifyArchive(archive, { version, platform: 'darwin-x64' }), /platform mismatch/);
 });
 
+test('Windows ZIP verification accepts native AnyCPU and x64 PE installers and rejects invalid release payloads', { skip: process.platform === 'win32' }, async t => {
+  const temporary = await mkdtemp(join(tmpdir(), 'aiyoudsh-release-windows-'));
+  t.after(() => rm(temporary, { recursive: true, force: true }));
+  const archive = join(temporary, 'windows.zip');
+  const pe = (machine = 0x14c) => {
+    const bytes = Buffer.alloc(16384);
+    bytes.write('MZ'); bytes.writeUInt32LE(128, 60); bytes.write('PE', 128);
+    bytes.writeUInt16LE(machine, 132); bytes.writeUInt16LE(3, 134);
+    bytes.writeUInt16LE(machine === 0x14c ? 224 : 240, 148); bytes.writeUInt16LE(2, 150);
+    bytes.writeUInt16LE(machine === 0x14c ? 0x10b : 0x20b, 152);
+    return bytes;
+  };
+  const entries = () => [
+    ['AIYOUDSH/runtime/manifest.json', Buffer.from(JSON.stringify({ version, upstream: { platform: 'win32-x64' } }))],
+    ['AIYOUDSH/AIYOUDSHInstaller.exe', pe()],
+    ...['安装.cmd', '卸载.cmd', 'install.ps1', 'uninstall.ps1', 'installer/installer.mjs'].map(path => ['AIYOUDSH/' + path, Buffer.from('fixture resource')]),
+  ];
+  const zip = records => execFileSync('python3', ['-c', 'import base64,json,sys,warnings\nfrom zipfile import ZipFile\nwarnings.simplefilter("ignore", UserWarning)\nwith ZipFile(sys.argv[1], "w") as archive:\n for name, value in json.load(sys.stdin): archive.writestr(name,base64.b64decode(value))', archive], {
+    input: JSON.stringify(records.map(([name, bytes]) => [name, bytes.toString('base64')])),
+  });
+  const options = { version, platform: 'win32-x64' };
+  zip(entries()); assert.equal((await verifyArchive(archive, options)).platform, 'win32-x64');
+  const amd64 = entries(); amd64[1][1] = pe(0x8664); zip(amd64);
+  assert.equal((await verifyArchive(archive, options)).platform, 'win32-x64');
+  const malformed = [
+    [records => records.filter(([name]) => !name.endsWith('.exe')), /Missing Windows installer resource/],
+    [records => records.filter(([name]) => !name.endsWith('安装.cmd')), /Missing Windows installer resource/],
+    [records => { records[0][1] = Buffer.from(JSON.stringify({ version: '0.8.3', upstream: { platform: 'win32-x64' } })); return records; }, /version mismatch/],
+    [records => { records[0][1] = Buffer.from(JSON.stringify({ version, upstream: { platform: 'darwin-x64' } })); return records; }, /platform mismatch/],
+    [records => { records[1][1] = Buffer.alloc(100); return records; }, /incomplete/],
+    [records => { records[1][1].write('NO'); return records; }, /not a PE/],
+    [records => { records[1][1].writeUInt32LE(0x7fffffff, 60); return records; }, /offset is invalid/],
+    [records => { records[1][1].write('NO', 128); return records; }, /header is invalid/],
+    [records => { records[1][1].writeUInt16LE(0x2002, 150); return records; }, /header is invalid/],
+    [records => [...records, records[0]], /Duplicate archive entry/],
+    [records => [...records, ['AIYOUDSH/aiyoudshinstaller.exe', pe()]], /Duplicate Windows archive path/],
+    [records => [...records, ['AIYOUDSH/../payload', Buffer.from('invalid')]], /Invalid Windows archive path/],
+  ];
+  for (const [alter, expected] of malformed) { zip(alter(entries())); await assert.rejects(verifyArchive(archive, options), expected); }
+  zip(entries()); await assert.rejects(verifyArchive(archive, { version, platform: 'linux-x64' }), /Unsupported/);
+});
+
 async function fixture(t, overrides = {}) {
   const temporary = await mkdtemp(join(tmpdir(), 'aiyoudsh-release-fixture-'));
   t.after(() => rm(temporary, { recursive: true, force: true }));
@@ -159,16 +204,26 @@ async function fixture(t, overrides = {}) {
   async function runCommand(executable, args) {
     state.commands.push({ executable, args });
     if (executable === 'git') return state.checkoutSha || headSha;
-    if (executable === 'python3') return JSON.stringify({ version: args[3], platform: args[4] || 'source' });
+    if (executable === 'python3') {
+      if (state.failVerifyPlatform === args[4]) throw new Error('Simulated archive verification failure: ' + args[4]);
+      return JSON.stringify({ version: args[3], platform: args[4] || 'source' });
+    }
     assert.equal(executable, 'gh');
     assert.ok(!args.includes('--clobber'));
     if (args[0] === 'run') {
       assert.deepEqual(args.slice(0, 5), ['run', 'download', runId, '--repo', REPOSITORY]);
       const directory = join(args[args.indexOf('--dir') + 1], 'ci-release');
-      const arch = args[args.indexOf('--name') + 1].slice('AIYOUDSH-darwin-'.length);
+      const target = args[args.indexOf('--name') + 1].slice('AIYOUDSH-'.length);
       await mkdir(directory, { recursive: true });
-      await writeFile(join(directory, `AIYOUDSH-${tag}-macos-${arch}.zip`), 'verified-' + arch);
-      await writeFile(join(directory, `AIYOUDSH-${tag}-source.zip`), 'verified-source-' + arch);
+      if (target === 'win32-x64') {
+        const name = `AIYOUDSH-${tag}-windows-x64.zip`;
+        if (!state.missingWindows) await writeFile(join(directory, name), 'verified-windows-x64');
+        if (state.duplicateWindows) { await mkdir(join(directory, 'duplicate')); await writeFile(join(directory, 'duplicate', name), 'duplicate-windows'); }
+      } else {
+        const arch = target.slice('darwin-'.length);
+        await writeFile(join(directory, `AIYOUDSH-${tag}-macos-${arch}.zip`), 'verified-' + arch);
+        await writeFile(join(directory, `AIYOUDSH-${tag}-source.zip`), 'verified-source-' + arch);
+      }
       return '';
     }
     assert.deepEqual(args.slice(0, 3), ['release', 'upload', tag]);
@@ -176,6 +231,7 @@ async function fixture(t, overrides = {}) {
     state.uploads.push(name);
     if (state.failUpload === name) { state.failUpload = null; throw new Error('Simulated interrupted upload'); }
     const bytes = await readFile(path);
+    if (name.endsWith('-SHA256SUMS.txt')) state.checksumText = bytes.toString();
     state.assets.push({ id: state.assets.length + 1, name, size: bytes.length, digest: 'sha256:' + digest(bytes), state: 'uploaded' });
     return '';
   }
@@ -201,15 +257,32 @@ test('successful publication uses ARM source, verifies remote hashes, then marks
   const report = await f.run();
   assert.equal(report.latest, true);
   assert.equal(report.commit, headSha);
-  assert.deepEqual(report.assets.map(asset => asset.name), [`AIYOUDSH-${tag}-macos-arm64.zip`, `AIYOUDSH-${tag}-macos-x64.zip`, `AIYOUDSH-${tag}-source.zip`, `AIYOUDSH-${tag}-SHA256SUMS.txt`]);
+  assert.deepEqual(report.assets.map(asset => asset.name), [`AIYOUDSH-${tag}-macos-arm64.zip`, `AIYOUDSH-${tag}-macos-x64.zip`, `AIYOUDSH-${tag}-source.zip`, `AIYOUDSH-${tag}-windows-x64.zip`, `AIYOUDSH-${tag}-SHA256SUMS.txt`]);
   assert.equal(report.assets.find(asset => asset.name.endsWith('-source.zip')).sha256, digest('verified-source-arm64'));
+  assert.deepEqual(f.state.commands.filter(call => call.executable === 'gh' && call.args[0] === 'run').map(call => call.args[call.args.indexOf('--name') + 1]), ['AIYOUDSH-darwin-arm64', 'AIYOUDSH-darwin-x64', 'AIYOUDSH-win32-x64']);
+  assert.equal(f.state.checksumText, report.assets.filter(asset => asset.name.endsWith('.zip')).map(asset => `${asset.sha256}  ${asset.name}\n`).join(''));
   assert.equal(f.state.mutations[0].body.draft, true);
   assert.equal(f.state.mutations[0].body.target_commitish, headSha);
   assert.equal(f.state.mutations[0].body.name, `AIYOUDSH ${tag}`);
   assert.ok(f.state.mutations[0].body.body.includes(`AIYOUDSH-${tag}-SHA256SUMS.txt`));
-  assert.match(f.state.mutations[0].body.body, /Windows.*历史 v0\.5\.0/);
+  assert.match(f.state.mutations[0].body.body, /Windows x64/);
+  assert.doesNotMatch(f.state.mutations[0].body.body, /历史 v0\.5\.0|不发布新的 Windows/);
   assert.equal(f.state.mutations.at(-1).body.make_latest, 'true');
   assert.equal(f.state.release.draft, false);
+});
+
+test('missing, duplicate or invalid Windows artifacts prevent draft creation and every upload', async t => {
+  for (const override of [{ missingWindows: true }, { duplicateWindows: true }, { failVerifyPlatform: 'win32-x64' }]) {
+    const f = await fixture(t, override);
+    await assert.rejects(f.run(), /missing|duplicate|verification failure/);
+    assert.deepEqual(f.state.mutations, []); assert.deepEqual(f.state.uploads, []);
+  }
+});
+
+test('a Windows attachment digest conflict preserves the draft without uploading replacements', async t => {
+  const f = await fixture(t, { release: draft(), assets: [{ id: 1, name: `AIYOUDSH-${tag}-windows-x64.zip`, size: 20, digest: 'sha256:' + digest('wrong-windows'), state: 'uploaded' }] });
+  await assert.rejects(f.run(), /SHA256 or size differs/);
+  assert.deepEqual(f.state.uploads, []); assert.deepEqual(f.state.mutations, []); assert.equal(f.state.release.draft, true);
 });
 
 test('an interrupted upload retains its draft and a retry skips identical existing assets', async t => {

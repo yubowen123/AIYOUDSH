@@ -3,14 +3,14 @@
   "platform": "darwin-x64",
   "os": "darwin",
   "arch": "x64",
-  "appVersion": "0.2.1-rc.1",
-  "buildCommit": "ed75efeffee65f9fe93625bbd76a68cb219aaaf9",
-  "appAsarSha256": "c0681004889259e80449344cc725c06fa9a3b1e65746a00e08f7c2086e1f2bcb",
+  "appVersion": "0.2.1-rc.4",
+  "buildCommit": "df71bd356c39b338b4269c1ab97fdb7f78e7243e",
+  "appAsarSha256": "31704f9a3eddd47646c469b36019d75fd4ac04a10727de24534585727b23eaf1",
   "compatibility": [
     {
       "package": "@deepseek-ai/dsh-client-ui-sidebar",
       "file": "lib/client.js",
-      "sha256": "da77bcc44064e57801d6926f6e1f4fbeb24c25892d6e3f3bf09ecc5d544beffb"
+      "sha256": "0885ceee108617456737ca4d56173a442e25fee896a4a1a3dfec3dd886504fb8"
     },
     {
       "package": "@deepseek-ai/dsh-client-ui-sidebar",
@@ -20,12 +20,12 @@
     {
       "package": "@deepseek-ai/dsh-client-ui-sidebar",
       "file": "package.json",
-      "sha256": "98b4d4dd87bb0195966ea9638f54a6f23e68e84ddba32fad5f2848e8672e3d98"
+      "sha256": "cd4f3c94f7a96313d4990b79a97283b563addb33e05a70d340b817469a995033"
     },
     {
       "package": "@deepseek-ai/dsh-client-ui-workspace",
       "file": "lib/client.js",
-      "sha256": "96ae01c7e1605e239058454071402dde55fbf122a3e1292a6746b6b5eb4c3eb9"
+      "sha256": "9e841e2624b8b75e0f07e6f19b7d8bb11a05832bf72f179fc9a1d48a514f9c10"
     },
     {
       "package": "@deepseek-ai/dsh-client-ui-workspace",
@@ -35,10 +35,10 @@
     {
       "package": "@deepseek-ai/dsh-client-ui-workspace",
       "file": "package.json",
-      "sha256": "3d89040257841eba51af0e5881b1eb74863d641d8addd352001ecf84a26fa6ad"
+      "sha256": "8a8a4592ad5401b43a5b4c20a31489dd66305cb09c93752bd9a7cf7b58812b18"
     }
   ],
-  "sourceUrl": "https://download.deepseek.com/dsh-desk/bin/mac-x64/deepseek-harness-0.2.1-rc.1-mac-x64.zip",
+  "sourceUrl": "https://download.deepseek.com/dsh-desk/bin/mac-x64/deepseek-harness-0.2.1-rc.4-mac-x64.zip",
   "layout": {
     "appAsar": "Contents/Resources/app.asar",
     "desktopProfile": "${DSH_HOME}/profiles/desktop",
@@ -47,10 +47,10 @@
   "executable": "Contents/MacOS/DeepSeek Harness",
   "discoveryUrl": "https://www.deepseek.com/en/harness/",
   "updateFeedUrl": "https://download.deepseek.com/dsh-desk/feeds/mac-x64/nightly-mac.yml",
-  "archiveSha256": "67bff9b16632bd6af1293650ffebfc91cadba597d5a479a8355cc130f0c8c3d3",
-  "archiveSize": 362402720,
+  "archiveSha256": "fca97f57d3d49efa963d15fbc3a254578693c02a690e9d6df9631d8fdaccda37",
+  "archiveSize": 369524912,
   "minimumMacOS": "13.0",
-  "selectorMapping": "platforms/darwin-x64-selectors.json",
+  "selectorMapping": "platforms/builds/darwin-x64/0.2.1-rc.4-selectors.json",
   "embeddedRuntime": {
     "electron": "44.7.0",
     "node": "24.21.0",
@@ -62,8 +62,9 @@
   "compatibilityEvidence": {
     "sourcePlatform": "darwin-arm64",
     "sourceBuild": "332895e0f7c9d4dbfb29729f5eb367fa263ff986",
-    "inspection": "Official x64 rc.1 and arm64 rc.2: 25 key packages, 155 files compared. Host behavior files match; client changes normalize to scoped CSS paths and one sidebar build badge. Official download SHA512 and code signature checked.",
+    "inspection": "Official mac-x64 nightly feed archive SHA512 and size matched. Deep strict code signature verified (NAN929V4UM); main binary is x86_64 and requires macOS 13.0. App version/build and all six sidebar/workspace compatibility hashes were read from the untouched official app.asar. Four untouched native UI client bundles were inspected by semantic CSS module export key; removed exports are recorded in the selector descriptor. Embedded Electron and Node were read from the official executable in Node mode with an isolated HOME and no inherited environment. This is not Intel native desktop smoke verification.",
     "desktopSmokeVerified": false
   },
-  "archiveSha512": "4SViINh3tDLRvvR80w4OJW/zj+j7Rp5ApjO41XeYtCpvhV9cS10Vibx90jnt90GLaE4HTGvXMp0ot4evs57JzA=="
+  "archiveSha512": "QGjNHmZbT7ZG6i/laeUYvoZ0yc/uypdnCr6rOzCSJrgIPQOvq1523CBdrFpmcvoSF4E6URAW3yV+h54JF3UhaA==",
+  "signingTeamIdentifier": "NAN929V4UM"
 }

@@ -12,7 +12,7 @@ const marker = 'AIYOUDSH_OFFICIAL_SMOKE_JSON:';
 const hashPattern = /^[a-f0-9]{64}$/u;
 
 export function parseSmokeOptions(args) {
-  const result = { runtime: join(root, 'dist/addon/runtime'), baseline: join(root, 'platforms/darwin-x64.json'), report: join(root, 'dist/macos-official-smoke.json'), workRoot: tmpdir() };
+  const result = { runtime: join(root, 'dist/addon/runtime'), baseline: join(root, 'platforms', 'darwin-' + process.arch + '.json'), report: join(root, 'dist/macos-official-smoke.json'), workRoot: tmpdir() };
   const names = { '--app': 'app', '--runtime': 'runtime', '--baseline': 'baseline', '--installer': 'archive', '--work-root': 'workRoot', '--report': 'report' };
   const seen = new Set();
   for (let i = 0; i < args.length; i += 2) {
@@ -26,8 +26,8 @@ export function parseSmokeOptions(args) {
 
 export function validatePinnedInputs(baseline, manifest) {
   assert.equal(baseline?.schemaVersion, 1, 'Unsupported baseline schema.');
-  assert.equal(baseline.platform, 'darwin-x64', 'Expected the real darwin-x64 baseline.');
-  assert.equal(baseline.arch, 'x64');
+  assert.ok(['darwin-arm64', 'darwin-x64'].includes(baseline.platform), 'Expected a real macOS baseline.');
+  assert.equal(baseline.platform, 'darwin-' + baseline.arch);
   assert.equal(baseline.os, 'darwin');
   const url = new URL(baseline.sourceUrl);
   assert.ok(url.protocol === 'https:' && url.hostname === 'download.deepseek.com' && !url.username && !url.password && !url.search && !url.hash && url.pathname.endsWith('.zip'), 'The archive must have a public, pinned official DeepSeek ZIP URL.');
@@ -37,7 +37,7 @@ export function validatePinnedInputs(baseline, manifest) {
   assert.match(baseline.buildCommit ?? '', /^[a-f0-9]{40}$/u);
   assert.ok(typeof baseline.executable === 'string' && !isAbsolute(baseline.executable) && !baseline.executable.split(/[\\/]/u).includes('..') && baseline.executable.startsWith('Contents/MacOS/'), 'Invalid official executable path.');
   assert.equal(manifest?.schemaVersion, 1);
-  assert.equal(manifest.upstream?.platform, 'darwin-x64', 'An ARM runtime cannot be relabeled as Intel.');
+  assert.equal(manifest.upstream?.platform, baseline.platform, 'A runtime cannot be relabeled for another architecture.');
   for (const field of ['appVersion', 'buildCommit', 'appAsarSha256']) assert.equal(manifest.upstream[field], baseline[field], 'Runtime baseline mismatch: ' + field);
   assert.ok(Array.isArray(baseline.compatibility) && baseline.compatibility.length > 0);
   assert.deepEqual(manifest.upstream.compatibility, baseline.compatibility, 'Runtime compatibility evidence differs from the pinned official baseline.');
@@ -53,9 +53,10 @@ export function assertIsolatedPath(path, protectedRoots) {
   return absolute;
 }
 
-export function validateRuntimeEvidence(actual) {
+export function validateRuntimeEvidence(actual, arch = 'x64') {
   assert.equal(actual?.platform, 'darwin', 'The official payload did not run on macOS.');
-  assert.equal(actual.arch, 'x64', 'The official payload is not an actual x64 process.');
+  assert.ok(['arm64', 'x64'].includes(arch));
+  assert.equal(actual.arch, arch, 'The official payload architecture differs from the selected baseline.');
   assert.ok(Number.isSafeInteger(actual.pid) && actual.pid > 0 && typeof actual.executable === 'string' && typeof actual.node === 'string');
   const value = field => typeof field === 'string' ? field.trim() : '';
   const translationFlag = value(actual.translated);
@@ -68,6 +69,11 @@ export function validateRuntimeEvidence(actual) {
   const intelBrand = /\bIntel\b/iu.test(brand);
   const appleCpu = /Apple/iu.test(vendor + ' ' + brand);
   const armMachine = /^(?:arm|aarch)/iu.test(machine);
+  if (arch === 'arm64') {
+    assert.ok(!translated && armFlag === '1' && armMachine, 'The official payload is not running natively on Apple Silicon.');
+    return { ...actual, executionMode: 'native-apple-silicon-arm64', nativeIntelHardware: false,
+      classificationEvidence: ['hw.optional.arm64=1', 'hw.machine=' + machine], userDesktopAcceptance: false };
+  }
   // Intel macOS may omit hw.optional.arm64 and sysctl.proc_translated. Missing
   // optional keys are neutral; a positive Intel CPU identity is still needed.
   // Translation=1 always wins, and contradictory Apple/ARM evidence must fail.
@@ -107,12 +113,12 @@ export function parseOfficialResult(result) {
     const value = JSON.parse(line.slice(marker.length));
     if (value.ok === false) {
       const completedChecks = Array.isArray(value.checks) ? value.checks.filter(check => check?.ok === true && /^[a-z0-9-]{1,120}$/u.test(check.check)) : [];
-      throw Object.assign(new Error(String(value.message ?? 'Official x64 payload failed.').slice(0, 400)), { code: value.code ?? 'OFFICIAL_PAYLOAD', completedChecks });
+      throw Object.assign(new Error(String(value.message ?? 'Official native payload failed.').slice(0, 400)), { code: value.code ?? 'OFFICIAL_PAYLOAD', completedChecks });
     }
     if (!result.error && result.status === 0) return value;
   }
-  if (result.error || result.status !== 0) throw Object.assign(new Error('The official x64 process failed.'), { code: 'OFFICIAL_RUNTIME_EXIT', status: result.status, signal: result.signal, processError: result.error?.code, stderr: result.stderr });
-  throw new Error('The official x64 process did not return structured smoke evidence.');
+  if (result.error || result.status !== 0) throw Object.assign(new Error('The official native process failed.'), { code: 'OFFICIAL_RUNTIME_EXIT', status: result.status, signal: result.signal, processError: result.error?.code, stderr: result.stderr });
+  throw new Error('The official native process did not return structured smoke evidence.');
 }
 
 function command(file, args, options = {}) {
@@ -160,7 +166,7 @@ async function hostPayload(config) {
   const { join } = await import('node:path');
   const { readFile } = await import('node:fs/promises');
   assert.equal(process.platform, 'darwin');
-  assert.equal(process.arch, 'x64');
+  assert.equal(process.arch, config.arch);
   assert.equal(process.env.DSH_HOME, config.dshHome);
   const appRequire = createRequire(join(config.asar, 'dsh/package.json'));
   const official = name => import(pathToFileURL(appRequire.resolve('@deepseek-ai/' + name)).href);
@@ -173,7 +179,7 @@ async function hostPayload(config) {
   try { process.noAsar = true; probe = await probeApplication(config.application, manifest); }
   finally { process.noAsar = previousNoAsar; }
   assert.equal(probe.compatible, true);
-  assert.equal(probe.platform, 'darwin-x64');
+  assert.equal(probe.platform, 'darwin-' + config.arch);
   const { Context } = await official('cordis');
   const ctx = new Context();
   const checks = [];
@@ -232,14 +238,14 @@ async function hostPayload(config) {
     try {
       db.exec("CREATE VIRTUAL TABLE smoke USING fts5(text); INSERT INTO smoke(text) VALUES ('intel native sqlite');");
       assert.equal(db.prepare("SELECT count(*) AS count FROM smoke WHERE smoke MATCH 'intel'").get().count, 1);
-      checks.push({ check: 'actual-x64-node-sqlite-file-and-fts5-execution', ok: true, sqliteVersion: db.prepare('SELECT sqlite_version() AS version').get().version });
+      checks.push({ check: 'actual-native-node-sqlite-file-and-fts5-execution', ok: true, sqliteVersion: db.prepare('SELECT sqlite_version() AS version').get().version });
     } finally { db.close(); }
     const sharp = appRequire('sharp');
     const png = await sharp({ create: { width: 2, height: 2, channels: 4, background: { r: 1, g: 2, b: 3, alpha: 1 } } }).png().toBuffer();
     const metadata = await sharp(png).metadata();
     assert.equal(metadata.width, 2);
     assert.equal(metadata.format, 'png');
-    checks.push({ check: 'actual-x64-official-sharp-native-payload-encode-and-decode', ok: true });
+    checks.push({ check: 'actual-native-official-sharp-native-payload-encode-and-decode', ok: true });
     return { ok: true, platform: process.platform, arch: process.arch, node: process.versions.node, pid: process.pid, probe, checks };
   } catch (error) { error.smokeChecks = checks; throw error; }
   finally { await ctx.fiber.dispose(); }
@@ -247,7 +253,7 @@ async function hostPayload(config) {
 
 export async function runSmoke(options) {
   const checks = [];
-  const report = { schemaVersion: 1, ok: false, platform: 'darwin-x64', controller: { platform: process.platform, arch: process.arch, node: process.versions.node }, checks, profileScope: 'unique temporary fixture only', userDesktopAcceptance: false, graphicalDesktopLaunched: false, officialApplicationInstalled: false, modelRequests: 0 };
+  const report = { schemaVersion: 1, ok: false, platform: 'darwin-' + process.arch, controller: { platform: process.platform, arch: process.arch, node: process.versions.node }, checks, profileScope: 'unique temporary fixture only', userDesktopAcceptance: false, graphicalDesktopLaunched: false, officialApplicationInstalled: false, modelRequests: 0 };
   let fixture, before, application, executable, asar, archive, operation, installed = false;
   const protectedRoots = ['/Applications', join(homedir(), 'Applications'), join(homedir(), '.dsh')];
   if (process.env.DSH_HOME) protectedRoots.push(resolve(process.env.DSH_HOME));
@@ -263,7 +269,7 @@ export async function runSmoke(options) {
     report.buildCommit = baseline.buildCommit;
     report.archiveSource = baseline.sourceUrl;
     await mkdir(options.workRoot, { recursive: true });
-    fixture = await mkdtemp(join(options.workRoot, 'aiyoudsh-intel-smoke-'));
+    fixture = await mkdtemp(join(options.workRoot, 'aiyoudsh-macos-smoke-'));
     const dshHome = join(fixture, 'dsh home');
     const profile = join(dshHome, 'profiles/desktop');
     const enhancerHome = join(fixture, 'enhancer home');
@@ -315,10 +321,10 @@ export async function runSmoke(options) {
     const actual = officialScript(serialize(runtimeEvidencePayload), 'actual-runtime-evidence');
     report.rawRuntimeEvidence = actual;
     assert.equal(await realpath(actual.executable), await realpath(executable));
-    report.actualRuntime = validateRuntimeEvidence(actual);
+    report.actualRuntime = validateRuntimeEvidence(actual, baseline.arch);
     if (baseline.embeddedRuntime?.node) assert.equal(actual.node, baseline.embeddedRuntime.node, 'Official Electron embedded Node version changed.');
     if (baseline.embeddedRuntime?.electron) assert.equal(actual.electron, baseline.embeddedRuntime.electron);
-    checks.push({ check: 'actual-official-x64-process-and-intel-or-rosetta-evidence', ok: true, mode: report.actualRuntime.executionMode });
+    checks.push({ check: 'actual-official-native-process-and-hardware-evidence', ok: true, mode: report.actualRuntime.executionMode });
     operation = (action, extra = []) => {
       const output = command(executable, [installerScript, action, '--runtime', runtime, '--app', application, '--profile', profile, '--dsh-home', dshHome, '--enhancer-home', enhancerHome, ...extra], { env, cwd: fixture });
       return JSON.parse(output);
@@ -335,12 +341,12 @@ export async function runSmoke(options) {
     assert.equal(dryRun.changed, false);
     await assert.rejects(lstat(enhancerHome), { code: 'ENOENT' });
     assert.deepEqual(await readFile(join(profile, 'cordis.patch.yml')), originalPatch);
-    checks.push({ check: 'official-x64-installer-dry-run-no-writes', ok: true });
+    checks.push({ check: 'official-native-installer-dry-run-no-writes', ok: true });
     const result = operation('install');
     installed = true;
     assert.equal(result.changed, true);
     assert.equal(result.compatible, true);
-    assert.equal(result.platform, 'darwin-x64');
+    assert.equal(result.platform, baseline.platform);
     assert.equal(result.modules, manifest.modules.length);
     const receipt = await readFile(join(enhancerHome, 'install-state.json'));
     const patch = await readFile(join(profile, 'cordis.patch.yml'));
@@ -352,16 +358,16 @@ export async function runSmoke(options) {
     }
     const current = operation('status');
     assert.ok(current.installed && current.runtimeUnchanged && current.managedPatchUnchanged && current.moduleLinks.every(link => link.matches));
-    checks.push({ check: 'official-x64-install-native-symlinks-status-and-owned-payload', ok: true, modules: manifest.modules.length });
-    const payload = officialScript(serialize(hostPayload, { application, asar, installerScript, runtime, profile, dshHome }), 'real-host-and-native-payload');
-    assert.equal(payload.arch, 'x64');
+    checks.push({ check: 'official-native-install-native-symlinks-status-and-owned-payload', ok: true, modules: manifest.modules.length });
+    const payload = officialScript(serialize(hostPayload, { application, asar, installerScript, runtime, profile, dshHome, arch: baseline.arch }), 'real-host-and-native-payload');
+    assert.equal(payload.arch, baseline.arch);
     report.hostPayload = { platform: payload.platform, arch: payload.arch, node: payload.node, pid: payload.pid };
     checks.push(...payload.checks);
     const repeated = operation('install');
     assert.ok(repeated.alreadyInstalled && !repeated.changed);
     assert.deepEqual(await readFile(join(enhancerHome, 'install-state.json')), receipt);
     assert.deepEqual(await readFile(join(profile, 'cordis.patch.yml')), patch);
-    checks.push({ check: 'official-x64-repeat-install-is-idempotent', ok: true });
+    checks.push({ check: 'official-native-repeat-install-is-idempotent', ok: true });
     assert.equal(operation('uninstall').installed, false);
     installed = false;
     assert.equal(operation('status').installed, false);
@@ -369,7 +375,7 @@ export async function runSmoke(options) {
     assert.deepEqual(await readFile(join(profile, 'cordis.patch.yml')), originalPatch);
     assert.deepEqual(await readFile(join(profile, 'fixture-preservation.json')), fixtureMarker);
     for (const module of manifest.modules) await assert.rejects(lstat(join(profile, 'node_modules', module.name)), { code: 'ENOENT' });
-    checks.push({ check: 'official-x64-uninstall-restores-fixture-and-removes-owned-symlinks', ok: true });
+    checks.push({ check: 'official-native-uninstall-restores-fixture-and-removes-owned-symlinks', ok: true });
     report.ok = true;
   } catch (error) {
     if (Array.isArray(error.completedChecks)) checks.push(...error.completedChecks);

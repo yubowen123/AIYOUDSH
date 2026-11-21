@@ -79,6 +79,10 @@
           "region": "lib/types/client/WorkspacePicker.js"
         },
         {
+          "file": "src/aiyou-host-compat.js",
+          "region": "AIYOU workspace host compatibility"
+        },
+        {
           "file": "src-recovered/lib/client_js/0016-WorkspaceBrowser.module.css.mjs.js",
           "region": "\\0dsh-css:upstream/packages/client/ui-workspace/src/client/rows/WorkspaceBrowser.module.css.mjs"
         },

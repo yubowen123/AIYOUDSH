@@ -6,26 +6,28 @@
 
 **让官方 DeepSeek Harness 拥有更完整的工作台、主题和创作入口。**
 
-AIYOUDSH 是可安装、可卸载的桌面增强包：基于官方安装包的原生扩展接口，重新整理导航和对话侧栏，加入主题配置、动态背景、本地资产与项目管理。v0.8.6 新增独立对话卡片透明度，并修复主题保存后重开设置的读回竞态。Windows x64、Mac arm64 与 Mac Intel x64 同步提供安装包。此前 v0.8.5 新增 GGWK / APIAI 默认媒体通道，填写 Key 后自动配置图片/视频模型；保留 Intel Mac（x64）独立安装包，并延续 AIYOUPLUS 画布与创作工具的本地融合，文字使用宿主模型，素材使用 DSH 统一素材库；新增全插件主题同步和独立的画布外观配置；素材库采用左目录右素材，支持目录关联与扫描，媒体 API 支持文档、模型目录与调用合同自动关联配置。本轮主题检查在 macOS Apple Silicon 与隔离浏览器中分层验证；Windows x64 继续使用独立官方基线，新增主题及画布能力尚未完成 Windows 桌面实测。
+AIYOUDSH 是可安装、可卸载的桌面增强包：基于官方原生扩展接口，提供竖向功能栏、项目与对话视图、主题和动态背景，以及画布、素材库与创作工具。**v0.8.7 更新三端官方版本兼容**，修复新版本被旧增强安装器拒绝的问题，并适配新版目录选择、原生菜单、导入入口与主题气泡。原生安装与运行时检查、完整聊天与第三方服务验收分别说明。
 
-[下载 v0.8.6](https://github.com/yubowen123/AIYOUDSH/releases/tag/v0.8.6) · [安装与卸载](docs/installation.md) · [功能说明](docs/features.md) · [主题与动效](docs/themes.md) · [构建源码](docs/development.md) · [问题反馈](https://github.com/yubowen123/AIYOUDSH/issues)
+[下载 v0.8.7](https://github.com/yubowen123/AIYOUDSH/releases/tag/v0.8.7) · [安装与卸载](docs/installation.md) · [功能说明](docs/features.md) · [主题与动效](docs/themes.md) · [构建源码](docs/development.md) · [问题反馈](https://github.com/yubowen123/AIYOUDSH/issues)
 
 ![AIYOUDSH 工作台：左侧功能栏与对话列表、中间聊天和主题背景；macOS 实机](docs/screenshots/overview.jpg)
 
-本次主题修复及三平台验证范围见 [v0.8.6 说明](docs/releases/v0.8.6.md)；默认媒体通道见 [v0.8.5 说明](docs/releases/v0.8.5.md)，Intel 架构基线见 [v0.8.4 说明](docs/releases/v0.8.4.md)。
+本次新版兼容及三平台验证范围见 [v0.8.7 说明](docs/releases/v0.8.7.md)；此前主题修复见 [v0.8.6 说明](docs/releases/v0.8.6.md)；默认媒体通道见 [v0.8.5 说明](docs/releases/v0.8.5.md)，Intel 架构基线见 [v0.8.4 说明](docs/releases/v0.8.4.md)。
 
 ## 下载与兼容
 
+**官方新版适配 v0.8.7**：Windows / Mac Apple Silicon 支持官方 `0.2.2-rc.5`，Intel Mac 支持其独立官方 feed 的 `0.2.1-rc.4`。见[适配内容及验证边界](docs/releases/v0.8.7.md)。
+
 | 平台 | 安装包 | 条件 |
 | --- | --- | --- |
-| Windows 10 / 11 x64 | [AIYOUDSH-v0.8.6-windows-x64.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.6/AIYOUDSH-v0.8.6-windows-x64.zip) | 官方 x64 应用、.NET Framework 4.8；安装器与隔离事务验证，完整聊天界面仍待实机验收 |
-| macOS Apple Silicon arm64 | [AIYOUDSH-v0.8.6-macos-arm64.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.6/AIYOUDSH-v0.8.6-macos-arm64.zip) | 官方 arm64 应用；原生 AppKit 安装器 |
-| macOS Intel x64 | [AIYOUDSH-v0.8.6-macos-x64.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.6/AIYOUDSH-v0.8.6-macos-x64.zip) | macOS 13+；官方 Intel rc.1 应用；独立 x64 安装器与媒体工具 |
-| 可构建源码 | [AIYOUDSH-v0.8.6-source.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.6/AIYOUDSH-v0.8.6-source.zip) | Node.js 24 或更新版本；按平台构建 |
+| Windows 10 / 11 x64 | [AIYOUDSH-v0.8.7-windows-x64.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.7/AIYOUDSH-v0.8.7-windows-x64.zip) | 官方 `0.2.2-rc.5`，.NET Framework 4.8；原生安装器与隔离事务验证 |
+| macOS Apple Silicon arm64 | [AIYOUDSH-v0.8.7-macos-arm64.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.7/AIYOUDSH-v0.8.7-macos-arm64.zip) | 官方 `0.2.2-rc.5`；原生 AppKit 安装器；既有 ARM FFmpeg 8.1 声明 macOS 26+ |
+| macOS Intel x64 | [AIYOUDSH-v0.8.7-macos-x64.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.7/AIYOUDSH-v0.8.7-macos-x64.zip) | macOS 13+，官方 `0.2.1-rc.4`；独立 x64 安装器与媒体工具 |
+| 可构建源码 | [AIYOUDSH-v0.8.7-source.zip](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.7/AIYOUDSH-v0.8.7-source.zip) | Node.js 24 或更新版本；按平台构建 |
 
-[SHA-256 校验文件](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.6/AIYOUDSH-v0.8.6-SHA256SUMS.txt) · [v0.5.0 说明](docs/releases/v0.5.0.md) · [上一版 macOS v0.4.0](https://github.com/yubowen123/AIYOUDSH/releases/tag/v0.4.0)
+[SHA-256 校验文件](https://github.com/yubowen123/AIYOUDSH/releases/download/v0.8.7/AIYOUDSH-v0.8.7-SHA256SUMS.txt) · [历史 v0.8.6](https://github.com/yubowen123/AIYOUDSH/releases/tag/v0.8.6)
 
-Apple Silicon 与 Windows 目标固定官方 **`0.2.1-rc.2 / 332895e`**；Intel 目标固定官方 **`0.2.1-rc.1 / ed75efe`**，其官方 Intel [ZIP](https://download.deepseek.com/dsh-desk/bin/mac-x64/deepseek-harness-0.2.1-rc.1-mac-x64.zip)已独立核对。各包校验对应架构、应用归档和组件哈希，不匹配时停止安装。Windows ARM 不在支持范围。
+三端分别校验官方版本、构建提交、应用归档与组件哈希，不匹配时停止安装。官方不同架构的更新进度不同，不能混用安装包；Windows ARM 不在支持范围。旧官方版本保留[显式源码构建方式](docs/releases/v0.8.7.md)，不要对旧包关闭校验。
 
 ## 工作台与功能
 

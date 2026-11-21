@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "platform": "darwin-x64",
+  "os": "darwin",
+  "arch": "x64",
+  "appVersion": "0.2.1-rc.1",
+  "buildCommit": "ed75efeffee65f9fe93625bbd76a68cb219aaaf9",
+  "appAsarSha256": "c0681004889259e80449344cc725c06fa9a3b1e65746a00e08f7c2086e1f2bcb",
+  "compatibility": [
+    {
+      "package": "@deepseek-ai/dsh-client-ui-sidebar",
+      "file": "lib/client.js",
+      "sha256": "da77bcc44064e57801d6926f6e1f4fbeb24c25892d6e3f3bf09ecc5d544beffb"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-sidebar",
+      "file": "lib/index.js",
+      "sha256": "be323c589cda4dbb7714df563ebb66f581a3d37ed2ab6859fed85fcebf970aea"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-sidebar",
+      "file": "package.json",
+      "sha256": "98b4d4dd87bb0195966ea9638f54a6f23e68e84ddba32fad5f2848e8672e3d98"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-workspace",
+      "file": "lib/client.js",
+      "sha256": "96ae01c7e1605e239058454071402dde55fbf122a3e1292a6746b6b5eb4c3eb9"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-workspace",
+      "file": "lib/index.js",
+      "sha256": "e6cdc4b725585354102a5c4598c9d8c79d6abac62d7979c09919821716370438"
+    },
+    {
+      "package": "@deepseek-ai/dsh-client-ui-workspace",
+      "file": "package.json",
+      "sha256": "3d89040257841eba51af0e5881b1eb74863d641d8addd352001ecf84a26fa6ad"
+    }
+  ],
+  "sourceUrl": "https://download.deepseek.com/dsh-desk/bin/mac-x64/deepseek-harness-0.2.1-rc.1-mac-x64.zip",
+  "layout": {
+    "appAsar": "Contents/Resources/app.asar",
+    "desktopProfile": "${DSH_HOME}/profiles/desktop",
+    "dshHomeDefault": "~/.dsh"
+  },
+  "executable": "Contents/MacOS/DeepSeek Harness",
+  "discoveryUrl": "https://www.deepseek.com/en/harness/",
+  "updateFeedUrl": "https://download.deepseek.com/dsh-desk/feeds/mac-x64/nightly-mac.yml",
+  "archiveSha256": "67bff9b16632bd6af1293650ffebfc91cadba597d5a479a8355cc130f0c8c3d3",
+  "archiveSize": 362402720,
+  "minimumMacOS": "13.0",
+  "selectorMapping": "platforms/darwin-x64-selectors.json",
+  "embeddedRuntime": {
+    "electron": "44.7.0",
+    "node": "24.21.0",
+    "runAsNode": true,
+    "environment": {
+      "ELECTRON_RUN_AS_NODE": "1"
+    }
+  },
+  "compatibilityEvidence": {
+    "sourcePlatform": "darwin-arm64",
+    "sourceBuild": "332895e0f7c9d4dbfb29729f5eb367fa263ff986",
+    "inspection": "Official x64 rc.1 and arm64 rc.2: 25 key packages, 155 files compared. Host behavior files match; client changes normalize to scoped CSS paths and one sidebar build badge. Official download SHA512 and code signature checked.",
+    "desktopSmokeVerified": false
+  },
+  "archiveSha512": "4SViINh3tDLRvvR80w4OJW/zj+j7Rp5ApjO41XeYtCpvhV9cS10Vibx90jnt90GLaE4HTGvXMp0ot4evs57JzA=="
+}

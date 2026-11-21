@@ -180,6 +180,9 @@
 				"data-row-key": `workspace:${group.key}`,
 				role: "treeitem",
 				"aria-expanded": row.expanded,
+				tabIndex: 0,
+				onContextMenu: event => { if (row.workspaceId !== void 0 && !openAiyouNativeRowMenu('workspace', { workspaceId: row.workspaceId, displayTitle: label }, event)) { event.preventDefault(); setMenuOpen(true); } },
+				onKeyDown: event => { if (event.target === event.currentTarget && (event.key === 'ContextMenu' || event.key === 'F10' && event.shiftKey) && row.workspaceId !== void 0 && !openAiyouNativeRowMenu('workspace', { workspaceId: row.workspaceId, displayTitle: label }, event)) { event.preventDefault(); setMenuOpen(true); } },
 				onClick: onToggle,
 				draggable: drag !== void 0,
 				onDragStart: drag === void 0 ? void 0 : (e) => {
@@ -225,7 +228,10 @@
 								type: "button",
 								className: Rows_module_css_default.iconButton,
 								"aria-label": t("actions.workspace.aria", { name: label }),
+								"data-context-menu-trigger": "",
+								onPointerDown: event => event.stopPropagation(),
 								onClick: (e) => {
+									if (openAiyouNativeRowMenu('workspace', { workspaceId: row.workspaceId, displayTitle: label }, e, true)) { setMenuOpen(false); return; }
 									e.stopPropagation();
 									setMenuOpen((v) => !v);
 								},
@@ -489,6 +495,9 @@
 					className: clsx(Rows_module_css_default.sessionRow, selected && Rows_module_css_default.selected, menuOpen && Rows_module_css_default.menuOpen, row.archived && Rows_module_css_default.archived, drag?.marker === "before" && Rows_module_css_default.dropBefore, drag?.marker === "after" && Rows_module_css_default.dropAfter),
 					role: "treeitem",
 					"aria-selected": selected,
+					tabIndex: 0,
+					onContextMenu: event => { if (!row.blank && !openAiyouNativeRowMenu('session', { sessionId: node.id, displayTitle: row.title }, event)) { event.preventDefault(); setMenuOpen(true); } },
+					onKeyDown: event => { if (!row.blank && event.target === event.currentTarget && (event.key === 'ContextMenu' || event.key === 'F10' && event.shiftKey) && !openAiyouNativeRowMenu('session', { sessionId: node.id, displayTitle: row.title }, event)) { event.preventDefault(); setMenuOpen(true); } },
 					"aria-description": row.archived ? t("toast.archivedNotOpenable") : void 0,
 					onClick: () => {
 						onOpen(node.id);
@@ -549,7 +558,10 @@
 									type: "button",
 									className: Rows_module_css_default.iconButton,
 									"aria-label": t("actions.session.aria", { name: title }),
-									onClick: () => {
+									"data-context-menu-trigger": "",
+									onPointerDown: event => event.stopPropagation(),
+									onClick: (event) => {
+										if (openAiyouNativeRowMenu('session', { sessionId: node.id, displayTitle: row.title }, event, true)) { setMenuOpen(false); return; }
 										setMenuOpen((v) => !v);
 									},
 									children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconEllipsisOutlineRegular, {})

@@ -2,9 +2,13 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 export const SUPPORTED_PLATFORMS = ['darwin-arm64', 'darwin-x64', 'win32-x64'];
-export async function platformBaseline(root, platform) {
+export async function platformBaseline(root, platform, { appVersion } = {}) {
   if (!SUPPORTED_PLATFORMS.includes(platform)) throw new Error('Unsupported target platform: ' + platform);
-  const baseline = JSON.parse(await readFile(join(root, 'platforms', platform + '.json'), 'utf8'));
+  if (appVersion && !/^\d+\.\d+\.\d+(?:-[a-z0-9.-]+)?$/u.test(appVersion)) throw new Error('Invalid upstream version');
+  const current = JSON.parse(await readFile(join(root, 'platforms', platform + '.json'), 'utf8'));
+  const baseline = !appVersion || current.appVersion === appVersion ? current
+    : JSON.parse(await readFile(join(root, 'platforms', 'builds', platform, appVersion + '.json'), 'utf8'));
+  if (appVersion && baseline.appVersion !== appVersion) throw new Error('Official baseline version mismatch');
   if (baseline.schemaVersion !== 1 || baseline.platform !== platform || !/^[a-f0-9]{64}$/.test(baseline.appAsarSha256)
       || !/^[a-f0-9]{40}$/.test(baseline.buildCommit) || !Array.isArray(baseline.compatibility) || !baseline.compatibility.length)
     throw new Error('Invalid or incomplete official platform baseline');
@@ -15,7 +19,7 @@ export async function platformBaseline(root, platform) {
   return baseline;
 }
 export function rewriteThemeSelectors(source, descriptor) {
-  const targetKey = descriptor.platform === 'win32-x64' ? 'windows' : descriptor.platform === 'darwin-x64' ? 'intel' : null;
+  const targetKey = descriptor.platform === 'win32-x64' ? 'windows' : descriptor.platform === 'darwin-x64' ? 'intel' : descriptor.platform === 'darwin-arm64' ? 'target' : null;
   if (descriptor.schemaVersion !== 1 || !targetKey || !descriptor.mapping || !Array.isArray(descriptor.modules))
     throw new Error('Invalid native selector map');
   const evidence = new Map();

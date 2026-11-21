@@ -60,6 +60,14 @@ test('native Intel sysctl evidence remains valid when the optional ARM and trans
   assert.equal(translated.nativeIntelHardware, false);
 });
 
+test('Apple Silicon smoke requires matching native hardware and cannot accept a renamed Intel process', () => {
+  const actual = { platform: 'darwin', arch: 'arm64', node: '24.21.0', executable: '/isolated/official-app', pid: 789,
+    translated: '0', hardwareArm64: '1', hardwareMachine: 'arm64' };
+  assert.equal(validateRuntimeEvidence(actual, 'arm64').executionMode, 'native-apple-silicon-arm64');
+  for (const changed of [{ ...actual, arch: 'x64' }, { ...actual, translated: '1' }, { ...actual, hardwareArm64: '0' }, { ...actual, hardwareMachine: 'x86_64' }])
+    assert.throws(() => validateRuntimeEvidence(changed, 'arm64'));
+});
+
 test('missing optional sysctl keys never turn Apple, unknown or contradictory hardware into Intel', () => {
   const actual = { platform: 'darwin', arch: 'x64', node: '24.21.0', executable: '/isolated/official-app', pid: 456, translated: null, hardwareArm64: null, cpuVendor: null, cpuBrand: null, hardwareMachine: null };
   for (const value of [

@@ -139,7 +139,11 @@ export async function probeApplication(app, manifest, options = {}) {
   const reader = await readAsar(archive);
   try {
     const info = JSON.parse((await reader.read('package.json')).toString());
-    if (info.version !== manifest.upstream.appVersion || info.dshBuildCommit !== manifest.upstream.buildCommit) throw fail('APP_VERSION', 'The installed Harness version differs from the supported build; nothing was installed');
+    if (info.version !== manifest.upstream.appVersion || info.dshBuildCommit !== manifest.upstream.buildCommit) {
+      const version = value => typeof value === 'string' && /^\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?$/u.test(value) ? value : undefined;
+      throw Object.assign(fail('APP_VERSION', 'The installed Harness version differs from the supported build; nothing was installed'),
+        { installedVersion: version(info.version), supportedVersion: version(manifest.upstream.appVersion) });
+    }
     const digest = await fileHash(archive);
     if (digest !== manifest.upstream.appAsarSha256) throw fail('APP_HASH', 'The installed application archive differs from the supported build; nothing was installed');
     for (const entry of manifest.upstream.compatibility ?? []) {
@@ -579,5 +583,6 @@ async function cli() {
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   // The installer inspects raw archive bytes; Electron otherwise treats app.asar as a directory.
   if (process.versions.electron) process.noAsar = true;
-  cli().catch(error => { console.error(JSON.stringify({ ok: false, code: error.code ?? 'INSTALLER_ERROR', message: error.code ? error.message : 'Installer operation failed; no configuration contents are printed' })); process.exitCode = 1; });
+  cli().catch(error => { console.error(JSON.stringify({ ok: false, code: error.code ?? 'INSTALLER_ERROR', message: error.code ? error.message : 'Installer operation failed; no configuration contents are printed',
+    ...(error.code === 'APP_VERSION' ? { installedVersion: error.installedVersion, supportedVersion: error.supportedVersion } : {}) })); process.exitCode = 1; });
 }

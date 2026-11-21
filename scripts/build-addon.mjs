@@ -8,11 +8,11 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
 const options = {};
 for (let i=0;i<args.length;i++) {
-  if (!['--platform','--out'].includes(args[i]) || !args[i+1]) throw new Error('Use --platform TARGET and/or --out DIRECTORY');
+  if (!['--platform','--out','--upstream-version'].includes(args[i]) || !args[i+1]) throw new Error('Use --platform TARGET, --upstream-version VERSION and/or --out DIRECTORY');
   options[args[i].slice(2)] = args[++i];
 }
 const platform = options.platform || process.platform + '-' + process.arch;
-const baseline = await platformBaseline(root, platform);
+const baseline = await platformBaseline(root, platform, { appVersion: options['upstream-version'] });
 const out = options.out ? resolve(options.out) : join(root, 'dist', 'addon', 'runtime');
 const outputRelative = relative(root, out);
 if (!outputRelative || (!outputRelative.startsWith('..') && !isAbsolute(outputRelative) && outputRelative.split(sep)[0] !== 'dist')) throw new Error('Build output inside the source repository must be under dist');
@@ -36,10 +36,8 @@ for (const [original, local, id] of replacements) {
     let data = Buffer.concat(await Promise.all(entry.parts.map(part => readFile(join(source, part.file)))));
     if (entry.output === 'lib/client.js') {
       let text = data.toString('utf8');
-      if (original === 'dsh-client-ui-sidebar' && platform === 'darwin-x64') {
-        // The rc.1 Intel/rc.2 ARM semantic comparison proves this sole badge
-        // difference. Keep frozen recovery partitions unchanged and show the
-        // actual target build rather than the source recovery build.
+      if (original === 'dsh-client-ui-sidebar') {
+        // Display the verified target, preserving the original recovery basis.
         const badge = '0.2.1-rc.2-332895e';
         if (text.split(badge).length !== 2) throw new Error('Recovered sidebar build badge has drifted');
         text = text.replace(badge, `${baseline.appVersion}-${baseline.buildCommit.slice(0,7)}`);
@@ -55,6 +53,7 @@ for (const [original, local, id] of replacements) {
   const metadata = JSON.parse(await readFile(join(target, 'package.json'), 'utf8'));
   metadata.name = `@local/${local}`;
   metadata.version = version;
+  metadata.peerDependencies = { ...metadata.peerDependencies, '@deepseek-ai/cordis': '4.0.5 || 4.1.0' };
   metadata.private = true;
   metadata.aiyouOriginalPackage = `@deepseek-ai/${original}`;
   metadata.aiyouOriginalBuild = '332895e0f7c9d4dbfb29729f5eb367fa263ff986';
